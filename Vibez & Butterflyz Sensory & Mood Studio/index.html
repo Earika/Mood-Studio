@@ -1148,85 +1148,8 @@ h3 { position: relative; }
 <!-- Shared butterfly emblem — purple/gold glow, used everywhere on the site -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
-    <!-- Wing fills: vivid magenta-violet like the reference art, lit from the body -->
-    <linearGradient id="bfly-fore-L" x1="100%" y1="100%" x2="0%" y2="0%">
-      <stop offset="0%" stop-color="#E85BB0"/>
-      <stop offset="30%" stop-color="#A94BD1"/>
-      <stop offset="70%" stop-color="#6B2FB8"/>
-      <stop offset="100%" stop-color="#3B1D7A"/>
-    </linearGradient>
-    <linearGradient id="bfly-fore-R" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#E85BB0"/>
-      <stop offset="30%" stop-color="#A94BD1"/>
-      <stop offset="70%" stop-color="#6B2FB8"/>
-      <stop offset="100%" stop-color="#3B1D7A"/>
-    </linearGradient>
-    <linearGradient id="bfly-hind-L" x1="100%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#F0A24B"/>
-      <stop offset="35%" stop-color="#C84FD8"/>
-      <stop offset="100%" stop-color="#4A2490"/>
-    </linearGradient>
-    <linearGradient id="bfly-hind-R" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#F0A24B"/>
-      <stop offset="35%" stop-color="#C84FD8"/>
-      <stop offset="100%" stop-color="#4A2490"/>
-    </linearGradient>
-    <radialGradient id="bfly-core-glow" cx="50%" cy="52%" r="60%">
-      <stop offset="0%" stop-color="#FFB84D" stop-opacity="0.8"/>
-      <stop offset="35%" stop-color="#E85BB0" stop-opacity="0.35"/>
-      <stop offset="100%" stop-color="#9D7FD4" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="bfly-body-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#B98FE8"/>
-      <stop offset="100%" stop-color="#5B3A9E"/>
-    </linearGradient>
     <g id="vb-butterfly">
-      <!-- warm core glow radiating from the body, like the reference -->
-      <ellipse cx="50" cy="52" rx="46" ry="40" fill="url(#bfly-core-glow)"/>
-
-      <!-- LEFT FOREWING: broad, swept up and out, gold-rimmed -->
-      <path d="M48 47 C42 38 34 26 24 17 C17 11 8 9 5 15 C2 20 5 28 9 34 C15 43 26 51 46 54 Z"
-            fill="url(#bfly-fore-L)" stroke="#F0C060" stroke-width="1.6" stroke-linejoin="round"/>
-      <!-- inner panel highlight -->
-      <path d="M45 48 C40 42 34 34 27 27 C31 26 37 29 41 34 C44 38 46 43 46 48 Z" fill="#F0A24B" opacity="0.55"/>
-      <!-- RIGHT FOREWING -->
-      <path d="M52 47 C58 38 66 26 76 17 C83 11 92 9 95 15 C98 20 95 28 91 34 C85 43 74 51 54 54 Z"
-            fill="url(#bfly-fore-R)" stroke="#F0C060" stroke-width="1.6" stroke-linejoin="round"/>
-      <path d="M55 48 C60 42 66 34 73 27 C69 26 63 29 59 34 C56 38 54 43 54 48 Z" fill="#F0A24B" opacity="0.55"/>
-
-      <!-- LEFT HINDWING: scalloped, with a swallowtail point -->
-      <path d="M46 56 C38 58 28 62 21 69 C15 75 13 82 17 86 C21 90 28 89 32 86 C34 89 38 90 41 87 C44 90 48 89 48 84 C49 76 48 65 47 58 Z"
-            fill="url(#bfly-hind-L)" stroke="#F0C060" stroke-width="1.5" stroke-linejoin="round"/>
-      <!-- RIGHT HINDWING -->
-      <path d="M54 56 C62 58 72 62 79 69 C85 75 87 82 83 86 C79 90 72 89 68 86 C66 89 62 90 59 87 C56 90 52 89 52 84 C51 76 52 65 53 58 Z"
-            fill="url(#bfly-hind-R)" stroke="#F0C060" stroke-width="1.5" stroke-linejoin="round"/>
-
-      <!-- gold wing veins fanning from the body -->
-      <path d="M47 49 C40 42 32 32 24 22 M47 51 C39 47 28 40 14 28 M46 53 C37 52 24 48 11 39
-               M53 49 C60 42 68 32 76 22 M53 51 C61 47 72 40 86 28 M54 53 C63 52 76 48 89 39
-               M47 58 C42 64 35 72 26 79 M48 60 C45 68 43 76 43 84
-               M53 58 C58 64 65 72 74 79 M52 60 C55 68 57 76 57 84"
-            stroke="#F0C060" stroke-width="0.8" fill="none" opacity="0.85" stroke-linecap="round"/>
-
-      <!-- glowing wing spots -->
-      <circle cx="24" cy="24" r="2.2" fill="#FFD98A"/>
-      <circle cx="76" cy="24" r="2.2" fill="#FFD98A"/>
-      <circle cx="16" cy="34" r="1.4" fill="#FF9ECF" opacity="0.9"/>
-      <circle cx="84" cy="34" r="1.4" fill="#FF9ECF" opacity="0.9"/>
-      <circle cx="27" cy="76" r="1.7" fill="#FFD98A" opacity="0.95"/>
-      <circle cx="73" cy="76" r="1.7" fill="#FFD98A" opacity="0.95"/>
-      <circle cx="38" cy="46" r="1.1" fill="#FFEDC2" opacity="0.9"/>
-      <circle cx="62" cy="46" r="1.1" fill="#FFEDC2" opacity="0.9"/>
-
-      <!-- segmented body with gold trim -->
-      <ellipse cx="50" cy="57" rx="2.8" ry="13" fill="url(#bfly-body-grad)" stroke="#F0C060" stroke-width="1"/>
-      <path d="M47.5 50 L52.5 50 M47.4 54 L52.6 54 M47.5 58 L52.5 58 M47.7 62 L52.3 62 M48 66 L52 66" stroke="#F0C060" stroke-width="0.7" opacity="0.9"/>
-      <circle cx="50" cy="42" r="3.4" fill="url(#bfly-body-grad)" stroke="#F0C060" stroke-width="1"/>
-
-      <!-- long curled gold antennae, like the reference -->
-      <path d="M48.5 39.5 C46 32 43 25 39 20 C37.5 18 35 17.5 34.5 19.5 C34 21 35.5 22 36.5 21
-               M51.5 39.5 C54 32 57 25 61 20 C62.5 18 65 17.5 65.5 19.5 C66 21 64.5 22 63.5 21"
-            stroke="#F0C060" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+      <image href="vb-butterfly.png" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid meet"/>
     </g>
   </defs>
 </svg>
@@ -2290,7 +2213,1539 @@ const OILS = [
   { id:"rain", name:"Rain", latin:"Accord (fragrance)", category:"Nature", note:"Top", type:"fragrance",
     intensity:2, blend_strength:2, aroma:["Petrichor","Ozonic","Green","Wet"], constituents:[],
     phototoxic:false, phototox_note:"N/A", cautions:["Fragrance accord."], pregnancy:"Topical",
-    pairs_with:["Vetiver","Green Tea","Bamboo"], uses:["Cool weather diffusion"] }
+    pairs_with:["Vetiver","Green Tea","Bamboo"], uses:["Cool weather diffusion"] },
+  {
+    id: "clementine", name: "Clementine", latin: "Citrus clementina",
+    category: "Citrus", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Crisp", "Fruity"],
+    constituents: [],
+    phototoxic: true, phototox_note: "Phototoxic risk; Dilute well",
+    cautions: ["Phototoxic risk", "Dilute well"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Mood lift"],
+    plant_part: "Rind", extraction: "Cold Pressed"
+  },
+  {
+    id: "grapefruit-pink", name: "Grapefruit (Pink)", latin: "Citrus paradisi",
+    category: "Citrus", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Tangy", "Citrus"],
+    constituents: [],
+    phototoxic: true, phototox_note: "Phototoxic; Max dermal 4%",
+    max_dermal: 4.0,
+    cautions: ["Phototoxic", "Max dermal 4%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Mood lift"],
+    plant_part: "Rind", extraction: "Cold Pressed"
+  },
+  {
+    id: "grapefruit-white", name: "Grapefruit (White)", latin: "Citrus paradisi",
+    category: "Citrus", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sharp", "Tart", "Citrus"],
+    constituents: [],
+    phototoxic: true, phototox_note: "Phototoxic; Max dermal 4%",
+    max_dermal: 4.0,
+    cautions: ["Phototoxic", "Max dermal 4%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Mood lift"],
+    plant_part: "Rind", extraction: "Cold Pressed"
+  },
+  {
+    id: "kaffir-lime-combava", name: "Kaffir Lime (Combava)", latin: "Citrus hystrix",
+    category: "Citrus", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Intense", "Tart", "Green citrus"],
+    constituents: [],
+    phototoxic: true, phototox_note: "Phototoxic; highly potent",
+    cautions: ["Phototoxic", "highly potent"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Mood lift"],
+    plant_part: "Rind/Leaf", extraction: "Cold Pressed/Steam Distilled"
+  },
+  {
+    id: "kumquat", name: "Kumquat", latin: "Citrus japonica",
+    category: "Citrus", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Rich citrus", "Tart"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Generally safe; dilute before use",
+    cautions: ["Generally safe", "dilute before use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Mood lift"],
+    plant_part: "Rind", extraction: "Cold Pressed"
+  },
+  {
+    id: "lime-cold-pressed", name: "Lime (Cold Pressed)", latin: "Citrus aurantifolia",
+    category: "Citrus", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Tart", "Sweet", "Fresh"],
+    constituents: [],
+    phototoxic: true, phototox_note: "Highly phototoxic; Max dermal 0.7%",
+    max_dermal: 0.7,
+    cautions: ["Highly phototoxic", "Max dermal 0.7%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Mood lift"],
+    plant_part: "Rind", extraction: "Cold Pressed"
+  },
+  {
+    id: "lime-distilled", name: "Lime (Distilled)", latin: "Citrus aurantifolia",
+    category: "Citrus", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sharp", "Green", "Citrus"],
+    constituents: [],
+    phototoxic: true, phototox_note: "Non-phototoxic (safe for sun)",
+    cautions: ["Non-phototoxic (safe for sun)"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Mood lift"],
+    plant_part: "Rind", extraction: "Steam Distilled"
+  },
+  {
+    id: "mandarin", name: "Mandarin", latin: "Citrus reticulata",
+    category: "Citrus", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Gentle", "Fruity"],
+    constituents: [],
+    phototoxic: true, phototox_note: "Generally non-phototoxic; mild",
+    cautions: ["Generally non-phototoxic", "mild"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Mood lift"],
+    plant_part: "Rind", extraction: "Cold Pressed"
+  },
+  {
+    id: "neroli", name: "Neroli", latin: "Citrus aurantium",
+    category: "Citrus", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Floral", "Citrusy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Mood lift"],
+    plant_part: "Blossoms", extraction: "Steam Distilled"
+  },
+  {
+    id: "petitgrain", name: "Petitgrain", latin: "Citrus aurantium",
+    category: "Citrus", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Woody", "Green", "Floral citrus"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Mood lift"],
+    plant_part: "Leaves/Twigs", extraction: "Steam Distilled"
+  },
+  {
+    id: "blood-red-orange", name: "Blood/Red Orange", latin: "Citrus sinensis",
+    category: "Citrus", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Rich", "Tart", "Warm citrus"],
+    constituents: [],
+    phototoxic: true, phototox_note: "Generally non-phototoxic",
+    cautions: ["Generally non-phototoxic"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Mood lift"],
+    plant_part: "Rind", extraction: "Cold Pressed"
+  },
+  {
+    id: "tangerine", name: "Tangerine", latin: "Citrus reticulata",
+    category: "Citrus", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Tangy", "Bright"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Mood lift"],
+    plant_part: "Rind", extraction: "Cold Pressed"
+  },
+  {
+    id: "yuzu", name: "Yuzu", latin: "Citrus junos",
+    category: "Citrus", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Tart", "Complex", "Floral citrus"],
+    constituents: [],
+    phototoxic: true, phototox_note: "Mild phototoxic risk",
+    cautions: ["Mild phototoxic risk"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Mood lift"],
+    plant_part: "Rind", extraction: "Cold Pressed"
+  },
+  {
+    id: "blue-lotus-absolute", name: "Blue Lotus (Absolute)", latin: "Nymphaea caerulea",
+    category: "Floral", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Intoxicating", "Rich", "Floral"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Use highly diluted; rare",
+    cautions: ["Use highly diluted", "rare"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowers", extraction: "Solvent Extracted"
+  },
+  {
+    id: "carnation-absolute", name: "Carnation (Absolute)", latin: "Dianthus caryophyllus",
+    category: "Floral", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Spicy", "Floral", "Honeyed"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Skin sensitization risk; low max dermal",
+    cautions: ["Skin sensitization risk", "low max dermal"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowers", extraction: "Solvent Extracted"
+  },
+  {
+    id: "champaca-absolute", name: "Champaca (Absolute)", latin: "Magnolia champaca",
+    category: "Floral", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Exotic", "Rich", "Fruity-floral"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Skin sensitization risk",
+    cautions: ["Skin sensitization risk"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowers", extraction: "Solvent Extracted"
+  },
+  {
+    id: "frangipani-plumeria", name: "Frangipani / Plumeria", latin: "Plumeria rubra",
+    category: "Floral", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Tropical", "Lush"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Use highly diluted",
+    cautions: ["Use highly diluted"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowers", extraction: "Solvent Extracted"
+  },
+  {
+    id: "rose-geranium", name: "Rose Geranium", latin: "Pelargonium roseum",
+    category: "Floral", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Rosy", "Green", "Citrus notes"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Leaves/Flowers", extraction: "Steam Distilled"
+  },
+  {
+    id: "helichrysum-immortelle", name: "Helichrysum / Immortelle", latin: "Helichrysum italicum",
+    category: "Floral", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Herbaceous", "Honey", "Tea-like"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe; excellent for skincare",
+    cautions: ["Safe", "excellent for skincare"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowers", extraction: "Steam Distilled"
+  },
+  {
+    id: "jasmine-grandiflorum", name: "Jasmine Grandiflorum", latin: "Jasminum grandiflorum",
+    category: "Floral", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Deep", "Rich", "Intensely floral"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Max dermal limit 0.7%",
+    max_dermal: 0.7,
+    cautions: ["Max dermal limit 0.7%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowers", extraction: "Solvent Extracted"
+  },
+  {
+    id: "jasmine-sambac", name: "Jasmine Sambac", latin: "Jasminum sambac",
+    category: "Floral", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Green", "Sweet", "Exotic floral"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Max dermal limit 4%",
+    max_dermal: 4.0,
+    cautions: ["Max dermal limit 4%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowers", extraction: "Solvent Extracted"
+  },
+  {
+    id: "lavender-english", name: "Lavender (English)", latin: "Lavandula angustifolia",
+    category: "Floral", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Floral", "Herbaceous"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Very safe; widely used",
+    cautions: ["Very safe", "widely used"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowering Tops", extraction: "Steam Distilled"
+  },
+  {
+    id: "lavender-spike", name: "Lavender (Spike)", latin: "Lavandula latifolia",
+    category: "Floral", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Camphorous", "Floral", "Fresh"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Contains camphor; avoid in young children",
+    cautions: ["Contains camphor", "avoid in young children"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowering Tops", extraction: "Steam Distilled"
+  },
+  {
+    id: "lavandin", name: "Lavandin", latin: "Lavandula x intermedia",
+    category: "Floral", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sharp", "Camphorous", "Floral"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowering Tops", extraction: "Steam Distilled"
+  },
+  {
+    id: "magnolia", name: "Magnolia", latin: "Magnolia grandiflora",
+    category: "Floral", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Creamy", "Sweet", "Bright floral"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowers", extraction: "Steam Distilled"
+  },
+  {
+    id: "mimosa-absolute", name: "Mimosa (Absolute)", latin: "Acacia dealbata",
+    category: "Floral", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Powdery", "Sweet", "Woody floral"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Skin sensitization risk",
+    cautions: ["Skin sensitization risk"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowers", extraction: "Solvent Extracted"
+  },
+  {
+    id: "osmanthus-absolute", name: "Osmanthus (Absolute)", latin: "Osmanthus fragrans",
+    category: "Floral", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Apricot", "Leather", "Rich floral"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Max dermal limit varies",
+    cautions: ["Max dermal limit varies"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowers", extraction: "Solvent Extracted"
+  },
+  {
+    id: "rose-damask", name: "Rose Damask", latin: "Rosa damascena",
+    category: "Floral", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Deep", "Sweet", "Classic rose"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Max dermal limit 0.6%",
+    max_dermal: 0.6,
+    cautions: ["Max dermal limit 0.6%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowers", extraction: "Steam Distilled"
+  },
+  {
+    id: "rose-centifolia-absolute", name: "Rose Centifolia (Absolute)", latin: "Rosa centifolia",
+    category: "Floral", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Rich", "Sweet", "Honeyed rose"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Skin sensitization risk",
+    cautions: ["Skin sensitization risk"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowers", extraction: "Solvent Extracted"
+  },
+  {
+    id: "tuberose-absolute", name: "Tuberose (Absolute)", latin: "Polianthes tuberosa",
+    category: "Floral", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Heavy", "Sweet", "Exotic floral"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Use highly diluted",
+    cautions: ["Use highly diluted"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowers", extraction: "Solvent Extracted"
+  },
+  {
+    id: "violet-leaf-absolute", name: "Violet Leaf (Absolute)", latin: "Viola odorata",
+    category: "Floral", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Green", "Earthy", "Cucumber-like"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Max dermal limit 2%",
+    max_dermal: 2.0,
+    cautions: ["Max dermal limit 2%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Leaves", extraction: "Solvent Extracted"
+  },
+  {
+    id: "ylang-ylang-extra", name: "Ylang Ylang (Extra)", latin: "Cananga odorata",
+    category: "Floral", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Intensely sweet", "Floral", "Exotic"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Max dermal limit 0.8%",
+    max_dermal: 0.8,
+    cautions: ["Max dermal limit 0.8%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowers", extraction: "Steam Distilled"
+  },
+  {
+    id: "ylang-ylang-complete", name: "Ylang Ylang (Complete)", latin: "Cananga odorata",
+    category: "Floral", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Floral", "Slightly woody"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Max dermal limit 0.8%",
+    max_dermal: 0.8,
+    cautions: ["Max dermal limit 0.8%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Perfumery"],
+    plant_part: "Flowers", extraction: "Steam Distilled"
+  },
+  {
+    id: "angelica-leaf", name: "Angelica Leaf", latin: "Angelica archangelica",
+    category: "Herb", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Green", "Peppery", "Herbaceous"],
+    constituents: [],
+    phototoxic: true, phototox_note: "Phototoxic risk",
+    cautions: ["Phototoxic risk"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "basil-sweet", name: "Basil (Sweet)", latin: "Ocimum basilicum",
+    category: "Herb", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Fresh", "Sweet", "Anise-like"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Contains estragole; max dermal 3.3%",
+    max_dermal: 3.3,
+    cautions: ["Contains estragole", "max dermal 3.3%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "basil-holy-tulsi", name: "Basil (Holy/Tulsi)", latin: "Ocimum sanctum",
+    category: "Herb", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Spicy", "Warm", "Sweet"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Max dermal limit 1%",
+    max_dermal: 1.0,
+    cautions: ["Max dermal limit 1%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "blue-tansy", name: "Blue Tansy", latin: "Tanacetum annuum",
+    category: "Herb", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Fruity", "Herbaceous"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe; yields vivid blue color (chamazulene)",
+    cautions: ["Safe", "yields vivid blue color (chamazulene)"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Flowers/Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "camphor-white", name: "Camphor (White)", latin: "Cinnamomum camphora",
+    category: "Herb", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sharp", "Piercing", "Medicinal"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Avoid in pregnancy/children",
+    cautions: ["Avoid in pregnancy/children"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Wood/Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "catnip", name: "Catnip", latin: "Nepeta cataria",
+    category: "Herb", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Minty", "Herbaceous", "Musty"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Generally safe",
+    cautions: ["Generally safe"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "chamomile-german", name: "Chamomile (German)", latin: "Matricaria chamomilla",
+    category: "Herb", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Strong", "Sweet", "Warm", "Herbaceous"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe; deep blue color",
+    cautions: ["Safe", "deep blue color"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Flowers", extraction: "Steam Distilled"
+  },
+  {
+    id: "cilantro", name: "Cilantro", latin: "Coriandrum sativum",
+    category: "Herb", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Pungent", "Green", "Sweet"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Generally safe",
+    cautions: ["Generally safe"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "common-sage", name: "Common Sage", latin: "Salvia officinalis",
+    category: "Herb", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Strong", "Spicy", "Camphorous"],
+    constituents: [],
+    phototoxic: false, phototox_note: "High thujone; neurotoxic risk. Avoid in pregnancy",
+    cautions: ["High thujone", "neurotoxic risk. Avoid in pregnancy"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "davana", name: "Davana", latin: "Artemisia pallens",
+    category: "Herb", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Rich", "Fruity", "Boozy", "Woody"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Generally safe",
+    cautions: ["Generally safe"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves/Flowers", extraction: "Steam Distilled"
+  },
+  {
+    id: "dill-weed", name: "Dill Weed", latin: "Anethum graveolens",
+    category: "Herb", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Fresh", "Sweet", "Herbaceous"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Generally safe",
+    cautions: ["Generally safe"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "eucalyptus-globulus", name: "Eucalyptus Globulus", latin: "Eucalyptus globulus",
+    category: "Herb", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Strong", "Camphorous", "Fresh"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Avoid near face of young children",
+    cautions: ["Avoid near face of young children"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "eucalyptus-radiata", name: "Eucalyptus Radiata", latin: "Eucalyptus radiata",
+    category: "Herb", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Crisp", "Clean", "Camphorous"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Gentler than Globulus; still caution with kids",
+    cautions: ["Gentler than Globulus", "still caution with kids"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "eucalyptus-lemon", name: "Eucalyptus Lemon", latin: "Eucalyptus citriodora",
+    category: "Herb", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Lemony", "Fresh", "Sweet"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "fennel-sweet", name: "Fennel (Sweet)", latin: "Foeniculum vulgare",
+    category: "Herb", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Anise-like", "Earthy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Avoid in pregnancy; estrogenic",
+    cautions: ["Avoid in pregnancy", "estrogenic"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Crushed Seeds", extraction: "Steam Distilled"
+  },
+  {
+    id: "hyssop-decumbens", name: "Hyssop (Decumbens)", latin: "Hyssopus officinalis",
+    category: "Herb", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Fresh", "Earthy", "Sweet"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Use Decumbens variety; pure hyssop is neurotoxic",
+    cautions: ["Use Decumbens variety", "pure hyssop is neurotoxic"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves/Flowers", extraction: "Steam Distilled"
+  },
+  {
+    id: "melissa-lemon-balm", name: "Melissa (Lemon Balm)", latin: "Melissa officinalis",
+    category: "Herb", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Bright", "Lemony", "Herbaceous"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Max dermal limit 0.9%",
+    max_dermal: 0.9,
+    cautions: ["Max dermal limit 0.9%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "oregano", name: "Oregano", latin: "Origanum vulgare",
+    category: "Herb", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Strong", "Spicy", "Camphorous"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Severe skin irritant; max dermal 1.1%",
+    max_dermal: 1.1,
+    cautions: ["Severe skin irritant", "max dermal 1.1%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "parsley-leaf", name: "Parsley Leaf", latin: "Petroselinum crispum",
+    category: "Herb", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Green", "Earthy", "Slightly woody"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Avoid in pregnancy",
+    cautions: ["Avoid in pregnancy"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "rosemary-ct-cineole", name: "Rosemary (ct. Cineole)", latin: "Salvia rosmarinus",
+    category: "Herb", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Fresh", "Woody", "Camphorous"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Avoid near face of young children",
+    cautions: ["Avoid near face of young children"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "rosemary-ct-verbenone", name: "Rosemary (ct. Verbenone)", latin: "Salvia rosmarinus",
+    category: "Herb", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Woody", "Herbaceous", "Mild"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Generally safer profile",
+    cautions: ["Generally safer profile"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "tarragon", name: "Tarragon", latin: "Artemisia dracunculus",
+    category: "Herb", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Anise-like", "Spicy", "Green"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Contains estragole; max dermal 0.1%",
+    max_dermal: 0.1,
+    cautions: ["Contains estragole", "max dermal 0.1%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "thyme-ct-thymol", name: "Thyme (ct. Thymol)", latin: "Thymus vulgaris",
+    category: "Herb", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Strong", "Herbaceous", "Medicinal"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Skin irritant; max dermal 1.3%",
+    max_dermal: 1.3,
+    cautions: ["Skin irritant", "max dermal 1.3%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "thyme-ct-linalool", name: "Thyme (ct. Linalool)", latin: "Thymus vulgaris",
+    category: "Herb", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Green", "Slightly woody"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "yarrow-blue", name: "Yarrow (Blue)", latin: "Achillea millefolium",
+    category: "Herb", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Herbaceous", "Spicy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "May interact with certain drugs",
+    cautions: ["May interact with certain drugs"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Aromatherapy blends"],
+    plant_part: "Flowers", extraction: "Steam Distilled"
+  },
+  {
+    id: "agarwood-oud", name: "Agarwood / Oud", latin: "Aquilaria malaccensis",
+    category: "Wood", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Deep", "Woody", "Rich", "Animalic"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Rare/Expensive; Generally safe",
+    cautions: ["Rare/Expensive", "Generally safe"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Resinous Wood", extraction: "Steam Distilled"
+  },
+  {
+    id: "amyris", name: "Amyris", latin: "Amyris balsamifera",
+    category: "Wood", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Woody", "Sweet", "Dry"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Wood", extraction: "Steam Distilled"
+  },
+  {
+    id: "arborvitae", name: "Arborvitae", latin: "Thuja plicata",
+    category: "Wood", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Earthy", "Woody", "Warm"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Generally safe",
+    cautions: ["Generally safe"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Wood", extraction: "Steam Distilled"
+  },
+  {
+    id: "cedarwood-virginian", name: "Cedarwood (Virginian)", latin: "Juniperus virginiana",
+    category: "Wood", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Woody", "Dry", "Pencil-like"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Wood", extraction: "Steam Distilled"
+  },
+  {
+    id: "cedarwood-himalayan", name: "Cedarwood (Himalayan)", latin: "Cedrus deodara",
+    category: "Wood", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Dry", "Woody", "Slightly sweet"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Wood", extraction: "Steam Distilled"
+  },
+  {
+    id: "cedarwood-texas", name: "Cedarwood (Texas)", latin: "Juniperus mexicana",
+    category: "Wood", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Woody", "Balsamic"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Wood", extraction: "Steam Distilled"
+  },
+  {
+    id: "cypress-mediterranean", name: "Cypress (Mediterranean)", latin: "Cupressus sempervirens",
+    category: "Wood", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Fresh", "Woody", "Evergreen"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Leaves/Twigs", extraction: "Steam Distilled"
+  },
+  {
+    id: "cypress-blue", name: "Cypress (Blue)", latin: "Callitris intratropica",
+    category: "Wood", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Woody", "Smoky", "Sweet"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Wood", extraction: "Steam Distilled"
+  },
+  {
+    id: "fir-balsam", name: "Fir (Balsam)", latin: "Abies balsamea",
+    category: "Wood", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Crisp", "Fresh", "Evergreen"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Needles", extraction: "Steam Distilled"
+  },
+  {
+    id: "fir-douglas", name: "Fir (Douglas)", latin: "Pseudotsuga menziesii",
+    category: "Wood", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Fresh", "Sweet", "Citrusy evergreen"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Needles", extraction: "Steam Distilled"
+  },
+  {
+    id: "fir-siberian", name: "Fir (Siberian)", latin: "Abies sibirica",
+    category: "Wood", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Fresh", "Woody", "Earthy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Needles", extraction: "Steam Distilled"
+  },
+  {
+    id: "fir-silver", name: "Fir (Silver)", latin: "Abies alba",
+    category: "Wood", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Crisp", "Woody", "Rich"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Needles", extraction: "Steam Distilled"
+  },
+  {
+    id: "hinoki", name: "Hinoki", latin: "Chamaecyparis obtusa",
+    category: "Wood", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Clean", "Woody", "Citrusy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Wood", extraction: "Steam Distilled"
+  },
+  {
+    id: "ho-wood", name: "Ho Wood", latin: "Cinnamomum camphora",
+    category: "Wood", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Floral", "Woody"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use (high linalool)",
+    cautions: ["Safe for general use (high linalool)"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Wood", extraction: "Steam Distilled"
+  },
+  {
+    id: "juniper-berry", name: "Juniper Berry", latin: "Juniperus communis",
+    category: "Wood", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Fresh", "Crisp", "Woody", "Sweet"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Avoid in kidney disease",
+    cautions: ["Avoid in kidney disease"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Berries", extraction: "Steam Distilled"
+  },
+  {
+    id: "kunzea", name: "Kunzea", latin: "Kunzea ambigua",
+    category: "Wood", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Clean", "Medicinal", "Spicy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "palo-santo", name: "Palo Santo", latin: "Bursera graveolens",
+    category: "Wood", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Woody", "Citrus", "Mint"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Sustainable sourcing recommended",
+    cautions: ["Sustainable sourcing recommended"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Wood", extraction: "Steam Distilled"
+  },
+  {
+    id: "pine-scotch", name: "Pine (Scotch)", latin: "Pinus sylvestris",
+    category: "Wood", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Strong", "Crisp", "Forest"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Can sensitize if oxidized",
+    cautions: ["Can sensitize if oxidized"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Needles", extraction: "Steam Distilled"
+  },
+  {
+    id: "pine-pinyon", name: "Pine (Pinyon)", latin: "Pinus edulis",
+    category: "Wood", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Fruity", "Piney", "Sweet"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Can sensitize if oxidized",
+    cautions: ["Can sensitize if oxidized"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Needles/Twigs", extraction: "Steam Distilled"
+  },
+  {
+    id: "rosewood", name: "Rosewood", latin: "Aniba rosaeodora",
+    category: "Wood", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Woody", "Floral"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Endangered species; use Ho Wood instead",
+    cautions: ["Endangered species", "use Ho Wood instead"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Wood", extraction: "Steam Distilled"
+  },
+  {
+    id: "sandalwood-australian", name: "Sandalwood (Australian)", latin: "Santalum spicatum",
+    category: "Wood", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Soft", "Woody", "Earthy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Wood", extraction: "Steam Distilled"
+  },
+  {
+    id: "sandalwood-east-indian", name: "Sandalwood (East Indian)", latin: "Santalum album",
+    category: "Wood", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Deep", "Soft", "Sweet", "Woody"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe; vulnerable species",
+    cautions: ["Safe", "vulnerable species"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Wood", extraction: "Steam Distilled"
+  },
+  {
+    id: "spruce-black", name: "Spruce (Black)", latin: "Picea mariana",
+    category: "Wood", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Fresh", "Crisp", "Earthy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Needles", extraction: "Steam Distilled"
+  },
+  {
+    id: "spruce-blue", name: "Spruce (Blue)", latin: "Picea pungens",
+    category: "Wood", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Crisp", "Evergreen", "Sweet"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Needles", extraction: "Steam Distilled"
+  },
+  {
+    id: "spruce-hemlock", name: "Spruce (Hemlock)", latin: "Tsuga canadensis",
+    category: "Wood", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Fruity", "Balsamic"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Needles/Twigs", extraction: "Steam Distilled"
+  },
+  {
+    id: "wintergreen", name: "Wintergreen", latin: "Gaultheria procumbens",
+    category: "Wood", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Strong", "Sweet", "Minty"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Contains methyl salicylate; hazardous to kids/pets",
+    cautions: ["Contains methyl salicylate", "hazardous to kids/pets"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "balsam-of-peru", name: "Balsam of Peru", latin: "Myroxylon pereirae",
+    category: "Spice", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Rich", "Vanilla", "Earthy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Skin sensitization; max dermal 0.4%",
+    max_dermal: 0.4,
+    cautions: ["Skin sensitization", "max dermal 0.4%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Resin", extraction: "Steam Distilled/Solvent"
+  },
+  {
+    id: "benzoin", name: "Benzoin", latin: "Styrax benzoin",
+    category: "Spice", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Warm", "Vanilla-like"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Skin sensitization risk; dilute well",
+    cautions: ["Skin sensitization risk", "dilute well"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Resin", extraction: "Solvent Extracted"
+  },
+  {
+    id: "copaiba-balsam", name: "Copaiba Balsam", latin: "Copaifera officinalis",
+    category: "Spice", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Mild", "Sweet", "Woody"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Oleoresin", extraction: "Steam Distilled"
+  },
+  {
+    id: "elemi", name: "Elemi", latin: "Canarium luzonicum",
+    category: "Spice", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Citrus", "Peppery", "Balsamic"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Resin", extraction: "Steam Distilled"
+  },
+  {
+    id: "frankincense-carterii", name: "Frankincense (Carterii)", latin: "Boswellia carterii",
+    category: "Spice", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Balsamic", "Rich", "Earthy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Resin", extraction: "Steam Distilled"
+  },
+  {
+    id: "frankincense-sacra", name: "Frankincense (Sacra)", latin: "Boswellia sacra",
+    category: "Spice", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Deep", "Resinous", "Citrusy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Resin", extraction: "Steam Distilled"
+  },
+  {
+    id: "frankincense-serrata", name: "Frankincense (Serrata)", latin: "Boswellia serrata",
+    category: "Spice", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Woody", "Spicy", "Earthy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Resin", extraction: "Steam Distilled"
+  },
+  {
+    id: "galbanum", name: "Galbanum", latin: "Ferula gummosa",
+    category: "Spice", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Intensely green", "Earthy", "Piney"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Resin", extraction: "Steam Distilled"
+  },
+  {
+    id: "gurjum-balsam", name: "Gurjum Balsam", latin: "Dipterocarpus turbinatus",
+    category: "Spice", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Mild", "Sweet", "Woody"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Resin", extraction: "Steam Distilled"
+  },
+  {
+    id: "labdanum-cistus", name: "Labdanum / Cistus", latin: "Cistus ladanifer",
+    category: "Spice", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Deep", "Musky", "Amber", "Sweet"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Resin", extraction: "Steam/Solvent Extracted"
+  },
+  {
+    id: "opoponax-sweet-myrrh", name: "Opoponax (Sweet Myrrh)", latin: "Commiphora opoponax",
+    category: "Spice", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Balsamic", "Spicy"],
+    constituents: [],
+    phototoxic: true, phototox_note: "Phototoxic risk; max dermal 0.6%",
+    max_dermal: 0.6,
+    cautions: ["Phototoxic risk", "max dermal 0.6%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Resin", extraction: "Steam Distilled"
+  },
+  {
+    id: "allspice-pimento-berry", name: "Allspice / Pimento Berry", latin: "Pimenta dioica",
+    category: "Spice", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Warm", "Spicy", "Sweet clove-like"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Mucous membrane irritant; max dermal 0.3%",
+    max_dermal: 0.3,
+    cautions: ["Mucous membrane irritant", "max dermal 0.3%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Berries", extraction: "Steam Distilled"
+  },
+  {
+    id: "anise", name: "Anise", latin: "Pimpinella anisum",
+    category: "Spice", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Licorice-like", "Sweet", "Spicy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Avoid in pregnancy; max dermal 2.4%",
+    max_dermal: 2.4,
+    cautions: ["Avoid in pregnancy", "max dermal 2.4%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Seeds", extraction: "Steam Distilled"
+  },
+  {
+    id: "star-anise", name: "Star Anise", latin: "Illicium verum",
+    category: "Spice", note: "Top", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Strong licorice", "Spicy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Avoid in pregnancy; max dermal 1.7%",
+    max_dermal: 1.7,
+    cautions: ["Avoid in pregnancy", "max dermal 1.7%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Pods", extraction: "Steam Distilled"
+  },
+  {
+    id: "caraway", name: "Caraway", latin: "Carum carvi",
+    category: "Spice", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Spicy", "Earthy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Max dermal limit 1.2%",
+    max_dermal: 1.2,
+    cautions: ["Max dermal limit 1.2%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Seeds", extraction: "Steam Distilled"
+  },
+  {
+    id: "cardamom", name: "Cardamom", latin: "Elettaria cardamomum",
+    category: "Spice", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Spicy", "Sweet", "Balsamic"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Seeds", extraction: "Steam Distilled"
+  },
+  {
+    id: "cassia", name: "Cassia", latin: "Cinnamomum cassia",
+    category: "Spice", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Warm", "Spicy", "Woody"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Severe irritant; max dermal 0.05%",
+    max_dermal: 0.05,
+    cautions: ["Severe irritant", "max dermal 0.05%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Bark/Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "celery-seed", name: "Celery Seed", latin: "Apium graveolens",
+    category: "Spice", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Warm", "Spicy", "Earthy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Seeds", extraction: "Steam Distilled"
+  },
+  {
+    id: "coriander-seed", name: "Coriander Seed", latin: "Coriandrum sativum",
+    category: "Spice", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Spicy", "Woody"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Seeds", extraction: "Steam Distilled"
+  },
+  {
+    id: "cubeb", name: "Cubeb", latin: "Piper cubeba",
+    category: "Spice", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Spicy", "Woody", "Camphorous"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Berries", extraction: "Steam Distilled"
+  },
+  {
+    id: "cumin", name: "Cumin", latin: "Cuminum cyminum",
+    category: "Spice", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Spicy", "Earthy", "Warm"],
+    constituents: [],
+    phototoxic: true, phototox_note: "Phototoxic; max dermal 0.4%",
+    max_dermal: 0.4,
+    cautions: ["Phototoxic", "max dermal 0.4%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Seeds", extraction: "Steam Distilled"
+  },
+  {
+    id: "ginger", name: "Ginger", latin: "Zingiber officinale",
+    category: "Spice", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Warm", "Spicy", "Earthy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "May irritate sensitive skin",
+    cautions: ["May irritate sensitive skin"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Roots/Rhizomes", extraction: "Steam Distilled"
+  },
+  {
+    id: "pink-pepper", name: "Pink Pepper", latin: "Schinus molle",
+    category: "Spice", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Spicy", "Warm"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Warming blends"],
+    plant_part: "Berries", extraction: "Steam Distilled"
+  },
+  {
+    id: "angelica-root", name: "Angelica Root", latin: "Angelica archangelica",
+    category: "Root", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Earthy", "Musky", "Sweet"],
+    constituents: [],
+    phototoxic: true, phototox_note: "Phototoxic; max dermal 0.8%",
+    max_dermal: 0.8,
+    cautions: ["Phototoxic", "max dermal 0.8%"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Roots", extraction: "Steam Distilled"
+  },
+  {
+    id: "carrot-seed", name: "Carrot Seed", latin: "Daucus carota",
+    category: "Root", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Earthy", "Woody", "Root-like"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Avoid in pregnancy",
+    cautions: ["Avoid in pregnancy"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Seeds", extraction: "Steam Distilled"
+  },
+  {
+    id: "cypriol-nagarmotha", name: "Cypriol / Nagarmotha", latin: "Cyperus scariosus",
+    category: "Root", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Woody", "Earthy", "Spicy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Roots", extraction: "Steam Distilled"
+  },
+  {
+    id: "palmarosa", name: "Palmarosa", latin: "Cymbopogon martini",
+    category: "Root", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Sweet", "Floral", "Rose-like"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Grass", extraction: "Steam Distilled"
+  },
+  {
+    id: "patchouli", name: "Patchouli", latin: "Pogostemon cablin",
+    category: "Root", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Rich", "Earthy", "Woody", "Sweet"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use; improves with age",
+    cautions: ["Safe for general use", "improves with age"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Leaves", extraction: "Steam Distilled"
+  },
+  {
+    id: "plai", name: "Plai", latin: "Zingiber cassumunar",
+    category: "Root", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Cooling", "Spicy", "Green"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Roots/Rhizomes", extraction: "Steam Distilled"
+  },
+  {
+    id: "spikenard-jatamansi", name: "Spikenard / Jatamansi", latin: "Nardostachys jatamansi",
+    category: "Root", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Deep", "Earthy", "Woody", "Musky"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Endangered species; use Vetiver instead",
+    cautions: ["Endangered species", "use Vetiver instead"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Roots", extraction: "Steam Distilled"
+  },
+  {
+    id: "turmeric", name: "Turmeric", latin: "Curcuma longa",
+    category: "Root", note: "Middle", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Warm", "Spicy", "Earthy"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use",
+    cautions: ["Safe for general use"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Roots", extraction: "Steam Distilled"
+  },
+  {
+    id: "valerian", name: "Valerian", latin: "Valeriana officinalis",
+    category: "Root", note: "Base", type: "essential",
+    intensity: 3, blend_strength: 3,
+    aroma: ["Earthy", "Musky", "Strong"],
+    constituents: [],
+    phototoxic: false, phototox_note: "Safe for general use; sleep aid",
+    cautions: ["Safe for general use", "sleep aid"],
+    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
+    pairs_with: [],
+    uses: ["Diffusion", "Grounding blends"],
+    plant_part: "Roots", extraction: "Steam Distilled"
+  }
 ];
 
 // Export
@@ -2992,16 +4447,21 @@ function goldDustBurst(x, y) {
 }
 
 function bflySafetyLine(oil) {
-  if (oil.phototoxic) return `<div class="bfly-back-line danger"><strong>⚠ Phototoxic</strong> — max ${oil.max_dermal}% before sun exposure.</div>`;
+  if (oil.phototoxic) {
+    return typeof oil.max_dermal === "number"
+      ? `<div class="bfly-back-line danger"><strong>⚠ Phototoxic</strong> — max ${oil.max_dermal}% before sun exposure.</div>`
+      : `<div class="bfly-back-line danger"><strong>⚠ Phototoxic</strong> — see safety notes for dilution.</div>`;
+  }
   if (/AVOID/i.test(oil.pregnancy)) return `<div class="bfly-back-line danger"><strong>Pregnancy:</strong> avoid.</div>`;
   return `<div class="bfly-back-line"><strong>Safety:</strong> ${oil.type === "fragrance" ? "Fragrance accord — patch test first." : "No phototoxicity flagged."}</div>`;
 }
 
 function bflyKeyNotes(oil) {
   const top = (oil.constituents || []).slice(0, 2).map(c => c.c).join(", ");
-  return top
-    ? `<div class="bfly-back-line"><strong>Key notes:</strong> ${top}</div>`
-    : `<div class="bfly-back-line"><strong>Profile:</strong> synthetic accord</div>`;
+  if (top) return `<div class="bfly-back-line"><strong>Key notes:</strong> ${top}</div>`;
+  return oil.type === "fragrance"
+    ? `<div class="bfly-back-line"><strong>Profile:</strong> synthetic accord</div>`
+    : `<div class="bfly-back-line"><strong>Profile:</strong> chemical data pending</div>`;
 }
 
 function bflyCardHTML(oil) {
@@ -3297,7 +4757,9 @@ function renderBlendActions(oils) {
   if (!container) return;
   const withChem = oils.filter(o => o.constituents && o.constituents.length);
   if (withChem.length === 0) {
-    container.innerHTML = '<div class="empty">Add true essential oils to see therapeutic actions.</div>';
+    container.innerHTML = oils.length
+      ? '<div class="empty">None of your current oils have chemical constituent data yet, so therapeutic actions can\'t be aggregated.</div>'
+      : '<div class="empty">Add true essential oils to see therapeutic actions.</div>';
     return;
   }
 
@@ -3454,7 +4916,9 @@ function renderChemComposition(oils) {
   const container = document.getElementById("chem-composition");
   const withChem = oils.filter(o => o.constituents && o.constituents.length);
   if (withChem.length === 0) {
-    container.innerHTML = '<div class="empty">Add true essential oils to see chemical breakdown. Fragrance accords have no constituent data.</div>';
+    container.innerHTML = oils.length
+      ? '<div class="empty">None of your current oils have chemical constituent data yet, so a breakdown can\'t be shown.</div>'
+      : '<div class="empty">Add true essential oils to see chemical breakdown. Fragrance accords have no constituent data.</div>';
     return;
   }
 
@@ -3579,7 +5043,9 @@ function openModal(oilId) {
           <div class="chem-bar-track"><div class="chem-bar-fill" style="width:${Math.min(c.pct, 100)}%"></div></div>
           <div class="chem-bar-pct">${c.pct}%</div>
         </div>`).join("")}</div>`
-    : `<div class="warn-banner">No chemical profile — this is a synthetic fragrance accord, not a true essential oil.</div>`;
+    : oil.type === "fragrance"
+      ? `<div class="warn-banner">No chemical profile — this is a synthetic fragrance accord, not a true essential oil.</div>`
+      : `<div class="warn-banner">Chemical constituent data not yet available for this oil.</div>`;
 
   const phototoxBanner = oil.phototoxic
     ? `<div class="danger-banner"><strong>⚠ Phototoxic.</strong> ${oil.phototox_note}</div>`
