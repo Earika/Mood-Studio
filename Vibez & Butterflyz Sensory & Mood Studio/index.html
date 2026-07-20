@@ -961,7 +961,7 @@ h3 { position: relative; }
 .guide.hidden { display: none; }
 .guide-panel {
   pointer-events: auto; width: 100%; max-width: 640px;
-  background: linear-gradient(180deg, rgba(38,31,62,0.78), rgba(23,18,42,0.82));
+  background: linear-gradient(180deg, rgba(38,31,62,0.52), rgba(23,18,42,0.58));
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--line-2); border-radius: 20px;
   box-shadow: 0 -6px 50px rgba(0,0,0,0.45), 0 0 40px rgba(157,127,212,0.18);
@@ -1027,8 +1027,19 @@ h3 { position: relative; }
   filter: drop-shadow(0 0 8px rgba(157,127,212,0.6));
 }
 @media (max-width: 600px) {
-  .guide { padding: 0 10px 24px; }
-  .guide-panel { max-height: 52vh; }
+  .guide { padding: 0 8px 16px; }
+  .guide-panel {
+    max-height: 34vh;
+    background: linear-gradient(180deg, rgba(38,31,62,0.42), rgba(23,18,42,0.48));
+  }
+  .guide-head { padding: 9px 12px 4px; }
+  .guide-emblem { width: 24px; height: 24px; }
+  .guide-step-title { font-size: 14px; }
+  .guide-drag-hint { display: none; }
+  .guide-body { padding: 2px 12px 4px; }
+  .guide-desc { font-size: 12px; margin-bottom: 6px; }
+  .guide-does, .guide-next { font-size: 11px; padding: 6px 9px; margin-bottom: 5px; }
+  .guide-foot { padding: 8px 12px 10px; }
   .guide-pill-btn { right: 14px; bottom: 14px; }
 }
 
