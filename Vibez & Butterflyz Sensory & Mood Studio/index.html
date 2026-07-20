@@ -74,7 +74,12 @@ h1, h2, h3, h4 {
   font-weight: 500;
   letter-spacing: -0.01em;
 }
-h1 { font-size: 24px; font-weight: 700; background: linear-gradient(90deg, var(--rose), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+h1 {
+  font-size: 24px; font-weight: 700;
+  background: linear-gradient(90deg, var(--rose), var(--violet));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  filter: drop-shadow(0 2px 10px rgba(8,6,16,0.65));
+}
 h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 14px; font-family: 'Satoshi', sans-serif; font-weight: 700; }
 button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
 a { color: var(--violet); }
@@ -744,7 +749,7 @@ a { color: var(--violet); }
   .stats { grid-template-columns: repeat(2,1fr); }
   .blend-summary { grid-template-columns: 1fr; }
   .shelf-grid { grid-template-columns: 1fr 1fr; }
-  .main { padding: 16px; }
+  .main { padding: 16px 16px 90px; }
   .lounge-grid { grid-template-columns: 1fr; }
   .moodlab-layout { grid-template-columns: 1fr; }
   .mood-card { width: 100%; }
@@ -840,10 +845,12 @@ body::after {
   content: ""; position: absolute; left: 8%; right: 8%; top: -60%; height: 120%;
   border-radius: 50%;
   background: transparent;
-  box-shadow: 0 0 40px 2px rgba(201,127,168,0.30), 0 0 70px 8px rgba(157,127,212,0.22);
-  border-top: 1px solid rgba(201,127,168,0.35);
+  box-shadow: 0 0 40px 2px rgba(201,127,168,0.16), 0 0 70px 8px rgba(157,127,212,0.12);
+  border-top: 1px solid rgba(201,127,168,0.20);
   pointer-events: none;
+  z-index: 0;
 }
+.topbar h1, .topbar .lede { position: relative; z-index: 1; }
 /* base light rail under the header */
 .topbar::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
@@ -933,6 +940,9 @@ h3 { position: relative; }
   border-radius: var(--radius-lg);
   background: linear-gradient(90deg, rgba(157,127,212,0.10), rgba(201,127,168,0.06));
   border: 1px solid var(--line-2);
+  /* keeps it clear of the fixed Tour / minimized-Guide pills docked in the
+     bottom corners when it's scrolled into view or auto-scrolled to */
+  scroll-margin-bottom: 76px;
 }
 .tab-help.hidden { display: none; }
 .tab-help-glow { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--rose), var(--violet)); box-shadow: 0 0 14px var(--violet); }
@@ -1139,7 +1149,7 @@ h3 { position: relative; }
 .site-tour-btn:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-2px); }
 .tour-emblem { width: 22px; height: 22px; filter: drop-shadow(0 0 6px rgba(157,127,212,0.6)); }
 .onboarding-emblem { width: 64px; height: 64px; margin: 0 auto; display: block; filter: drop-shadow(0 8px 14px rgba(0,0,0,0.5)) drop-shadow(0 0 16px rgba(157,127,212,0.6)); }
-.onboarding-mood-emblem { width: 26px; height: 26px; filter: drop-shadow(0 0 6px rgba(157,127,212,0.5)); }
+.onboarding-mood-emblem { width: 40px; height: 40px; filter: drop-shadow(0 0 6px rgba(157,127,212,0.5)); }
 @media (max-width: 600px) {
   .site-tour-btn { left: 14px; bottom: 14px; padding: 9px 14px 9px 10px; font-size: 11px; }
 }
@@ -6087,6 +6097,12 @@ function renderTabHelp(v) {
   document.getElementById("tab-help-title").textContent = h.title;
   document.getElementById("tab-help-desc").textContent = h.desc;
   document.getElementById("tab-help-next").innerHTML = (h.nextLabel || "Next:") + " " + h.next;
+  // Every render (including a tab switch, which updates this card's
+  // text without ever hiding it) can land it right behind the fixed
+  // Tour / Guide pills docked in the bottom corners -- nudge it fully
+  // into view every time. scroll-margin-bottom keeps this a no-op once
+  // it's already clear, so it's safe to call unconditionally.
+  helpEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 document.getElementById("tab-help-dismiss").addEventListener("click", () => {
   tabHelpDismissed = true; helpEl.classList.add("hidden");
