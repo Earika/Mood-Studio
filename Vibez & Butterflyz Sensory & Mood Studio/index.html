@@ -4147,14 +4147,19 @@ const LOUNGE_MAP = {
 
 function inferLoungeMood(oils) {
   if (!oils.length) return "Calm";
-  const names = oils.map(o => o.name.toLowerCase());
-  if (names.some(n => ["rosemary","peppermint","basil","lemon"].includes(n))) return "Focus";
-  if (names.some(n => ["sweet orange","grapefruit","bergamot"].includes(n))) return "Uplift";
-  if (names.some(n => ["eucalyptus","tea tree","pine"].includes(n))) return "Breathe";
-  if (names.some(n => ["chamomile","lavender"].includes(n) && names.some(n2 => ["vanilla","sandalwood"].includes(n2)))) return "Sleep";
-  if (names.some(n => ["jasmine","ylang ylang","rose","vanilla"].includes(n))) return "Sensual";
-  if (names.some(n => ["vetiver","cedarwood","frankincense","sandalwood"].includes(n))) return "Grounding";
-  if (names.some(n => ["lavender","chamomile","orange blossom"].includes(n))) return "Calm";
+  // Strip parenthetical qualifiers ("Chamomile (Roman)" -> "chamomile") and
+  // match on the base name so variant/chemotype names — with or without
+  // parens ("Eucalyptus Globulus", "Rosemary (ct. Cineole)") — still hit
+  // the keyword lists below instead of only matching an exact bare name.
+  const names = oils.map(o => o.name.replace(/\s*\([^)]*\)/g, "").trim().toLowerCase());
+  const has = (...keywords) => names.some(n => keywords.some(kw => n === kw || n.startsWith(kw + " ")));
+  if (has("rosemary","peppermint","basil","lemon")) return "Focus";
+  if (has("sweet orange","grapefruit","bergamot")) return "Uplift";
+  if (has("eucalyptus","tea tree","pine")) return "Breathe";
+  if (has("chamomile","lavender") && has("vanilla","sandalwood")) return "Sleep";
+  if (has("jasmine","ylang ylang","rose","vanilla")) return "Sensual";
+  if (has("vetiver","cedarwood","frankincense","sandalwood")) return "Grounding";
+  if (has("lavender","chamomile","orange blossom")) return "Calm";
   return "Calm";
 }
 
@@ -5831,6 +5836,11 @@ function syncMoodCard() {
   document.getElementById("mood-card-oils").innerHTML = oils.length
     ? oils.map(o => `<span class="mood-card-chip">${o}</span>`).join("")
     : `<span class="mood-card-chip">${placeholder}</span>`;
+
+  // The Lounge Experience cards live alongside the mood card now — keep
+  // them in sync with whatever oils are driving it (live blend if any,
+  // else the resolved preset/suggested blend's oils).
+  renderLoungeMatrix(oils.map(name => ({ name })));
 }
 
 function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
