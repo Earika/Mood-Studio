@@ -1079,6 +1079,26 @@ h3 { position: relative; }
 .onboarding-lede { font-size: 14.5px; color: var(--ink-2); margin-bottom: 26px; line-height: 1.5; }
 .onboarding-begin { display: block; width: 100%; margin-bottom: 10px; padding: 13px; font-size: 14px; }
 #onboarding-skip-all { display: block; width: 100%; }
+
+/* Email gate sits above onboarding — first thing any visitor sees */
+.email-gate { z-index: 220; }
+.email-gate-input {
+  width: 100%; padding: 13px 14px; margin-bottom: 10px; font: inherit; font-size: 14px;
+  color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
+}
+.email-gate-input:focus { outline: none; border-color: var(--violet); box-shadow: var(--glow-violet); }
+.email-gate-error {
+  font-size: 12px; color: var(--rose); text-align: left; margin: -4px 0 10px; padding: 2px 2px;
+}
+.email-gate-error.hidden { display: none; }
+.email-gate-fineprint { font-size: 11px; color: var(--ink-3); margin-top: 14px; line-height: 1.5; }
+.email-gate-dev-warning {
+  margin-top: 16px; padding: 10px 12px; border-radius: 8px; text-align: left;
+  font-size: 11px; line-height: 1.5; color: var(--gold);
+  background: rgba(201,168,92,0.1); border: 1px solid rgba(201,168,92,0.3);
+}
+.email-gate-dev-warning.hidden { display: none; }
+#email-gate-submit[disabled] { opacity: 0.6; pointer-events: none; }
 .onboarding-quiz-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 18px; font-weight: 700; }
 .onboarding-mood-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px;
@@ -1491,6 +1511,26 @@ h3 { position: relative; }
     <svg class="guide-pill-emblem" viewBox="0 0 100 100" aria-hidden="true"><use href="#vb-butterfly"/></svg>
     <span id="guide-pill-label">Guide</span>
   </button>
+</div>
+
+<!-- ============ EMAIL GATE — shown before onboarding, first-run only ============ -->
+<div id="email-gate" class="onboarding email-gate hidden" role="dialog" aria-modal="true" aria-label="Join the Vibez & Butterflyz mailing list">
+  <div class="onboarding-backdrop"></div>
+  <div class="onboarding-panel email-gate-panel">
+    <div class="onboarding-icon" aria-hidden="true"><svg class="onboarding-emblem" viewBox="0 0 100 100"><use href="#vb-butterfly"/></svg></div>
+    <h2>Join Vibez &amp; Butterflyz</h2>
+    <p class="onboarding-lede">Pop in your email to enter the studio and join our mailing list — you'll also be able to save your Mood Card at the end.</p>
+    <form id="email-gate-form" novalidate>
+      <input id="email-gate-input" class="email-gate-input" type="email" name="email" placeholder="you@example.com" required autocomplete="email" />
+      <div id="email-gate-error" class="email-gate-error hidden"></div>
+      <button class="btn-primary onboarding-begin" id="email-gate-submit" type="submit">Enter the Studio</button>
+    </form>
+    <p class="email-gate-fineprint">We'll only use this to send studio updates and your mood cards. No spam.</p>
+    <div id="email-gate-dev-warning" class="email-gate-dev-warning hidden">
+      ⚠ Dev notice: FORMSPREE_ENDPOINT is still a placeholder in the code, so this gate can't actually submit anywhere yet.
+      Letting you through so the site isn't locked for testing — replace the endpoint before this goes live.
+    </div>
+  </div>
 </div>
 
 <!-- ============ ONBOARDING: WELCOME + MOOD QUIZ ============ -->
@@ -6298,15 +6338,91 @@ document.getElementById("onboarding-skip").addEventListener("click", finishOnboa
 document.getElementById("onboarding-backdrop").addEventListener("click", finishOnboarding);
 
 // First-run only — returning visitors (or anyone who has clicked out) skip straight in.
-if (!localStorage.getItem("vb_seen_onboarding")) {
-  startOnboarding();
-} else {
-  const savedMood = localStorage.getItem("vb_session_mood");
-  if (savedMood && MOODLAB_MOOD_PRESETS[savedMood]) {
-    state.mood = savedMood;
-    const themeSel = document.getElementById("moodlab-theme");
-    if (themeSel) themeSel.value = savedMood;
+function runFirstRunFlow() {
+  if (!localStorage.getItem("vb_seen_onboarding")) {
+    startOnboarding();
+  } else {
+    const savedMood = localStorage.getItem("vb_session_mood");
+    if (savedMood && MOODLAB_MOOD_PRESETS[savedMood]) {
+      state.mood = savedMood;
+      const themeSel = document.getElementById("moodlab-theme");
+      if (themeSel) themeSel.value = savedMood;
+    }
   }
+}
+
+/* =================================================================== */
+/* ============ EMAIL GATE — mailing-list join, first-run only ======= */
+/* This is a static site with no server, so "join the mailing list"    */
+/* only becomes real once FORMSPREE_ENDPOINT below points at an actual */
+/* Formspree form (formspree.io -> new form -> copy the endpoint URL). */
+/* Until then this is a dev fallback: it validates the email, then     */
+/* lets the visitor through anyway (with an on-screen dev notice) so a */
+/* forgotten placeholder can't lock everyone out of a live site.       */
+/* =================================================================== */
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID"; // TODO: replace with your real endpoint
+const emailGateEl = document.getElementById("email-gate");
+
+function emailGateConfigured() {
+  return !FORMSPREE_ENDPOINT.includes("YOUR_FORM_ID");
+}
+function emailGatePassed() {
+  return !!localStorage.getItem("vb_email_captured");
+}
+function showEmailGate() {
+  emailGateEl.classList.remove("hidden");
+  document.getElementById("email-gate-dev-warning").classList.toggle("hidden", emailGateConfigured());
+  document.getElementById("email-gate-input").focus();
+}
+function passEmailGate(email) {
+  localStorage.setItem("vb_email_captured", "true");
+  if (email) localStorage.setItem("vb_email_captured_address", email);
+  emailGateEl.classList.add("hidden");
+  runFirstRunFlow();
+}
+
+document.getElementById("email-gate-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const input = document.getElementById("email-gate-input");
+  const errorEl = document.getElementById("email-gate-error");
+  const submitBtn = document.getElementById("email-gate-submit");
+  const email = input.value.trim();
+  errorEl.classList.add("hidden");
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errorEl.textContent = "Enter a valid email address.";
+    errorEl.classList.remove("hidden");
+    return;
+  }
+
+  if (!emailGateConfigured()) {
+    // Dev fallback — see comment above FORMSPREE_ENDPOINT.
+    passEmailGate(email);
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Joining…";
+  try {
+    const res = await fetch(FORMSPREE_ENDPOINT, {
+      method: "POST",
+      headers: { "Accept": "application/json", "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+    if (!res.ok) throw new Error("Submission failed");
+    passEmailGate(email);
+  } catch (err) {
+    errorEl.textContent = "Something went wrong submitting that — please try again.";
+    errorEl.classList.remove("hidden");
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Enter the Studio";
+  }
+});
+
+if (!emailGatePassed()) {
+  showEmailGate();
+} else {
+  runFirstRunFlow();
 }
 
 // ---- Always-available corner Tour — independent of onboarding, never auto-triggers ----
