@@ -587,8 +587,8 @@ a { color: var(--violet); }
 }
 .moodblend-card .preset-name { padding-right: 22px; }
 .moodblend-oils { font-size: 10.5px; color: var(--violet); margin: 4px 0 8px; line-height: 1.4; }
-.moodblend-aff {
-  font-size: 11px; font-style: italic; color: var(--ink-2); line-height: 1.45;
+.moodblend-desc {
+  font-size: 11px; color: var(--ink-2); line-height: 1.45;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .moodblend-controls { display: flex; flex-direction: column; gap: 8px; margin: 18px 0 12px; padding-top: 16px; border-top: 1px solid var(--line); }
@@ -3817,14 +3817,12 @@ function renderMoodBlends() {
     grid.innerHTML = visible.map(b => {
       const idx = MOOD_BLENDS.indexOf(b);
       const theme = BLEND_CAT_MOOD[b.cat] || "clarity-focus";
-      const aff = b.aff.split(/(?<=[.!?])\s/)[0];
-      const affSnippet = aff.length > 92 ? aff.slice(0, 90).trim() + "…" : aff;
       return `
         <div class="preset-card moodblend-card" data-moodblend="${idx}">
           <span class="moodblend-swatch theme-${theme}" title="${b.cat}" aria-hidden="true"></span>
           <div class="preset-name">${b.name}</div>
           <div class="moodblend-oils">${b.oils.map(o => o.n).join(" · ")}</div>
-          <div class="moodblend-aff">“${affSnippet}”</div>
+          <div class="moodblend-desc">${b.diff}</div>
         </div>`;
     }).join("");
     grid.querySelectorAll("[data-moodblend]").forEach(el => {
