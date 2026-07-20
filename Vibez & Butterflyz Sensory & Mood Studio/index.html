@@ -4521,8 +4521,9 @@ const TAB_HELP = {
   library: {
     icon: "\u25C9",
     title: "Oil Library — the scent garden",
-    desc: "Browse the full oil library. Filter by True EO vs. Fragrance, note (top / middle / base), or category, and search by name. Tap any butterfly card to flip it for safety details, add it to your Active Blend, or open its full profile.",
-    next: "Start here: <strong>add 2–4 oils</strong> to begin your blend, then head to Blend Analyzer."
+    desc: "Browse the full oil library. Filter by Essential Oils (EO) vs. Fragrance, note (top / middle / base), or category, and search by name. Tap any butterfly card to flip it for safety details, add it to your Active Blend, or open its full profile.",
+    nextLabel: "Start here:",
+    next: "<strong>Add 2–4 oils</strong> to begin your blend, then head to the Blend Analyzer."
   },
   blend: {
     icon: "\u2261",
@@ -4559,7 +4560,7 @@ function renderTabHelp(v) {
   document.getElementById("tab-help-icon").innerHTML = '<svg viewBox="0 0 100 100" style="width:28px;height:28px;display:block;"><use href="#vb-butterfly"/></svg>';
   document.getElementById("tab-help-title").textContent = h.title;
   document.getElementById("tab-help-desc").textContent = h.desc;
-  document.getElementById("tab-help-next").innerHTML = "Next: " + h.next;
+  document.getElementById("tab-help-next").innerHTML = (h.nextLabel || "Next:") + " " + h.next;
 }
 document.getElementById("tab-help-dismiss").addEventListener("click", () => {
   tabHelpDismissed = true; helpEl.classList.add("hidden");
