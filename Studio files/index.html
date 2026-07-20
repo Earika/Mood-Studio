@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Vibez & Butterflyz Sensory & Mood Studio</title>
+<meta name="description" content="Vibez & Butterflyz Sensory & Mood Studio. Build your mood through scent in a butterfly-lit studio, then let the lounge meet you there." />
+<meta property="og:title" content="Vibez & Butterflyz Sensory & Mood Studio" />
+<meta property="og:description" content="Build your mood through scent — pick oils, tune a blend, and let the lounge meet you there." />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Vibez & Butterflyz Sensory & Mood Studio" />
+<meta name="twitter:description" content="Build your mood through scent — pick oils, tune a blend, and let the lounge meet you there." />
+<meta name="theme-color" content="#0F0B1A" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="preconnect" href="https://api.fontshare.com" />
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400;500;700;900&f[]=zodiak@400;500;700&display=swap" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+<!-- Shared butterfly emblem — purple/gold glow, used everywhere on the site -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="bfly-fore-L" x1="100%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#E85BB0"/>
+      <stop offset="30%" stop-color="#A94BD1"/>
+      <stop offset="70%" stop-color="#6B2FB8"/>
+      <stop offset="100%" stop-color="#3B1D7A"/>
+    </linearGradient>
+    <linearGradient id="bfly-fore-R" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#E85BB0"/>
+      <stop offset="30%" stop-color="#A94BD1"/>
+      <stop offset="70%" stop-color="#6B2FB8"/>
+      <stop offset="100%" stop-color="#3B1D7A"/>
+    </linearGradient>
+    <linearGradient id="bfly-hind-L" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F0A24B"/>
+      <stop offset="35%" stop-color="#C84FD8"/>
+      <stop offset="100%" stop-color="#4A2490"/>
+    </linearGradient>
+    <linearGradient id="bfly-hind-R" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F0A24B"/>
+      <stop offset="35%" stop-color="#C84FD8"/>
+      <stop offset="100%" stop-color="#4A2490"/>
+    </linearGradient>
+    <radialGradient id="bfly-core-glow" cx="50%" cy="52%" r="60%">
+      <stop offset="0%" stop-color="#FFB84D" stop-opacity="0.8"/>
+      <stop offset="35%" stop-color="#E85BB0" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#9D7FD4" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bfly-body-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#B98FE8"/>
+      <stop offset="100%" stop-color="#5B3A9E"/>
+    </linearGradient>
+    <g id="vb-butterfly">
+      <ellipse cx="50" cy="52" rx="46" ry="40" fill="url(#bfly-core-glow)"/>
+      <path d="M48 47 C42 38 34 26 24 17 C17 11 8 9 5 15 C2 20 5 28 9 34 C15 43 26 51 46 54 Z"
+            fill="url(#bfly-fore-L)" stroke="#F0C060" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M45 48 C40 42 34 34 27 27 C31 26 37 29 41 34 C44 38 46 43 46 48 Z" fill="#F0A24B" opacity="0.55"/>
+      <path d="M52 47 C58 38 66 26 76 17 C83 11 92 9 95 15 C98 20 95 28 91 34 C85 43 74 51 54 54 Z"
+            fill="url(#bfly-fore-R)" stroke="#F0C060" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M55 48 C60 42 66 34 73 27 C69 26 63 29 59 34 C56 38 54 43 54 48 Z" fill="#F0A24B" opacity="0.55"/>
+      <path d="M46 56 C38 58 28 62 21 69 C15 75 13 82 17 86 C21 90 28 89 32 86 C34 89 38 90 41 87 C44 90 48 89 48 84 C49 76 48 65 47 58 Z"
+            fill="url(#bfly-hind-L)" stroke="#F0C060" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M54 56 C62 58 72 62 79 69 C85 75 87 82 83 86 C79 90 72 89 68 86 C66 89 62 90 59 87 C56 90 52 89 52 84 C51 76 52 65 53 58 Z"
+            fill="url(#bfly-hind-R)" stroke="#F0C060" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M47 49 C40 42 32 32 24 22 M47 51 C39 47 28 40 14 28 M46 53 C37 52 24 48 11 39
+               M53 49 C60 42 68 32 76 22 M53 51 C61 47 72 40 86 28 M54 53 C63 52 76 48 89 39
+               M47 58 C42 64 35 72 26 79 M48 60 C45 68 43 76 43 84
+               M53 58 C58 64 65 72 74 79 M52 60 C55 68 57 76 57 84"
+            stroke="#F0C060" stroke-width="0.8" fill="none" opacity="0.85" stroke-linecap="round"/>
+      <circle cx="24" cy="24" r="2.2" fill="#FFD98A"/>
+      <circle cx="76" cy="24" r="2.2" fill="#FFD98A"/>
+      <circle cx="16" cy="34" r="1.4" fill="#FF9ECF" opacity="0.9"/>
+      <circle cx="84" cy="34" r="1.4" fill="#FF9ECF" opacity="0.9"/>
+      <circle cx="27" cy="76" r="1.7" fill="#FFD98A" opacity="0.95"/>
+      <circle cx="73" cy="76" r="1.7" fill="#FFD98A" opacity="0.95"/>
+      <circle cx="38" cy="46" r="1.1" fill="#FFEDC2" opacity="0.9"/>
+      <circle cx="62" cy="46" r="1.1" fill="#FFEDC2" opacity="0.9"/>
+      <ellipse cx="50" cy="57" rx="2.8" ry="13" fill="url(#bfly-body-grad)" stroke="#F0C060" stroke-width="1"/>
+      <path d="M47.5 50 L52.5 50 M47.4 54 L52.6 54 M47.5 58 L52.5 58 M47.7 62 L52.3 62 M48 66 L52 66" stroke="#F0C060" stroke-width="0.7" opacity="0.9"/>
+      <circle cx="50" cy="42" r="3.4" fill="url(#bfly-body-grad)" stroke="#F0C060" stroke-width="1"/>
+      <path d="M48.5 39.5 C46 32 43 25 39 20 C37.5 18 35 17.5 34.5 19.5 C34 21 35.5 22 36.5 21
+               M51.5 39.5 C54 32 57 25 61 20 C62.5 18 65 17.5 65.5 19.5 C66 21 64.5 22 63.5 21"
+            stroke="#F0C060" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+    </g>
+  </defs>
+</svg>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-logo" aria-hidden="true">
+        <svg viewBox="0 0 100 100" width="40" height="40" aria-label="Vibez & Butterflyz">
+          <use href="#vb-butterfly"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">Vibez &amp; Butterflyz</div>
+        <div class="brand-sub">Sensory &amp; Mood Studio</div>
+      </div>
+    </div>
+
+    <div class="section-label">Olfactory Vault</div>
+    <div class="filters">
+      <input id="search" type="search" placeholder="Search oils…" aria-label="Search oils"/>
+      <div class="filter-row">
+        <label class="chip"><input type="checkbox" data-filter="type" value="essential"/> True EO</label>
+        <label class="chip"><input type="checkbox" data-filter="type" value="fragrance"/> Fragrance</label>
+      </div>
+      <div class="filter-row">
+        <label class="chip note-top"><input type="checkbox" data-filter="note" value="Top"/> Top</label>
+        <label class="chip note-mid"><input type="checkbox" data-filter="note" value="Middle"/> Middle</label>
+        <label class="chip note-base"><input type="checkbox" data-filter="note" value="Base"/> Base</label>
+      </div>
+      <div class="filter-row">
+        <label class="chip warn"><input type="checkbox" data-filter="phototoxic" value="true"/> Hide phototoxic</label>
+      </div>
+      <select id="category-filter" aria-label="Category filter">
+        <option value="">All categories</option>
+      </select>
+    </div>
+
+    <div class="section-label">Active Blend</div>
+    <div id="blend-list" class="blend-list" aria-live="polite"></div>
+    <button id="clear-blend" class="btn-ghost">Clear blend</button>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1>Vibez &amp; Butterflyz Sensory &amp; Mood Studio</h1>
+        <p class="lede">Load a scent, tune the mix, let the lounge meet you there. <button id="open-guide-inline" class="lede-guide-link" type="button">New here? Walk me through it →</button></p>
+      </div>
+      <div class="console-nav">
+        <button id="walk-me-through" class="walkme-cta" type="button">
+          <svg class="walkme-emblem" viewBox="0 0 100 100" aria-hidden="true"><use href="#vb-butterfly"/></svg>
+          Walk Me Through
+        </button>
+        <div class="topbar-actions" role="tablist" aria-label="Studio spaces">
+          <button id="tab-library" class="tab active">Oil Library</button>
+          <button id="tab-blend" class="tab">Blend Analyzer</button>
+          <button id="tab-terpenes" class="tab">Terpenes</button>
+          <button id="tab-recipes" class="tab">Curated Moods</button>
+          <button id="tab-moodlab" class="tab">Moodlab</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTEXTUAL TAB HELP -->
+    <div id="tab-help" class="tab-help" aria-live="polite">
+      <div class="tab-help-glow" aria-hidden="true"></div>
+      <div class="tab-help-body">
+        <div class="tab-help-icon" id="tab-help-icon" aria-hidden="true"></div>
+        <div class="tab-help-text">
+          <div class="tab-help-title" id="tab-help-title"></div>
+          <div class="tab-help-desc" id="tab-help-desc"></div>
+          <div class="tab-help-next" id="tab-help-next"></div>
+        </div>
+      </div>
+      <button class="tab-help-dismiss" id="tab-help-dismiss" type="button" aria-label="Hide tab help">Hide help</button>
+    </div>
+
+    <!-- VIEW: LIBRARY -->
+    <section id="view-library" class="view">
+      <div class="pairing-shelf" id="inline-shelf">
+        <h3>Complementary Scent Suggestions</h3>
+        <p class="pairing-shelf-sub">Real-time recommendations update as you build your blend. Click any suggestion to add it.</p>
+        <div class="shelf-grid">
+          <div class="shelf-col">
+            <span class="shelf-col-label top">Top Note Pairs</span>
+            <div class="shelf-items" id="shelf-top"></div>
+          </div>
+          <div class="shelf-col">
+            <span class="shelf-col-label mid">Heart / Middle</span>
+            <div class="shelf-items" id="shelf-mid"></div>
+          </div>
+          <div class="shelf-col">
+            <span class="shelf-col-label base">Base / Fixatives</span>
+            <div class="shelf-items" id="shelf-base"></div>
+          </div>
+          <div class="shelf-col">
+            <span class="shelf-col-label carrier">Carrier Suggestion</span>
+            <div id="shelf-carrier" class="shelf-empty">Add oils to see carrier recommendation.</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="filter-banner" class="filter-banner hidden"></div>
+      <div class="stats">
+        <div class="stat"><span class="stat-n" id="stat-total">0</span><span>Oils shown</span></div>
+        <div class="stat"><span class="stat-n" id="stat-eo">0</span><span>True essential oils</span></div>
+        <div class="stat"><span class="stat-n" id="stat-photo">0</span><span>Phototoxic</span></div>
+        <div class="stat"><span class="stat-n" id="stat-blend">0</span><span>In blend</span></div>
+      </div>
+      <div class="layout-switcher" id="layout-switcher" role="group" aria-label="Card layout">
+        <button class="layout-btn" data-layout="grid" type="button">Grid</button>
+        <button class="layout-btn" data-layout="carousel" type="button">Carousel</button>
+      </div>
+      <div id="oil-grid" class="oil-grid layout-grid"></div>
+    </section>
+
+    <!-- VIEW: BLEND ANALYZER -->
+    <section id="view-blend" class="view hidden">
+      <div class="blend-summary">
+        <div class="card">
+          <h3>Note Balance</h3>
+          <div id="note-balance" class="note-balance"></div>
+          <div id="note-advice" class="advice"></div>
+        </div>
+        <div class="card">
+          <h3>Safety Assessment</h3>
+          <div id="safety-report" class="safety-report"></div>
+        </div>
+      </div>
+
+      <!-- LOUNGE EXPERIENCE MATRIX -->
+      <div class="lounge-matrix" id="lounge-matrix">
+        <h3>The Lounge Experience</h3>
+        <p class="lounge-matrix-sub">Your scent profile shapes the whole vibe — drinks, food, and atmosphere curated to match your mood.</p>
+        <div class="lounge-grid">
+          <div class="lounge-card">
+            <div class="lounge-card-header"><span class="lounge-card-type">Wine & Spirits</span><span class="lounge-card-tag">Pour</span></div>
+            <div id="lounge-wine-name" class="lounge-card-name">Select your blend…</div>
+            <div id="lounge-wine-desc" class="lounge-card-desc">Awaiting your mood.</div>
+          </div>
+          <div class="lounge-card">
+            <div class="lounge-card-header"><span class="lounge-card-type">Craft Cocktail</span><span class="lounge-card-tag">Shaken</span></div>
+            <div id="lounge-cocktail-name" class="lounge-card-name">Select your blend…</div>
+            <div id="lounge-cocktail-desc" class="lounge-card-desc">Awaiting your mood.</div>
+          </div>
+          <div class="lounge-card">
+            <div class="lounge-card-header"><span class="lounge-card-type">Mocktail</span><span class="lounge-card-tag">Zero Proof</span></div>
+            <div id="lounge-mocktail-name" class="lounge-card-name">Select your blend…</div>
+            <div id="lounge-mocktail-desc" class="lounge-card-desc">Awaiting your mood.</div>
+          </div>
+          <div class="lounge-card">
+            <div class="lounge-card-header"><span class="lounge-card-type">Small Plates</span><span class="lounge-card-tag">Artisanal</span></div>
+            <div id="lounge-food-name" class="lounge-card-name">Select your blend…</div>
+            <div id="lounge-food-desc" class="lounge-card-desc">Awaiting your mood.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Therapeutic Actions</h3>
+        <p class="muted">Aggregated from constituent terpenes, weighted by drop contribution and strength.</p>
+        <div id="blend-actions" class="blend-actions"></div>
+      </div>
+      <div class="card">
+        <h3>Chemical Composition</h3>
+        <div id="chem-composition" class="chem-composition"></div>
+      </div>
+      <div class="card">
+        <h3>Blend Recipe</h3>
+        <div id="recipe-controls" class="recipe-controls">
+          <label>Total volume
+            <select id="total-volume">
+              <option value="10">10 ml roller</option>
+              <option value="15" selected>15 ml bottle</option>
+              <option value="30">30 ml massage</option>
+              <option value="100">100 ml diffuser reservoir</option>
+            </select>
+          </label>
+          <label>Use case
+            <select id="use-case">
+              <option value="diffusion">Diffusion (no dilution limits)</option>
+              <option value="topical-body" selected>Topical body (2%)</option>
+              <option value="topical-face">Topical face (1%)</option>
+              <option value="topical-sensitive">Sensitive skin (0.5%)</option>
+              <option value="perfume">Perfume (10–25%)</option>
+            </select>
+          </label>
+        </div>
+        <div id="recipe-output" class="recipe-output"></div>
+      </div>
+    </section>
+
+    <!-- VIEW: TERPENES -->
+    <section id="view-terpenes" class="view hidden">
+      <div class="card">
+        <h3>Terpene & Constituent Reference</h3>
+        <p class="muted">Click any terpene to expand therapeutic actions, cautions, and source oils. Data from Tisserand & Young, Battaglia, and peer-reviewed pharmacology.</p>
+        <div id="terpene-list" class="terpene-list"></div>
+      </div>
+    </section>
+
+    <!-- VIEW: SUGGESTIONS -->
+    <section id="view-recipes" class="view hidden">
+      <div class="card">
+        <h3>Curated Moods</h3>
+        <p class="muted">Load a starting point, then make it yours. The full 250-blend Vibez &amp; Butterflyz library lives here too — diffuser and roll-on recipes with a matching affirmation for every mood. Tap any blend for its full recipe.</p>
+        <div id="preset-grid" class="preset-grid"></div>
+        <div class="moodblend-controls">
+          <input id="moodblend-search" type="search" placeholder="Search all 250 mood blends…" aria-label="Search mood blends" />
+          <div class="filter-row" id="moodblend-cats"></div>
+        </div>
+        <div id="moodblend-grid" class="preset-grid"></div>
+        <button id="moodblend-more" class="btn-ghost" type="button">Show more blends</button>
+      </div>
+      <div class="card">
+        <h3>Pairing Suggestions</h3>
+        <p class="muted">Based on your current blend — oils that harmonize with what you've already chosen.</p>
+        <div id="pairing-suggestions" class="pairing-suggestions"></div>
+      </div>
+    </section>
+
+    <!-- VIEW: MOODLAB -->
+    <section id="view-moodlab" class="view hidden">
+      <div class="card">
+        <h3>Moodlab</h3>
+        <p class="muted">Turn your current blend into a shareable mood card for Vibez & Butterflyz.</p>
+        <div class="moodlab-layout">
+          <div class="moodlab-controls">
+            <label>Blend title
+              <input id="moodlab-title" type="text" placeholder="Focus Blend" />
+            </label>
+            <label>Mood line
+              <input id="moodlab-tagline" type="text" placeholder="Deep work. Quiet mind." />
+            </label>
+            <label>Attribution
+              <input id="moodlab-attribution" type="text" value="Diffuser set by @vibezandbutterflyz" />
+            </label>
+            <label>Card source
+              <select id="moodlab-source">
+                <option value="mood-preset">Mood preset</option>
+                <option value="suggested">Suggested blend</option>
+                <option value="my-blend">My current blend</option>
+              </select>
+            </label>
+            <label id="moodlab-suggested-wrap" class="moodlab-conditional hidden">
+              Suggested blend
+              <select id="moodlab-suggested"></select>
+            </label>
+            <label>Mood
+              <select id="moodlab-theme">
+                <option value="calm-peace">Calm &amp; Peace</option>
+                <option value="motivation-drive">Motivation &amp; Drive</option>
+                <option value="renewal-rejuvenation">Renewal &amp; Rejuvenation</option>
+                <option value="reenergize-reignite">Reenergize &amp; Reignite</option>
+                <option value="relaxation-rest">Relaxation &amp; Rest</option>
+                <option value="self-love-being-loved">Self-Love &amp; Being Loved</option>
+                <option value="confidence-power">Confidence &amp; Power</option>
+                <option value="protection-strength">Protection &amp; Strength</option>
+                <option value="joy-uplift">Joy &amp; Uplift</option>
+                <option value="clarity-focus">Clarity &amp; Focus</option>
+              </select>
+            </label>
+            <div class="muted" style="margin:0;">A matching affirmation is assigned automatically.</div>
+            <div class="moodlab-actions">
+              <button id="moodlab-generate" class="btn-primary" type="button">Preview Card</button>
+              <button id="moodlab-download" class="btn-secondary" type="button">Download PNG</button>
+            </div>
+          </div>
+          <div class="moodlab-preview-wrap">
+            <div id="mood-card" class="mood-card theme-clarity-focus">
+              <div class="mood-card-inner">
+                <div class="mood-card-brand">Vibez &amp; Butterflyz Blendz</div>
+                <h2 id="mood-card-title">Focus Blend</h2>
+                <div id="mood-card-tagline" class="mood-card-tagline">Deep work. Quiet mind.</div>
+                <div id="mood-card-affirmation" class="mood-card-affirmation">I know what matters, and I let the rest fall away.</div>
+                <div class="mood-card-divider"></div>
+                <div id="mood-card-oils" class="mood-card-oils"></div>
+                <div id="mood-card-attribution" class="mood-card-attribution">Diffuser set by @vibezandbutterflyz</div>
+                <div class="mood-card-footer">Made in Vibez &amp; Butterflyz</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ WALK ME THROUGH — GUIDED RAIL ============ -->
+<div id="guide" class="guide hidden" role="dialog" aria-modal="false" aria-label="Walk Me Through guided tour">
+  <div class="guide-panel">
+    <div class="guide-rail-bar" aria-hidden="true"><div class="guide-rail-progress" id="guide-rail-progress"></div></div>
+    <div class="guide-head">
+      <div class="guide-head-left">
+        <svg class="guide-emblem" viewBox="0 0 100 100" aria-hidden="true"><use href="#vb-butterfly"/></svg>
+        <div>
+          <div class="guide-kicker" id="guide-kicker">Guided Session</div>
+          <div class="guide-step-title" id="guide-step-title">Set the Mood</div>
+          <div class="guide-drag-hint">Drag to move · − to tuck away</div>
+        </div>
+      </div>
+      <div class="guide-head-actions">
+        <button class="guide-min" id="guide-min" type="button" aria-label="Minimize guide to a corner">&minus;</button>
+        <button class="guide-close" id="guide-close" type="button" aria-label="Close guide">&times;</button>
+      </div>
+    </div>
+    <div class="guide-track" id="guide-track" aria-hidden="true"></div>
+    <div class="guide-body">
+      <p class="guide-desc" id="guide-desc"></p>
+      <div class="guide-does" id="guide-does"></div>
+      <div class="guide-next" id="guide-next"></div>
+    </div>
+    <div class="guide-foot">
+      <button class="btn-secondary guide-explore" id="guide-explore" type="button">Explore Freely</button>
+      <div class="guide-nav">
+        <span class="guide-count" id="guide-count"></span>
+        <button class="btn-secondary" id="guide-prev" type="button">Back</button>
+        <button class="btn-primary" id="guide-nextbtn" type="button">Next</button>
+      </div>
+    </div>
+  </div>
+  <button class="guide-pill-btn" id="guide-pill-btn" type="button" aria-label="Resume Walk Me Through guide">
+    <svg class="guide-pill-emblem" viewBox="0 0 100 100" aria-hidden="true"><use href="#vb-butterfly"/></svg>
+    <span id="guide-pill-label">Guide</span>
+  </button>
+</div>
+
+<!-- ============ ONBOARDING: WELCOME + MOOD QUIZ ============ -->
+<div id="onboarding" class="onboarding hidden" role="dialog" aria-modal="true" aria-label="Welcome to Vibez & Butterflyz">
+  <div class="onboarding-backdrop" id="onboarding-backdrop"></div>
+  <div class="onboarding-panel">
+    <button class="onboarding-skip" id="onboarding-skip" type="button" aria-label="Skip intro">&times;</button>
+
+    <div class="onboarding-step" id="onboarding-step-welcome">
+      <div class="onboarding-icon" aria-hidden="true"><svg class="onboarding-emblem" viewBox="0 0 100 100"><use href="#vb-butterfly"/></svg></div>
+      <h2>Welcome to Vibez &amp; Butterflyz Sensory &amp; Mood Studio</h2>
+      <p class="onboarding-lede">What kind of mood would you like to set today?</p>
+      <button class="btn-primary onboarding-begin" id="onboarding-begin" type="button">Begin</button>
+      <button class="btn-secondary" id="onboarding-skip-all" type="button">Skip intro</button>
+    </div>
+
+    <div class="onboarding-step hidden" id="onboarding-step-quiz">
+      <div class="onboarding-quiz-title">Pick a mood to set the tone</div>
+      <div class="onboarding-mood-grid" id="onboarding-mood-grid"></div>
+      <button class="btn-secondary" id="onboarding-quiz-skip" type="button">Skip — I'll explore freely</button>
+    </div>
+  </div>
+</div>
+
+<button class="site-tour-btn" id="site-tour-btn" type="button" aria-label="Take a tour of this page">
+  <svg class="tour-emblem" viewBox="0 0 100 100" aria-hidden="true"><use href="#vb-butterfly"/></svg> Tour
+</button>
+
+<div id="dust-overlay" aria-hidden="true"></div>
+
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-body" id="modal-body"></div>
+</div>
+
+<!-- Application Modular Scripts -->
+<script src="oils.js"></script>
+<script src="terpenes.js"></script>
+<script src="mood_blends.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
