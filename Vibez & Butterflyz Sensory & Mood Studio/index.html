@@ -6321,6 +6321,14 @@ function startOnboarding() {
   showOnboardingStep("welcome");
   renderOnboardingMoodGrid();
 }
+// Hides the panel without marking onboarding "seen" -- for accidental
+// dismissals (a stray tap on the backdrop, the corner X) that shouldn't
+// permanently skip the quiz on future visits.
+function dismissOnboarding() {
+  onboardingEl.classList.add("hidden");
+}
+// Hides AND permanently marks onboarding "seen" -- only for deliberate
+// opt-outs (the labeled Skip buttons) or actually completing the quiz.
 function finishOnboarding() {
   onboardingEl.classList.add("hidden");
   localStorage.setItem("vb_seen_onboarding", "true");
@@ -6334,8 +6342,8 @@ function selectOnboardingMood(moodKey) {
 document.getElementById("onboarding-begin").addEventListener("click", () => showOnboardingStep("quiz"));
 document.getElementById("onboarding-skip-all").addEventListener("click", finishOnboarding);
 document.getElementById("onboarding-quiz-skip").addEventListener("click", finishOnboarding);
-document.getElementById("onboarding-skip").addEventListener("click", finishOnboarding);
-document.getElementById("onboarding-backdrop").addEventListener("click", finishOnboarding);
+document.getElementById("onboarding-skip").addEventListener("click", dismissOnboarding);
+document.getElementById("onboarding-backdrop").addEventListener("click", dismissOnboarding);
 
 // First-run only — returning visitors (or anyone who has clicked out) skip straight in.
 function runFirstRunFlow() {
