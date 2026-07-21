@@ -970,13 +970,13 @@ h3 { position: relative; }
 }
 .guide.hidden { display: none; }
 .guide-panel {
-  pointer-events: auto; width: 100%; max-width: 640px;
-  background: linear-gradient(180deg, rgba(38,31,62,0.52), rgba(23,18,42,0.58));
+  pointer-events: auto; width: 100%; max-width: 480px;
+  background: linear-gradient(180deg, rgba(38,31,62,0.42), rgba(23,18,42,0.48));
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--line-2); border-radius: 20px;
   box-shadow: 0 -6px 50px rgba(0,0,0,0.45), 0 0 40px rgba(157,127,212,0.18);
   overflow: hidden;
-  max-height: 44vh;
+  max-height: min(34vh, 320px);
   display: flex; flex-direction: column;
   animation: guideRise .35s cubic-bezier(0.22,1,0.36,1);
 }
@@ -1039,10 +1039,6 @@ h3 { position: relative; }
 }
 @media (max-width: 600px) {
   .guide { padding: 0 8px 16px; }
-  .guide-panel {
-    max-height: 34vh;
-    background: linear-gradient(180deg, rgba(38,31,62,0.42), rgba(23,18,42,0.48));
-  }
   .guide-head { padding: 9px 12px 4px; }
   .guide-emblem { width: 24px; height: 24px; }
   .guide-step-title { font-size: 14px; }
