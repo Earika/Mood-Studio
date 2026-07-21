@@ -1578,6 +1578,19 @@ h3 { position: relative; }
 
 <script>
 
+// Some browsers/embedded WebViews (privacy-restricted contexts, certain
+// secure/sandboxed viewers) throw a SecurityError the instant localStorage
+// is touched at all. An uncaught throw here would halt every line of script
+// after it on the page -- including the oil library's first render -- so
+// every localStorage call in this file goes through these two instead of
+// calling it directly. On failure they just act as if nothing was stored.
+function safeStorageGet(key) {
+  try { return localStorage.getItem(key); } catch (e) { return null; }
+}
+function safeStorageSet(key, value) {
+  try { localStorage.setItem(key, value); } catch (e) { /* storage unavailable -- ignore */ }
+}
+
 // Aromatherapy oil database
 // Chemical profiles, phototoxicity, and safety data drawn from:
 // - Tisserand & Young, "Essential Oil Safety" 2nd ed.
@@ -4650,7 +4663,7 @@ function setupCarouselObserver() {
   });
 }
 function initLayoutState() {
-  const stored = localStorage.getItem("vb_layout");
+  const stored = safeStorageGet("vb_layout");
   if (stored && LAYOUTS.includes(stored)) { state.layout = stored; return; }
   state.layout = (window.innerWidth <= 640) ? "carousel" : "grid";
 }
@@ -4664,7 +4677,7 @@ function applyLayout() {
 }
 function setLayout(l) {
   state.layout = l;
-  localStorage.setItem("vb_layout", l);
+  safeStorageSet("vb_layout", l);
   applyLayout();
   renderLibrary(); // grid and carousel produce different markup
 }
@@ -6322,7 +6335,7 @@ function renderOnboardingMoodGrid() {
 // this is the single hook that ties the mood quiz to the rest of the app.
 function applySessionMoodEffects(moodKey) {
   state.mood = moodKey;
-  localStorage.setItem("vb_session_mood", moodKey);
+  safeStorageSet("vb_session_mood", moodKey);
   const preset = MOODLAB_MOOD_PRESETS[moodKey];
   if (preset) {
     preset.oils.slice(0, 2).forEach(name => {
@@ -6349,7 +6362,7 @@ function dismissOnboarding() {
 // opt-outs (the labeled Skip buttons) or actually completing the quiz.
 function finishOnboarding() {
   onboardingEl.classList.add("hidden");
-  localStorage.setItem("vb_seen_onboarding", "true");
+  safeStorageSet("vb_seen_onboarding", "true");
 }
 function selectOnboardingMood(moodKey) {
   applySessionMoodEffects(moodKey);
@@ -6365,10 +6378,10 @@ document.getElementById("onboarding-backdrop").addEventListener("click", dismiss
 
 // First-run only — returning visitors (or anyone who has clicked out) skip straight in.
 function runFirstRunFlow() {
-  if (!localStorage.getItem("vb_seen_onboarding")) {
+  if (!safeStorageGet("vb_seen_onboarding")) {
     startOnboarding();
   } else {
-    const savedMood = localStorage.getItem("vb_session_mood");
+    const savedMood = safeStorageGet("vb_session_mood");
     if (savedMood && MOODLAB_MOOD_PRESETS[savedMood]) {
       state.mood = savedMood;
       const themeSel = document.getElementById("moodlab-theme");
@@ -6393,7 +6406,7 @@ function emailGateConfigured() {
   return !FORMSPREE_ENDPOINT.includes("YOUR_FORM_ID");
 }
 function emailGatePassed() {
-  return !!localStorage.getItem("vb_email_captured");
+  return !!safeStorageGet("vb_email_captured");
 }
 function showEmailGate() {
   emailGateEl.classList.remove("hidden");
@@ -6401,8 +6414,8 @@ function showEmailGate() {
   document.getElementById("email-gate-input").focus();
 }
 function passEmailGate(email) {
-  localStorage.setItem("vb_email_captured", "true");
-  if (email) localStorage.setItem("vb_email_captured_address", email);
+  safeStorageSet("vb_email_captured", "true");
+  if (email) safeStorageSet("vb_email_captured_address", email);
   emailGateEl.classList.add("hidden");
   runFirstRunFlow();
 }
