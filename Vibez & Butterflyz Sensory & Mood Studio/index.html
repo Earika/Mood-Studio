@@ -28,7 +28,7 @@
 
   --ink:         #EDE8F8;   /* Primary text — warm white with violet tint */
   --ink-2:       #A89DC0;   /* Secondary — muted lavender */
-  --ink-3:       #6A607E;   /* Tertiary — soft shadow */
+  --ink-3:       #897CA3;   /* Tertiary — soft shadow (lightened from #6A607E for WCAG AA contrast on small text) */
 
   --line:        rgba(157,130,220,0.12);  /* Subtle violet border */
   --line-2:      rgba(157,130,220,0.22);  /* Active border */
@@ -85,7 +85,7 @@ button { font: inherit; color: inherit; background: none; border: none; cursor: 
 a { color: var(--violet); }
 
 /* ============ LAYOUT ============ */
-.app { display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; }
+.app { display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; min-height: 100dvh; }
 
 /* ============ SIDEBAR ============ */
 .sidebar {
@@ -94,6 +94,7 @@ a { color: var(--violet); }
   padding: 20px 16px;
   overflow-y: auto;
   max-height: 100vh;
+  max-height: 100dvh;
   position: sticky;
   top: 0;
 }
@@ -249,7 +250,7 @@ a { color: var(--violet); }
 .shelf-carrier-rec { font-size: 11px; color: var(--mint); line-height: 1.5; }
 
 /* ============ MAIN ============ */
-.main { padding: 28px 36px 60px; overflow-y: auto; max-height: 100vh; }
+.main { padding: 28px 36px 60px; overflow-y: auto; max-height: 100vh; max-height: 100dvh; }
 
 .topbar {
   display: flex; justify-content: space-between; align-items: flex-end;
@@ -684,7 +685,7 @@ a { color: var(--violet); }
   position: relative; background: var(--paper-2);
   border-radius: 12px; border: 1px solid var(--violet);
   padding: 28px 30px; max-width: 600px; width: 100%;
-  max-height: 85vh; overflow-y: auto;
+  max-height: 85vh; max-height: 85dvh; overflow-y: auto;
   box-shadow: var(--glow-violet), 0 24px 60px rgba(0,0,0,0.6);
 }
 .modal-close { position: absolute; top: 12px; right: 14px; background: none; border: none; font-size: 22px; color: var(--ink-3); width: 30px; height: 30px; border-radius: 4px; }
@@ -752,7 +753,9 @@ a { color: var(--violet); }
   .main { padding: 16px 16px 90px; }
   .lounge-grid { grid-template-columns: 1fr; }
   .moodlab-layout { grid-template-columns: 1fr; }
+  .moodlab-preview-wrap { padding: 6px; }
   .mood-card { width: 100%; }
+  .card { padding: 16px; }
 }
 @media (max-width: 600px) {
   .topbar { flex-direction: column; align-items: flex-start; gap: 12px; }
@@ -1109,7 +1112,7 @@ h3 { position: relative; }
 .onboarding-quiz-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); margin-bottom: 18px; font-weight: 700; }
 .onboarding-mood-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px;
-  max-height: 50vh; overflow-y: auto; padding: 2px;
+  max-height: 50vh; max-height: 50dvh; overflow-y: auto; padding: 2px;
 }
 .onboarding-mood-tile {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -1124,7 +1127,7 @@ h3 { position: relative; }
 .onboarding-mood-label { font-weight: 700; font-size: 12px; color: var(--ink); }
 .onboarding-mood-tag { font-size: 10px; color: var(--ink-3); line-height: 1.3; }
 @media (max-width: 600px) {
-  .onboarding-panel { padding: 30px 20px; max-height: 90vh; overflow-y: auto; }
+  .onboarding-panel { padding: 30px 20px; max-height: 90vh; max-height: 90dvh; overflow-y: auto; }
   .onboarding-panel h2 { font-size: 20px; }
   .onboarding-mood-grid { grid-template-columns: 1fr 1fr; max-height: none; }
   .onboarding-mood-tile { min-height: 76px; padding: 12px 8px; }
@@ -1174,7 +1177,7 @@ h3 { position: relative; }
   .blend-drops button { width: 28px; height: 28px; font-size: 16px; }
   .blend-remove { font-size: 20px; padding: 4px 8px; }
   .blend-list { max-height: 200px; }
-  .modal-body { padding: 22px 18px; max-height: 92vh; }
+  .modal-body { padding: 22px 18px; max-height: 92vh; max-height: 92dvh; }
   .btn-primary, .btn-secondary { padding: 11px 16px; min-height: 40px; }
   .bfly-pill { min-height: 44px; font-size: 11px; }
   .butterfly-card, .butterfly-card-inner { min-height: 210px; }
@@ -6098,7 +6101,7 @@ const TAB_HELP = {
 
 const helpEl = document.getElementById("tab-help");
 let tabHelpDismissed = false;
-function renderTabHelp(v) {
+function renderTabHelp(v, opts = {}) {
   const h = TAB_HELP[v];
   if (!h || tabHelpDismissed) { helpEl.classList.add("hidden"); return; }
   helpEl.classList.remove("hidden");
@@ -6106,12 +6109,15 @@ function renderTabHelp(v) {
   document.getElementById("tab-help-title").textContent = h.title;
   document.getElementById("tab-help-desc").textContent = h.desc;
   document.getElementById("tab-help-next").innerHTML = (h.nextLabel || "Next:") + " " + h.next;
-  // Every render (including a tab switch, which updates this card's
-  // text without ever hiding it) can land it right behind the fixed
-  // Tour / Guide pills docked in the bottom corners -- nudge it fully
-  // into view every time. scroll-margin-bottom keeps this a no-op once
-  // it's already clear, so it's safe to call unconditionally.
-  helpEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  // A tab switch updates this card's text without ever hiding it, and can
+  // land it right behind the fixed Tour / Guide pills docked in the bottom
+  // corners -- nudge it fully into view when that happens. But this also
+  // runs once automatically on initial page load (see call at the bottom
+  // of this file), before the user has done anything -- scrolling then
+  // made the whole page open pre-scrolled away from the top, behind the
+  // email gate / onboarding overlay. So: only user-triggered calls (tab
+  // clicks) opt into the scroll; the initial-load call passes scroll:false.
+  if (opts.scroll !== false) helpEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 document.getElementById("tab-help-dismiss").addEventListener("click", () => {
   tabHelpDismissed = true; helpEl.classList.add("hidden");
@@ -6287,7 +6293,10 @@ document.addEventListener("keydown", e => {
 });
 
 // Show contextual help for the initial (library) station on load.
-renderTabHelp("library");
+// scroll:false -- this fires before the user has done anything (often
+// while the email gate / onboarding overlay is still covering the page),
+// so it must never move the page's scroll position.
+renderTabHelp("library", { scroll: false });
 
 /* =================================================================== */
 /* ============ ONBOARDING: WELCOME -> MOOD QUIZ -> GUIDE ============ */
@@ -6411,7 +6420,10 @@ function emailGatePassed() {
 function showEmailGate() {
   emailGateEl.classList.remove("hidden");
   document.getElementById("email-gate-dev-warning").classList.toggle("hidden", emailGateConfigured());
-  document.getElementById("email-gate-input").focus();
+  // No auto-focus here: focusing an input inside a fixed-position overlay on
+  // page load makes mobile browsers scroll the whole document trying to
+  // "help" bring it into view, even though it's already fully visible --
+  // this was the cause of the page opening scrolled to the middle.
 }
 function passEmailGate(email) {
   safeStorageSet("vb_email_captured", "true");
