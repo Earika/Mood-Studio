@@ -1625,15 +1625,16 @@ h3 { position: relative; }
 
 <!-- ============ EMAIL GATE — shown before onboarding, first-run only ============ -->
 <div id="email-gate" class="onboarding email-gate hidden" role="dialog" aria-modal="true" aria-label="Join the Vibez & Butterflyz mailing list">
-  <div class="onboarding-backdrop"></div>
+  <div class="onboarding-backdrop" id="email-gate-backdrop"></div>
   <div class="onboarding-panel email-gate-panel">
+    <button class="onboarding-skip" id="email-gate-cancel" type="button" aria-label="Cancel">&times;</button>
     <div class="onboarding-icon" aria-hidden="true"><svg class="onboarding-emblem" viewBox="0 0 100 100"><use href="#vb-butterfly"/></svg></div>
     <h2>Join Vibez &amp; Butterflyz</h2>
-    <p class="onboarding-lede">Pop in your email to enter the studio and join our mailing list — you'll also be able to save your Mood Card at the end.</p>
+    <p class="onboarding-lede" id="email-gate-lede">Enter your email to download and send your Mood Card.</p>
     <form id="email-gate-form" novalidate>
       <input id="email-gate-input" class="email-gate-input" type="email" name="email" placeholder="you@example.com" required autocomplete="email" />
       <div id="email-gate-error" class="email-gate-error hidden"></div>
-      <button class="btn-primary onboarding-begin" id="email-gate-submit" type="submit">Enter the Studio</button>
+      <button class="btn-primary onboarding-begin" id="email-gate-submit" type="submit">Download or send your card</button>
     </form>
     <p class="email-gate-fineprint">We'll only use this to send studio updates and your mood cards. No spam.</p>
     <div id="email-gate-dev-warning" class="email-gate-dev-warning hidden">
@@ -4560,7 +4561,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("moodlab-generate").addEventListener("click", syncMoodCard);
-  document.getElementById("moodlab-download").addEventListener("click", downloadMoodCard);
+  // moodlab-download's click handler is registered later, gated behind the
+  // email capture -- see the EMAIL GATE section.
 
   initLayoutState();
   applyLayout();
@@ -6561,6 +6563,9 @@ document.getElementById("onboarding-skip").addEventListener("click", dismissOnbo
 document.getElementById("onboarding-backdrop").addEventListener("click", dismissOnboarding);
 
 // First-run only — returning visitors (or anyone who has clicked out) skip straight in.
+// No longer gated behind email capture -- the app is fully navigable from
+// the first load; see the EMAIL GATE section below for where that ask
+// actually happens now.
 function runFirstRunFlow() {
   if (!safeStorageGet("vb_seen_onboarding")) {
     startOnboarding();
@@ -6573,18 +6578,27 @@ function runFirstRunFlow() {
     }
   }
 }
+runFirstRunFlow();
 
 /* =================================================================== */
-/* ============ EMAIL GATE — mailing-list join, first-run only ======= */
+/* ============ EMAIL GATE — asked at the Download/Send moment ======= */
 /* This is a static site with no server, so "join the mailing list"    */
 /* only becomes real once FORMSPREE_ENDPOINT below points at an actual */
 /* Formspree form (formspree.io -> new form -> copy the endpoint URL). */
 /* Until then this is a dev fallback: it validates the email, then     */
 /* lets the visitor through anyway (with an on-screen dev notice) so a */
 /* forgotten placeholder can't lock everyone out of a live site.       */
+/*                                                                     */
+/* The gate itself is no longer a first-load hard block -- Library,    */
+/* Blend Analyzer, the mood quiz, and Moodlab are all usable without   */
+/* ever entering an email. It's asked exactly once, at the moment the  */
+/* value actually lands: clicking Download/Send on a Mood Card. Once   */
+/* passed, later downloads in the same session (or a returning visit,  */
+/* since it's remembered) skip straight through.                      */
 /* =================================================================== */
 const FORMSPREE_ENDPOINT = "https://formspree.io/f/xanonboo";
 const emailGateEl = document.getElementById("email-gate");
+let pendingGateAction = null;
 
 function emailGateConfigured() {
   return !FORMSPREE_ENDPOINT.includes("YOUR_FORM_ID");
@@ -6592,20 +6606,31 @@ function emailGateConfigured() {
 function emailGatePassed() {
   return !!safeStorageGet("vb_email_captured");
 }
-function showEmailGate() {
+function showEmailGate(onSuccess) {
+  pendingGateAction = onSuccess || null;
   emailGateEl.classList.remove("hidden");
   document.getElementById("email-gate-dev-warning").classList.toggle("hidden", emailGateConfigured());
-  // No auto-focus here: focusing an input inside a fixed-position overlay on
-  // page load makes mobile browsers scroll the whole document trying to
-  // "help" bring it into view, even though it's already fully visible --
-  // this was the cause of the page opening scrolled to the middle.
+  // No auto-focus here: focusing an input inside a fixed-position overlay
+  // makes mobile browsers scroll the whole document trying to "help" bring
+  // it into view, even though it's already fully visible.
+}
+function hideEmailGate() {
+  emailGateEl.classList.add("hidden");
+  pendingGateAction = null;
 }
 function passEmailGate(email) {
   safeStorageSet("vb_email_captured", "true");
   if (email) safeStorageSet("vb_email_captured_address", email);
   emailGateEl.classList.add("hidden");
-  runFirstRunFlow();
+  const action = pendingGateAction;
+  pendingGateAction = null;
+  if (action) action();
 }
+
+// Cancelling out of the gate (X or backdrop) just closes it -- the rest of
+// the app is already usable, so there's nothing to fail back to.
+document.getElementById("email-gate-cancel").addEventListener("click", hideEmailGate);
+document.getElementById("email-gate-backdrop").addEventListener("click", hideEmailGate);
 
 document.getElementById("email-gate-form").addEventListener("submit", async e => {
   e.preventDefault();
@@ -6628,7 +6653,7 @@ document.getElementById("email-gate-form").addEventListener("submit", async e =>
   }
 
   submitBtn.disabled = true;
-  submitBtn.textContent = "Joining…";
+  submitBtn.textContent = "Sending…";
   try {
     const res = await fetch(FORMSPREE_ENDPOINT, {
       method: "POST",
@@ -6641,15 +6666,17 @@ document.getElementById("email-gate-form").addEventListener("submit", async e =>
     errorEl.textContent = "Something went wrong submitting that — please try again.";
     errorEl.classList.remove("hidden");
     submitBtn.disabled = false;
-    submitBtn.textContent = "Enter the Studio";
+    submitBtn.textContent = "Download or send your card";
   }
 });
 
-if (!emailGatePassed()) {
-  showEmailGate();
-} else {
-  runFirstRunFlow();
-}
+// Gate the Download/Send action specifically -- replaces the old direct
+// binding to downloadMoodCard(). Already-passed visitors skip straight
+// through; everyone else sees the gate with the download as its reward.
+document.getElementById("moodlab-download").addEventListener("click", () => {
+  if (emailGatePassed()) downloadMoodCard();
+  else showEmailGate(downloadMoodCard);
+});
 
 // ---- Always-available corner Tour — independent of onboarding, never auto-triggers ----
 const TOUR_STEPS = Object.keys(TAB_HELP).map(key => {
