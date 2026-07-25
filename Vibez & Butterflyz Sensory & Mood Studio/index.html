@@ -581,6 +581,7 @@ a { color: var(--violet); }
   cursor: pointer; transition: all 0.15s;
 }
 .preset-card:hover { border-color: var(--violet); background: var(--paper-3); }
+.preset-card:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
 .preset-name { font-weight: 700; font-family: 'Zodiak', serif; font-size: 14px; color: var(--ink); margin-bottom: 4px; }
 .preset-desc { font-size: 11px; color: var(--ink-2); margin-bottom: 6px; line-height: 1.5; }
 .preset-oils { font-size: 10px; color: var(--violet); }
@@ -5264,7 +5265,7 @@ function renderPresets() {
   grid.innerHTML = PRESETS.map((p, i) => {
     const names = Object.keys(p.oils).map(id => OILS.find(o => o.id === id).name);
     return `
-      <div class="preset-card" data-preset="${i}">
+      <div class="preset-card" data-preset="${i}" role="button" tabindex="0" aria-label="${p.name}. Load into your blend.">
         <div class="preset-name">${p.name}</div>
         <div class="preset-desc">${p.desc}</div>
         <div class="preset-oils">${names.join(" · ")}</div>
@@ -5272,11 +5273,15 @@ function renderPresets() {
     `;
   }).join("");
   grid.querySelectorAll(".preset-card").forEach(el => {
-    el.addEventListener("click", () => {
+    const load = () => {
       const p = PRESETS[el.dataset.preset];
       state.blend = { ...p.oils };
       setView("blend");
       renderAll();
+    };
+    el.addEventListener("click", load);
+    el.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); load(); }
     });
   });
 }
@@ -5363,7 +5368,7 @@ function renderMoodBlends() {
       const idx = MOOD_BLENDS.indexOf(b);
       const theme = BLEND_CAT_MOOD[b.cat] || "clarity-focus";
       return `
-        <div class="preset-card moodblend-card" data-moodblend="${idx}">
+        <div class="preset-card moodblend-card" data-moodblend="${idx}" role="button" tabindex="0" aria-label="${b.name}, ${b.cat}. View recipe and load into your blend.">
           <span class="moodblend-swatch theme-${theme}" title="${b.cat}" aria-hidden="true"></span>
           <div class="preset-name">${b.name}</div>
           <div class="moodblend-oils">${b.oils.map(o => o.n).join(" · ")}</div>
@@ -5371,9 +5376,13 @@ function renderMoodBlends() {
         </div>`;
     }).join("");
     grid.querySelectorAll("[data-moodblend]").forEach(el => {
-      el.addEventListener("click", e => {
-        goldDustBurst(e.clientX, e.clientY);
+      const open = e => {
+        goldDustBurst(e.clientX ?? 0, e.clientY ?? 0);
         setTimeout(() => openMoodBlendModal(+el.dataset.moodblend), 170);
+      };
+      el.addEventListener("click", open);
+      el.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(e); }
       });
     });
   }
