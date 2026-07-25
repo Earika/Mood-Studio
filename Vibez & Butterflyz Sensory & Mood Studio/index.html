@@ -713,27 +713,32 @@ a { color: var(--violet); }
 .modal { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 24px; }
 .modal.hidden { display: none; }
 .modal-backdrop { position: absolute; inset: 0; background: rgba(8,6,16,0.75); backdrop-filter: blur(6px); }
+/* True fixed-header/scrolling-middle/fixed-footer layout -- not a sticky-
+   within-scroll hack. A sticky footer sits on top of (and hides) whatever
+   content scrolls to that same screen position, which is expected for a
+   transient scroll gesture but is a real readability bug if the user
+   stops scrolling with a paragraph paused underneath it -- verified that
+   exact failure with "Traditional Uses"/"Blends Well With" landing fully
+   obscured at multiple rest scroll positions before this rewrite. Making
+   .modal-actions a true flex sibling OUTSIDE the scrollable region means
+   there's structurally nothing for it to ever overlap. */
 .modal-body {
   position: relative; background: var(--paper-2);
   border-radius: 12px; border: 1px solid var(--violet);
-  padding: 28px 30px; max-width: 600px; width: 100%;
-  max-height: 85vh; max-height: 85dvh; overflow-y: auto;
+  padding: 0; max-width: 600px; width: 100%;
+  max-height: 85vh; max-height: 85dvh; overflow: hidden;
+  display: flex; flex-direction: column;
   box-shadow: var(--glow-violet), 0 24px 60px rgba(0,0,0,0.6);
 }
-.modal-close { position: absolute; top: 12px; right: 14px; background: none; border: none; font-size: 22px; color: var(--ink-3); width: 30px; height: 30px; border-radius: 4px; }
+.modal-scroll { overflow-y: auto; padding: 28px 30px; flex: 1 1 auto; min-height: 0; }
+.modal-close { position: absolute; top: 12px; right: 14px; z-index: 2; background: none; border: none; font-size: 22px; color: var(--ink-3); width: 30px; height: 30px; border-radius: 4px; }
 .modal-close:hover { color: var(--rose); background: var(--rose-glow); }
 .modal-body h2 { font-family: 'Zodiak', serif; font-size: 22px; color: var(--ink); margin-bottom: 4px; }
 .modal-section { margin-top: 18px; }
 .modal-section h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); margin-bottom: 6px; font-family: 'Satoshi', sans-serif; }
 .modal-actions {
-  /* Sticks to the bottom of the modal's own scroll area regardless of
-     content length or viewport height, so "Add to Blend" / "Close" are
-     never scrolled out of reach on a shorter screen -- the negative
-     margin cancels .modal-body's padding so this spans full width and
-     sits flush against the visible edge. */
-  margin: 22px -30px -28px; padding: 14px 30px 16px;
+  flex-shrink: 0; margin: 0; padding: 14px 30px 22px;
   display: flex; gap: 8px;
-  position: sticky; bottom: 0; z-index: 1;
   background: var(--paper-2);
   border-top: 1px solid var(--line);
   box-shadow: 0 -8px 16px -8px rgba(0,0,0,0.35);
@@ -1280,8 +1285,9 @@ h3 { position: relative; }
   .blend-drops button { width: 28px; height: 28px; font-size: 16px; }
   .blend-remove { font-size: 20px; padding: 4px 8px; }
   .blend-list { max-height: 200px; }
-  .modal-body { padding: 22px 18px; max-height: 92vh; max-height: 92dvh; }
-  .modal-actions { margin: 22px -18px -22px; padding: 12px 18px 14px; }
+  .modal-body { max-height: 92vh; max-height: 92dvh; }
+  .modal-scroll { padding: 22px 18px; }
+  .modal-actions { padding: 12px 18px 18px; }
   .btn-primary, .btn-secondary { padding: 11px 16px; min-height: 40px; }
   .bfly-pill { min-height: 44px; font-size: 11px; }
   .butterfly-card, .butterfly-card-inner { min-height: 210px; }
@@ -5318,50 +5324,52 @@ function openModal(oilId) {
 
   body.innerHTML = `
     <button class="modal-close" aria-label="Close">×</button>
-    <h2>${oil.name}</h2>
-    <div class="oil-latin">${oil.latin}</div>
-    <div class="oil-meta">
-      <span class="tag note-${oil.note === "Top" ? "top" : oil.note === "Middle" ? "mid" : "base"}">${oil.note} note</span>
-      <span class="tag">${oil.category}</span>
-      <span class="tag">Intensity ${oil.intensity}/5</span>
-      <span class="tag">Blend strength ${oil.blend_strength}/5</span>
-      ${oil.type === "fragrance" ? '<span class="tag type-fragrance">Fragrance</span>' : ''}
-      ${oil.phototoxic ? '<span class="tag phototox">Phototoxic</span>' : ''}
-    </div>
+    <div class="modal-scroll">
+      <h2>${oil.name}</h2>
+      <div class="oil-latin">${oil.latin}</div>
+      <div class="oil-meta">
+        <span class="tag note-${oil.note === "Top" ? "top" : oil.note === "Middle" ? "mid" : "base"}">${oil.note} note</span>
+        <span class="tag">${oil.category}</span>
+        <span class="tag">Intensity ${oil.intensity}/5</span>
+        <span class="tag">Blend strength ${oil.blend_strength}/5</span>
+        ${oil.type === "fragrance" ? '<span class="tag type-fragrance">Fragrance</span>' : ''}
+        ${oil.phototoxic ? '<span class="tag phototox">Phototoxic</span>' : ''}
+      </div>
 
-    ${phototoxBanner}
-    ${pregnancyClass ? `<div class="${pregnancyClass}"><strong>Pregnancy:</strong> ${oil.pregnancy}</div>` : ""}
+      ${phototoxBanner}
+      ${pregnancyClass ? `<div class="${pregnancyClass}"><strong>Pregnancy:</strong> ${oil.pregnancy}</div>` : ""}
 
-    <div class="modal-section">
-      <h4>Aroma Profile</h4>
-      <div>${oil.aroma.join(" · ")}</div>
-    </div>
+      <div class="modal-section">
+        <h4>Aroma Profile</h4>
+        <div>${oil.aroma.join(" · ")}</div>
+      </div>
 
-    <div class="modal-section">
-      <h4>Chemical Constituents</h4>
-      ${constituentsHtml}
-    </div>
+      <div class="modal-section">
+        <h4>Chemical Constituents</h4>
+        ${constituentsHtml}
+      </div>
 
-    ${oil.max_dermal != null ? `<div class="modal-section">
-      <h4>Max Dermal Dilution (Tisserand)</h4>
-      <div>${oil.max_dermal}% ${oil.max_dermal === 100 ? "(no ceiling — safe at any typical use dilution)" : `— above this on skin risks sensitization/irritation`}</div>
-    </div>` : ""}
+      ${oil.max_dermal != null ? `<div class="modal-section">
+        <h4>Max Dermal Dilution (Tisserand)</h4>
+        <div>${oil.max_dermal}% ${oil.max_dermal === 100 ? "(no ceiling — safe at any typical use dilution)" : `— above this on skin risks sensitization/irritation`}</div>
+      </div>` : ""}
 
-    <div class="modal-section">
-      <h4>Cautions</h4>
-      <ul style="padding-left:18px; font-size:13px; color:var(--ink-2);">
-        ${(oil.cautions || []).map(c => `<li>${c}</li>`).join("")}
-      </ul>
-    </div>
+      <div class="modal-section">
+        <h4>Cautions</h4>
+        <ul style="padding-left:18px; font-size:13px; color:var(--ink-2);">
+          ${(oil.cautions || []).map(c => `<li>${c}</li>`).join("")}
+        </ul>
+      </div>
 
-    <div class="modal-section">
-      <h4>Blends Well With</h4>
-      <div>${oil.pairs_with.join(" · ")}</div>
-    </div>
+      <div class="modal-section">
+        <h4>Blends Well With</h4>
+        <div>${oil.pairs_with.join(" · ")}</div>
+      </div>
 
-    <div class="modal-section">
-      <h4>Traditional Uses</h4>
-      <div>${oil.uses.join(" · ")}</div>
+      <div class="modal-section">
+        <h4>Traditional Uses</h4>
+        <div>${oil.uses.join(" · ")}</div>
+      </div>
     </div>
 
     <div class="modal-actions">
@@ -5580,15 +5588,17 @@ function openMoodBlendModal(idx) {
   const unmatched = matched.filter(m => !m.lib).map(m => m.n);
   body.innerHTML = `
     <button class="modal-close" aria-label="Close">×</button>
-    <h2>${b.name}</h2>
-    <div class="oil-latin">${b.cat}</div>
-    <div class="modal-section"><h4>Oils</h4><div>${b.oils.map(o => `${o.n} (${o.p} parts)`).join(" · ")}</div></div>
-    <div class="modal-section"><h4>Diffuser (per 100ml water)</h4><div>${b.diff}</div></div>
-    <div class="modal-section"><h4>Roll-on</h4><div>${b.top}</div></div>
-    ${b.wear ? `<div class="modal-section"><h4>Wrist Wear</h4><div>${b.wear}</div></div>` : ""}
-    ${b.caution ? `<div class="warn-banner"><strong>Caution:</strong> ${b.caution}.</div>` : ""}
-    <div class="modal-section"><h4>Affirmation</h4><div style="font-style:italic;">"${b.aff}"</div></div>
-    <p class="muted" style="margin-top:14px;">Always patch test before topical use. Keep away from eyes, children, and pets. Consult a physician if pregnant, nursing, or on medication.</p>
+    <div class="modal-scroll">
+      <h2>${b.name}</h2>
+      <div class="oil-latin">${b.cat}</div>
+      <div class="modal-section"><h4>Oils</h4><div>${b.oils.map(o => `${o.n} (${o.p} parts)`).join(" · ")}</div></div>
+      <div class="modal-section"><h4>Diffuser (per 100ml water)</h4><div>${b.diff}</div></div>
+      <div class="modal-section"><h4>Roll-on</h4><div>${b.top}</div></div>
+      ${b.wear ? `<div class="modal-section"><h4>Wrist Wear</h4><div>${b.wear}</div></div>` : ""}
+      ${b.caution ? `<div class="warn-banner"><strong>Caution:</strong> ${b.caution}.</div>` : ""}
+      <div class="modal-section"><h4>Affirmation</h4><div style="font-style:italic;">"${b.aff}"</div></div>
+      <p class="muted" style="margin-top:14px;">Always patch test before topical use. Keep away from eyes, children, and pets. Consult a physician if pregnant, nursing, or on medication.</p>
+    </div>
     <div class="modal-actions">
       <button class="btn-primary" id="moodblend-load">Load into Blend</button>
       <button class="btn-secondary" id="moodblend-moodcard">Open as Mood Card</button>
@@ -5619,7 +5629,7 @@ function openMoodBlendModal(idx) {
     const note = document.createElement("p");
     note.className = "muted";
     note.textContent = `Not in the oil library (recipe only): ${unmatched.join(", ")}`;
-    body.querySelector(".modal-actions").before(note);
+    body.querySelector(".modal-scroll").appendChild(note);
   }
 }
 
