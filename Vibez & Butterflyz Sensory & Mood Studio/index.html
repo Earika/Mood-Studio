@@ -15,6 +15,10 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Vibez & Butterflyz" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="icon" href="icon-192.png" />
 <link rel="preconnect" href="https://api.fontshare.com" />
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400;500;700;900&f[]=zodiak@400;500;700&display=swap" />
 <style>
@@ -6684,6 +6688,16 @@ const TOUR_STEPS = Object.keys(TAB_HELP).map(key => {
   return { key, view: key, title: h.title, desc: h.desc, does: "", next: h.next };
 });
 document.getElementById("site-tour-btn").addEventListener("click", () => openGuide({ mode: "tour", startAt: 0 }));
+
+// ============ PWA: register the service worker (offline shell caching) ============
+// Registration failing (e.g. served over file:// instead of http/https,
+// which service workers require) is not fatal -- the app already works
+// fully online without one, this just adds offline support on top.
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
 
 </script>
 </body>
