@@ -1241,6 +1241,34 @@ h3 { position: relative; }
   .onboarding-mood-tile { min-height: 76px; padding: 12px 8px; }
 }
 
+/* Mood Quiz — multi-question, scored (see QUIZ_QUESTIONS in JS) */
+.quiz-progress { display: flex; gap: 6px; justify-content: center; margin-bottom: 16px; }
+.quiz-progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); transition: background 0.15s; }
+.quiz-progress-dot.done { background: var(--gold); }
+.quiz-progress-dot.current { background: var(--violet); }
+.quiz-answers { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.quiz-answer-btn {
+  width: 100%; text-align: left; padding: 14px 16px; font: inherit; font-size: 14px;
+  background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
+  color: var(--ink); cursor: pointer; transition: all 0.15s; min-height: 48px;
+}
+.quiz-answer-btn:hover, .quiz-answer-btn:focus-visible {
+  border-color: var(--violet); background: var(--paper-3); box-shadow: var(--glow-violet); outline: none;
+}
+.quiz-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.quiz-nav .btn-secondary { padding: 8px 14px; font-size: 12px; width: auto; display: inline-block; }
+.quiz-manual-link {
+  background: none; border: none; color: var(--ink-3); font-size: 12px;
+  text-decoration: underline; cursor: pointer; padding: 8px 4px; font-family: inherit;
+}
+.quiz-manual-link:hover, .quiz-manual-link:focus-visible { color: var(--violet); }
+.quiz-result-detail {
+  background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 14px; margin-bottom: 18px; font-size: 13px; color: var(--ink-2);
+  text-align: left; line-height: 1.5;
+}
+.quiz-result-detail strong { color: var(--ink); }
+
 /* Corner Tour — sits opposite the guide's minimize-pill (bottom-right), never auto-opens */
 .site-tour-btn {
   position: fixed; left: 20px; bottom: 20px; z-index: 119;
@@ -1505,6 +1533,11 @@ h3 { position: relative; }
         <button id="moodblend-more" class="btn-ghost" type="button">Show more blends</button>
       </div>
       <div class="card">
+        <h3>Practical &amp; Wellness Blends</h3>
+        <p class="muted">Function-first recipes — focus, sleep, muscle relief, insect repellent — rather than a mood. Tap one to load it straight into your Blend Analyzer.</p>
+        <div id="preset-grid" class="preset-grid"></div>
+      </div>
+      <div class="card">
         <h3>Pairing Suggestions</h3>
         <p class="muted">Based on your current blend — oils that harmonize with what you've already chosen.</p>
         <div id="pairing-suggestions" class="pairing-suggestions"></div>
@@ -1676,15 +1709,39 @@ h3 { position: relative; }
     <div class="onboarding-step" id="onboarding-step-welcome">
       <div class="onboarding-icon" aria-hidden="true"><svg class="onboarding-emblem" viewBox="0 0 100 100"><use href="#vb-butterfly"/></svg></div>
       <h2>Welcome to Vibez &amp; Butterflyz Sensory &amp; Mood Studio</h2>
-      <p class="onboarding-lede">What kind of mood would you like to set today?</p>
+      <p class="onboarding-lede">Answer a few quick questions and we'll recommend where to start.</p>
       <button class="btn-primary onboarding-begin" id="onboarding-begin" type="button">Begin</button>
       <button class="btn-secondary" id="onboarding-skip-all" type="button">Skip intro</button>
     </div>
 
     <div class="onboarding-step hidden" id="onboarding-step-quiz">
+      <div class="quiz-progress" id="quiz-progress" aria-hidden="true"></div>
+      <div aria-live="polite">
+        <div class="onboarding-quiz-title" id="quiz-question-count">Question 1</div>
+        <p class="onboarding-lede" id="quiz-prompt"></p>
+      </div>
+      <div class="quiz-answers" id="quiz-answers"></div>
+      <div class="quiz-nav">
+        <button class="btn-secondary" id="quiz-back" type="button">&larr; Back</button>
+        <button class="quiz-manual-link" id="quiz-manual-link" type="button">I'd rather just pick a mood</button>
+      </div>
+      <button class="btn-secondary" id="onboarding-quiz-skip" type="button">Skip — I'll explore freely</button>
+    </div>
+
+    <div class="onboarding-step hidden" id="onboarding-step-result">
+      <div class="onboarding-icon" aria-hidden="true"><svg class="onboarding-emblem" viewBox="0 0 100 100"><use href="#vb-butterfly"/></svg></div>
+      <div class="onboarding-quiz-title">Based on your answers</div>
+      <h2 id="quiz-result-title"></h2>
+      <p class="onboarding-lede" id="quiz-result-tagline"></p>
+      <div class="quiz-result-detail" id="quiz-result-detail"></div>
+      <button class="btn-primary onboarding-begin" id="quiz-result-use" type="button">Set this mood</button>
+      <button class="btn-secondary" id="quiz-result-manual" type="button">Choose a different mood</button>
+    </div>
+
+    <div class="onboarding-step hidden" id="onboarding-step-manual">
       <div class="onboarding-quiz-title">Pick a mood to set the tone</div>
       <div class="onboarding-mood-grid" id="onboarding-mood-grid"></div>
-      <button class="btn-secondary" id="onboarding-quiz-skip" type="button">Skip — I'll explore freely</button>
+      <button class="btn-secondary" id="onboarding-manual-skip" type="button">Skip — I'll explore freely</button>
     </div>
   </div>
 </div>
@@ -5451,7 +5508,7 @@ const PRESETS = [
 
 function renderPresets() {
   const grid = document.getElementById("preset-grid");
-  if (!grid) return; // curated presets merged into the single Curated Moods list
+  if (!grid) return;
   grid.innerHTML = PRESETS.map((p, i) => {
     const names = Object.keys(p.oils).map(id => OILS.find(o => o.id === id).name);
     return `
@@ -5468,6 +5525,7 @@ function renderPresets() {
       state.blend = { ...p.oils };
       setView("blend");
       renderAll();
+      showToast(`Loaded "${p.name}" into your blend`);
     };
     el.addEventListener("click", load);
     el.addEventListener("keydown", e => {
@@ -6518,11 +6576,82 @@ const ONBOARDING_MOODS = [
   { key: "clarity-focus", label: "Clarity & Focus" }
 ];
 
+// The Mood Quiz — each answer awards weighted points toward one or more of
+// the 10 keys above. After the last question the highest-scoring key wins
+// and drives the recommendation (see computeQuizResult/showQuizResult below).
+// This is a first-draft question set: swap in your own copy freely, the
+// engine only cares about the shape -- { prompt, answers: [{ label, scores }] }.
+const QUIZ_QUESTIONS = [
+  {
+    prompt: "How does your body feel right now?",
+    answers: [
+      { label: "Tight, wired, on edge", scores: { "calm-peace": 2, "relaxation-rest": 1 } },
+      { label: "Flat, foggy, low battery", scores: { "reenergize-reignite": 2, "renewal-rejuvenation": 1 } },
+      { label: "Restless, scattered, can't focus", scores: { "clarity-focus": 2, "motivation-drive": 1 } },
+      { label: "Actually solid — just want more of it", scores: { "confidence-power": 2, "joy-uplift": 1 } }
+    ]
+  },
+  {
+    prompt: "What does your mind keep doing today?",
+    answers: [
+      { label: "Replaying an old worry or hurt", scores: { "self-love-being-loved": 2, "calm-peace": 1 } },
+      { label: "Bracing for something — a conversation, a deadline, a threat", scores: { "protection-strength": 2, "confidence-power": 1 } },
+      { label: "Chasing ten things at once", scores: { "clarity-focus": 2, "motivation-drive": 1 } },
+      { label: "Not much — mostly quiet", scores: { "relaxation-rest": 2, "calm-peace": 1 } }
+    ]
+  },
+  {
+    prompt: "If you had the next hour completely free, you'd want to...",
+    answers: [
+      { label: "Do absolutely nothing", scores: { "relaxation-rest": 2, "renewal-rejuvenation": 1 } },
+      { label: "Move — walk, stretch, get the blood going", scores: { "motivation-drive": 2, "reenergize-reignite": 1 } },
+      { label: "Laugh, play music, be a little ridiculous", scores: { "joy-uplift": 2, "self-love-being-loved": 1 } },
+      { label: "Sit somewhere quiet and just breathe", scores: { "calm-peace": 2, "clarity-focus": 1 } }
+    ]
+  },
+  {
+    prompt: "What do you need from other people right now?",
+    answers: [
+      { label: "Space — nobody needs anything from me", scores: { "protection-strength": 2, "calm-peace": 1 } },
+      { label: "To feel wanted, chosen, cared for", scores: { "self-love-being-loved": 2, "joy-uplift": 1 } },
+      { label: "To show up strong for someone", scores: { "confidence-power": 2, "motivation-drive": 1 } },
+      { label: "Nothing — just quiet renewal", scores: { "renewal-rejuvenation": 2, "relaxation-rest": 1 } }
+    ]
+  },
+  {
+    prompt: "Which sentence sounds most like today?",
+    answers: [
+      { label: "“I have to hold it together.”", scores: { "protection-strength": 2, "confidence-power": 1 } },
+      { label: "“I'm running on empty.”", scores: { "reenergize-reignite": 2, "renewal-rejuvenation": 1 } },
+      { label: "“I want to feel like myself again.”", scores: { "self-love-being-loved": 2, "renewal-rejuvenation": 1 } },
+      { label: "“I actually feel kind of good — let's build on it.”", scores: { "joy-uplift": 2, "confidence-power": 1 } }
+    ]
+  }
+];
+
+// Reverse of BLEND_CAT_MOOD (defined earlier, near the Curated Moods library):
+// lets a winning quiz mood look up which curated-blend category (if any)
+// actually has matching recipes, so the result can suggest a real named
+// blend instead of only the mood's 3 generic signature oils.
+const MOOD_TO_BLEND_CAT = Object.fromEntries(
+  Object.entries(BLEND_CAT_MOOD).map(([cat, mood]) => [mood, cat])
+);
+
+function suggestedBlendFor(moodKey) {
+  const cat = MOOD_TO_BLEND_CAT[moodKey];
+  if (!cat) return null;
+  const options = MOOD_BLENDS.filter(b => b.cat === cat);
+  if (!options.length) return null;
+  return options[Math.floor(Math.random() * options.length)];
+}
+
 const onboardingEl = document.getElementById("onboarding");
 
 function showOnboardingStep(step) {
   document.getElementById("onboarding-step-welcome").classList.toggle("hidden", step !== "welcome");
   document.getElementById("onboarding-step-quiz").classList.toggle("hidden", step !== "quiz");
+  document.getElementById("onboarding-step-result").classList.toggle("hidden", step !== "result");
+  document.getElementById("onboarding-step-manual").classList.toggle("hidden", step !== "manual");
 }
 
 function renderOnboardingMoodGrid() {
@@ -6583,11 +6712,133 @@ function selectOnboardingMood(moodKey) {
   openGuide({ mode: "onboarding", startAt: 0 });
 }
 
-document.getElementById("onboarding-begin").addEventListener("click", () => showOnboardingStep("quiz"));
+// ---- Quiz engine ----------------------------------------------------
+// quizState.answers[i] holds the scores object for question i once
+// answered. Storing per-question (not a running total) makes Back safe:
+// re-answering a question just overwrites its slot, so totals are always
+// recomputed fresh from whatever's currently answered -- no double-counting.
+let quizState = { index: 0, answers: [] };
+let quizResultState = { topKey: null, blend: null };
+
+function startQuiz() {
+  quizState = { index: 0, answers: [] };
+  showOnboardingStep("quiz");
+  renderQuizQuestion();
+}
+
+function quizTotals() {
+  const totals = {};
+  quizState.answers.forEach(scores => {
+    if (!scores) return;
+    Object.entries(scores).forEach(([k, v]) => { totals[k] = (totals[k] || 0) + v; });
+  });
+  return totals;
+}
+
+function renderQuizQuestion() {
+  const q = QUIZ_QUESTIONS[quizState.index];
+  document.getElementById("quiz-question-count").textContent = `Question ${quizState.index + 1} of ${QUIZ_QUESTIONS.length}`;
+  document.getElementById("quiz-prompt").textContent = q.prompt;
+  document.getElementById("quiz-progress").innerHTML = QUIZ_QUESTIONS.map((_, i) => {
+    let cls = "quiz-progress-dot";
+    if (i < quizState.index) cls += " done";
+    if (i === quizState.index) cls += " current";
+    return `<span class="${cls}"></span>`;
+  }).join("");
+  const answersEl = document.getElementById("quiz-answers");
+  answersEl.innerHTML = q.answers.map((a, i) =>
+    `<button class="quiz-answer-btn" type="button" data-answer="${i}">${a.label}</button>`
+  ).join("");
+  answersEl.querySelectorAll(".quiz-answer-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      quizState.answers[quizState.index] = q.answers[Number(btn.dataset.answer)].scores;
+      if (quizState.index < QUIZ_QUESTIONS.length - 1) {
+        quizState.index++;
+        renderQuizQuestion();
+      } else {
+        showQuizResult();
+      }
+    });
+  });
+  document.getElementById("quiz-back").style.visibility = quizState.index === 0 ? "hidden" : "visible";
+}
+
+function computeQuizResult() {
+  const totals = quizTotals();
+  const ranked = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+  const topKey = ranked.length ? ranked[0][0] : ONBOARDING_MOODS[0].key;
+  const runnerUp = ranked.length > 1 && (ranked[0][1] - ranked[1][1]) <= 1 ? ranked[1][0] : null;
+  return { topKey, runnerUp };
+}
+
+function showQuizResult() {
+  const { topKey, runnerUp } = computeQuizResult();
+  const preset = MOODLAB_MOOD_PRESETS[topKey];
+  const label = (ONBOARDING_MOODS.find(m => m.key === topKey) || {}).label || topKey;
+  const blend = suggestedBlendFor(topKey);
+  quizResultState = { topKey, blend };
+
+  document.getElementById("quiz-result-title").textContent = preset ? preset.title : label;
+  document.getElementById("quiz-result-tagline").textContent = preset ? preset.tagline : "";
+
+  let detailHtml = `<div><strong>${label}</strong></div>`;
+  if (blend) {
+    detailHtml += `<div style="margin-top:8px;">Suggested recipe: <strong>${blend.name}</strong><br>${blend.oils.map(o => o.n).join(" · ")}</div>`;
+  } else if (preset) {
+    detailHtml += `<div style="margin-top:8px;">Starting oils: ${preset.oils.join(" · ")}</div>`;
+  }
+  if (runnerUp) {
+    const runnerLabel = (ONBOARDING_MOODS.find(m => m.key === runnerUp) || {}).label || runnerUp;
+    detailHtml += `<div style="margin-top:8px; color:var(--ink-3); font-size:12px;">This one narrowly edged out ${runnerLabel} — worth a look if it doesn't quite fit.</div>`;
+  }
+  document.getElementById("quiz-result-detail").innerHTML = detailHtml;
+
+  showOnboardingStep("result");
+}
+
+// Loading a full suggested curated blend mirrors openMoodBlendModal's
+// "Load into Blend" behavior (same state.blend shape, same Moodlab feed)
+// so the quiz result is as rich as manually browsing Curated Moods.
+function acceptQuizResult() {
+  const { topKey, blend } = quizResultState;
+  if (blend) {
+    const matched = blend.oils.map(o => ({ ...o, lib: findLibraryOil(o.n) }));
+    state.blend = {};
+    matched.forEach(m => { if (m.lib) state.blend[m.lib.id] = m.p; });
+    feedMoodlabFromBlend(blend);
+    state.mood = topKey;
+    safeStorageSet("vb_session_mood", topKey);
+    const themeSel = document.getElementById("moodlab-theme");
+    if (themeSel) themeSel.value = topKey;
+    finishOnboarding();
+    openGuide({ mode: "onboarding", startAt: 0 });
+    renderAll();
+    renderInlineShelf();
+  } else {
+    selectOnboardingMood(topKey);
+  }
+}
+
+document.getElementById("onboarding-begin").addEventListener("click", () => startQuiz());
 document.getElementById("onboarding-skip-all").addEventListener("click", finishOnboarding);
 document.getElementById("onboarding-quiz-skip").addEventListener("click", finishOnboarding);
+document.getElementById("onboarding-manual-skip").addEventListener("click", finishOnboarding);
 document.getElementById("onboarding-skip").addEventListener("click", dismissOnboarding);
 document.getElementById("onboarding-backdrop").addEventListener("click", dismissOnboarding);
+document.getElementById("quiz-back").addEventListener("click", () => {
+  if (quizState.index === 0) { showOnboardingStep("welcome"); return; }
+  quizState.index--;
+  renderQuizQuestion();
+});
+document.getElementById("quiz-manual-link").addEventListener("click", () => {
+  renderOnboardingMoodGrid();
+  showOnboardingStep("manual");
+});
+document.getElementById("quiz-result-use").addEventListener("click", acceptQuizResult);
+document.getElementById("quiz-result-manual").addEventListener("click", () => {
+  renderOnboardingMoodGrid();
+  showOnboardingStep("manual");
+});
 
 // First-run only — returning visitors (or anyone who has clicked out) skip straight in.
 // No longer gated behind email capture -- the app is fully navigable from
