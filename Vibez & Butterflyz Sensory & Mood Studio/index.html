@@ -725,7 +725,19 @@ a { color: var(--violet); }
 .modal-body h2 { font-family: 'Zodiak', serif; font-size: 22px; color: var(--ink); margin-bottom: 4px; }
 .modal-section { margin-top: 18px; }
 .modal-section h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); margin-bottom: 6px; font-family: 'Satoshi', sans-serif; }
-.modal-actions { margin-top: 22px; display: flex; gap: 8px; }
+.modal-actions {
+  /* Sticks to the bottom of the modal's own scroll area regardless of
+     content length or viewport height, so "Add to Blend" / "Close" are
+     never scrolled out of reach on a shorter screen -- the negative
+     margin cancels .modal-body's padding so this spans full width and
+     sits flush against the visible edge. */
+  margin: 22px -30px -28px; padding: 14px 30px 16px;
+  display: flex; gap: 8px;
+  position: sticky; bottom: 0; z-index: 1;
+  background: var(--paper-2);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -8px 16px -8px rgba(0,0,0,0.35);
+}
 .btn-primary { padding: 9px 18px; background: linear-gradient(90deg, var(--rose), var(--violet)); color: var(--bg); border: none; border-radius: var(--radius); font-weight: 700; font-size: 13px; }
 .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
 .btn-primary.remove { background: linear-gradient(90deg, var(--clay), #8B4050); }
@@ -1269,6 +1281,7 @@ h3 { position: relative; }
   .blend-remove { font-size: 20px; padding: 4px 8px; }
   .blend-list { max-height: 200px; }
   .modal-body { padding: 22px 18px; max-height: 92vh; max-height: 92dvh; }
+  .modal-actions { margin: 22px -18px -22px; padding: 12px 18px 14px; }
   .btn-primary, .btn-secondary { padding: 11px 16px; min-height: 40px; }
   .bfly-pill { min-height: 44px; font-size: 11px; }
   .butterfly-card, .butterfly-card-inner { min-height: 210px; }
