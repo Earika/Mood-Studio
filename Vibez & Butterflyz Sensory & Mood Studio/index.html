@@ -903,6 +903,37 @@ body::after {
   content: ""; position: absolute; left: 12px; right: 12px; bottom: 3px; height: 2px;
   background: var(--violet); border-radius: 2px; opacity: 0; transition: opacity .2s;
 }
+/* "Next step" nudge -- a small dot pointing at where to go next, cleared the
+   moment the user actually visits that tab. */
+.tab.has-nudge::after {
+  content: ""; position: absolute; top: 2px; right: 2px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--gold); box-shadow: 0 0 8px var(--gold);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tab.has-nudge::after { animation: tabNudgePulse 1.6s ease-in-out infinite; }
+}
+@keyframes tabNudgePulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .55; transform: scale(1.35); } }
+
+/* ---- Toast: brief, dismissible confirmation ---- */
+.toast {
+  /* top, not bottom -- the guide panel and minimized guide/tour pills all
+     dock at the bottom of the screen, so a bottom toast would collide with
+     them (most visibly right when picking a mood, which opens the guide
+     immediately after this fires). */
+  position: fixed; left: 50%; top: 18px; z-index: 210;
+  transform: translate(-50%, -12px); max-width: min(420px, calc(100vw - 32px));
+  background: linear-gradient(180deg, rgba(38,31,62,0.96), rgba(23,18,42,0.98));
+  border: 1px solid var(--line-2); border-radius: 14px;
+  padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 24px rgba(157,127,212,0.18);
+  color: var(--ink); font-size: 13.5px;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+}
+.toast.visible { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) { .toast, .toast.visible { transform: translate(-50%, 0); transition: opacity .01s; } }
+.toast-emblem { width: 20px; height: 20px; flex-shrink: 0; filter: drop-shadow(0 0 6px rgba(157,127,212,0.5)); }
 .tab:hover::before { opacity: 0.4; }
 .tab.active { box-shadow: 0 0 18px rgba(201,127,168,0.45); }
 .tab.active::before { opacity: 0; }
@@ -1581,6 +1612,12 @@ h3 { position: relative; }
 
 <!-- golden dust transition layer -->
 <div id="dust-overlay" aria-hidden="true"></div>
+
+<!-- ============ TOAST: brief confirmations (e.g. quiz added oils) ============ -->
+<div id="toast" class="toast" role="status" aria-live="polite">
+  <svg class="toast-emblem" viewBox="0 0 100 100" aria-hidden="true"><use href="#vb-butterfly"/></svg>
+  <span id="toast-text"></span>
+</div>
 
 <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
   <div class="modal-backdrop" data-close></div>
@@ -4479,10 +4516,14 @@ function setView(v) {
   document.getElementById(`tab-${v}`).classList.add("active");
   document.querySelectorAll(".view").forEach(el => el.classList.add("hidden"));
   document.getElementById(`view-${v}`).classList.remove("hidden");
+  clearTabNudge(v); // visiting a tab is the whole point of its nudge -- clear it
   if (v === "blend") renderBlendView();
   if (v === "recipes") renderPairingSuggestions();
   if (v === "terpenes") renderTerpenes();
   if (v === "moodlab") renderMoodlab();
+  // Once the user has actually looked at their blend's analysis, nudge
+  // them toward turning it into a Mood Card next.
+  if (v === "blend" && Object.keys(state.blend).length > 0) showTabNudge("moodlab");
 }
 
 // ============ LIBRARY RENDER ============
@@ -4724,10 +4765,32 @@ function clearFilters() {
 }
 
 // ============ BLEND MANAGEMENT ============
+// ============ TOAST + "NEXT STEP" TAB NUDGES ============
+let toastHideTimer = null;
+function showToast(message, ms = 3200) {
+  const el = document.getElementById("toast");
+  document.getElementById("toast-text").textContent = message;
+  el.classList.add("visible");
+  clearTimeout(toastHideTimer);
+  toastHideTimer = setTimeout(() => el.classList.remove("visible"), ms);
+}
+function showTabNudge(tabId) {
+  const tab = document.getElementById(`tab-${tabId}`);
+  if (tab) tab.classList.add("has-nudge");
+}
+function clearTabNudge(tabId) {
+  const tab = document.getElementById(`tab-${tabId}`);
+  if (tab) tab.classList.remove("has-nudge");
+}
+
 function addToBlend(oilId, drops = 2) {
+  const hadOilsBefore = Object.keys(state.blend).length > 0;
   state.blend[oilId] = (state.blend[oilId] || 0) + drops;
   renderAll();
   renderInlineShelf();
+  // First oil ever added this session -- nudge toward the Analyzer, where
+  // that oil actually starts meaning something (note balance, safety, etc).
+  if (!hadOilsBefore && state.view !== "blend") showTabNudge("blend");
 }
 function setDrops(oilId, drops) {
   if (drops <= 0) delete state.blend[oilId];
@@ -6363,14 +6426,16 @@ function applySessionMoodEffects(moodKey) {
   state.mood = moodKey;
   safeStorageSet("vb_session_mood", moodKey);
   const preset = MOODLAB_MOOD_PRESETS[moodKey];
+  const added = [];
   if (preset) {
     preset.oils.slice(0, 2).forEach(name => {
       const oil = OILS.find(o => o.name === name);
-      if (oil) addToBlend(oil.id, 2);
+      if (oil) { addToBlend(oil.id, 2); added.push(oil.name); }
     });
   }
   const themeSel = document.getElementById("moodlab-theme");
   if (themeSel) themeSel.value = moodKey;
+  if (added.length) showToast(`Added ${added.join(" + ")} to your blend`);
 }
 
 function startOnboarding() {
