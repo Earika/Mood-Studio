@@ -7117,7 +7117,8 @@ const TTL_QUESTIONS = {
   },
   pairing: {
     key: "pairingPreference", eyebrow: "Setting the table",
-    prompt: "What's joining us tonight?", multi: false,
+    prompt: "What's joining us tonight?", multi: true,
+    clearValues: ["aromas-only"],
     options: [
       { value: "tea", label: "Tea" },
       { value: "cocktail", label: "Cocktail" },
@@ -7238,7 +7239,9 @@ function renderTTLQuestion(name) {
 }
 
 function ttlApplyIntentBackdrop(intent) {
-  ttlBackdropEl.classList.remove("intent-exhale", "intent-celebrate", "intent-romanticize");
+  // Clear every existing intent-* class rather than a hardcoded list, so a
+  // future added intent doesn't accidentally accumulate on the backdrop.
+  [...ttlBackdropEl.classList].forEach(c => { if (c.startsWith("intent-")) ttlBackdropEl.classList.remove(c); });
   if (intent === "exhale" || intent === "celebrate" || intent === "romanticize") {
     ttlBackdropEl.classList.add(`intent-${intent}`);
   }
@@ -7308,23 +7311,52 @@ function ttlTriggerButterflyScatter() {
 // never has to be chased down at every one of that function's call sites.
 function applyLoungeVisibility(profile) {
   if (!profile) return;
-  const hideAll = profile.pairingPreference === "aromas-only";
+  // pairingPreference is now a multi-select array (upgraded per user
+  // feedback -- wine WITH food is a legitimate combination). Legacy
+  // string values from older stored profiles are normalized here so no
+  // one's return visit crashes on a schema mismatch.
+  const prefs = Array.isArray(profile.pairingPreference)
+    ? profile.pairingPreference
+    : (profile.pairingPreference ? [profile.pairingPreference] : []);
+  const hideAll = prefs.includes("aromas-only") && prefs.length === 1;
   ["wine", "cocktail", "mocktail", "food"].forEach(key => {
     const card = document.getElementById(`lounge-${key}-name`)?.closest(".lounge-card");
     if (card) card.classList.toggle("hidden", hideAll);
   });
   if (hideAll) return;
-  const priority = ["cocktail", "wine", "mocktail"].includes(profile.pairingPreference) ? profile.pairingPreference : null;
-  if (!priority) return;
+  // Surface every explicitly-chosen drink card first (in the user's
+  // selection order); non-priority cards keep their default order after.
   const grid = document.querySelector(".lounge-grid");
-  const priorityCard = document.getElementById(`lounge-${priority}-name`)?.closest(".lounge-card");
-  if (grid && priorityCard) grid.prepend(priorityCard);
+  if (!grid) return;
+  const priorityOrder = prefs
+    .map(p => ({ wine: "wine", cocktail: "cocktail", mocktail: "mocktail", food: "food" })[p])
+    .filter(Boolean);
+  // Iterate in reverse and prepend so the FIRST selection ends up on top.
+  priorityOrder.slice().reverse().forEach(key => {
+    const card = document.getElementById(`lounge-${key}-name`)?.closest(".lounge-card");
+    if (card) grid.prepend(card);
+  });
 }
 
 // Silent sync used both right after completion and on every return visit --
 // must never mutate state.blend (that only happens once, via
 // ttlPreloadSignatureOils at first completion) or it would re-add oils to
 // the blend on every single page load.
+// Reverse of BLEND_CAT_MOOD -- lets a resolved mood find the curated blend
+// category it belongs to, so post-completion we can route the user to a
+// pre-filtered Curated Moods view of recipes that actually match them.
+const TTL_MOOD_TO_BLEND_CAT = Object.fromEntries(
+  Object.entries(BLEND_CAT_MOOD).map(([cat, mood]) => [mood, cat])
+);
+const INTENT_TAB_LABEL = {
+  exhale: "Curated Moods — recipes tuned for release",
+  spark: "Curated Moods — recipes to reignite you",
+  romanticize: "Curated Moods — recipes for a slower today",
+  "slow-down": "Curated Moods — recipes to soften the noise",
+  celebrate: "Curated Moods — recipes worth celebrating",
+  surprise: "Curated Moods — a starting point for you"
+};
+
 function applyStoredProfile(profile) {
   if (!profile) return null;
   const moodKeys = Object.keys(MOODLAB_MOOD_PRESETS);
@@ -7352,6 +7384,60 @@ function applyStoredProfile(profile) {
   return moodKey;
 }
 
+// Human-readable summary of what the profile actually changed. Fed into
+// the post-completion orientation toast(s) so the user hears BACK the
+// answers they gave, not just a generic "tuned" claim -- which was the
+// core of the "nothing happened / waste of time" complaint.
+function ttlProfileChangeSummary(profile) {
+  const bits = [];
+  if (profile.excludedOils?.length) {
+    const names = profile.excludedOils.slice(0, 3).map(id => OILS.find(o => o.id === id)?.name).filter(Boolean);
+    if (names.length) bits.push(`Excluded ${names.join(", ")}${profile.excludedOils.length > 3 ? " (+" + (profile.excludedOils.length - 3) + " more)" : ""}`);
+  }
+  if (profile.safetyFlags?.length && !profile.safetyFlags.includes("nothing")) {
+    bits.push(`Filtered for ${profile.safetyFlags.filter(f => f !== "nothing").join(" / ")}`);
+  }
+  const prefs = Array.isArray(profile.pairingPreference) ? profile.pairingPreference : [profile.pairingPreference];
+  const drinkPrefs = prefs.filter(p => ["cocktail","wine","mocktail"].includes(p));
+  if (drinkPrefs.length) bits.push(`${drinkPrefs.join(" + ")} surfaced first in the Lounge`);
+  else if (prefs.includes("aromas-only")) bits.push("Drink/food cards hidden");
+  if (profile.adventureLevel === "trust") bits.push("Rare oils and blends surfaced");
+  else if (profile.adventureLevel === "familiar") bits.push("Common oils sorted first");
+  return bits;
+}
+
+// Post-completion orientation: land the user in Curated Moods filtered
+// to their profile's blend category, tell them (in plain words) what
+// their answers actually changed, then leave a persistent invite to the
+// full walkthrough. Not the same as auto-opening the generic tour, which
+// yanks them off the personalized view -- that was the old bad option.
+function ttlRouteToPersonalized(profile, moodKey) {
+  const cat = TTL_MOOD_TO_BLEND_CAT[moodKey];
+  const landedOnRecipes = cat && MOOD_BLENDS.some(b => b.cat === cat);
+  if (landedOnRecipes) {
+    moodBlendState.cat = cat;
+    moodBlendState.shown = 24;
+    if (typeof renderMoodBlendCats === "function") renderMoodBlendCats();
+    if (typeof renderMoodBlends === "function") renderMoodBlends();
+    if (typeof setView === "function") setView("recipes");
+  } else {
+    if (typeof setView === "function") setView("moodlab");
+  }
+  const intro = landedOnRecipes
+    ? (INTENT_TAB_LABEL[profile.sessionIntent] || "Recipes tuned to your answers")
+    : "Your Moodlab is tuned to your answers";
+  showToast(intro, 3800);
+  // 4 seconds later, tell them WHAT specifically changed. Split across
+  // two toasts so neither one is a wall of text.
+  const bits = ttlProfileChangeSummary(profile);
+  if (bits.length) {
+    setTimeout(() => showToast(bits.join(" · "), 6000), 4200);
+  }
+  // 11 seconds later, remind them the deeper tour is right there when
+  // they want it -- this replaces auto-forcing the tour on them.
+  setTimeout(() => showToast("Want a full walkthrough? Tap Tour in the corner.", 5000), 10800);
+}
+
 function ttlPreloadSignatureOils(moodKey) {
   if (!moodKey) return;
   applySessionMoodEffects(moodKey);
@@ -7365,7 +7451,7 @@ function finishTTL() {
     atmospherePreference: ttlAnswers.atmospherePreference ?? null,
     applicationMethod: ttlAnswers.applicationMethod ?? "both",
     safetyFlags: ttlAnswers.safetyFlags ?? [],
-    pairingPreference: ttlAnswers.pairingPreference ?? "aromas-only",
+    pairingPreference: ttlAnswers.pairingPreference ?? ["aromas-only"],
     adventureLevel: ttlAnswers.adventureLevel ?? "some-surprise"
   };
   safeStorageSet("vb_sensory_profile", JSON.stringify(profile));
@@ -7386,6 +7472,11 @@ function finishTTL() {
   setTimeout(() => {
     clearInterval(dustTimer);
     ttlOnboardingEl.classList.add("hidden");
+    // The completion ritual finishes -> we don't want to leave the user
+    // staring at the raw Library grid. Take them straight into the part
+    // of the app their answers actually unlocked, with an explanatory
+    // toast, then open the walkthrough so they know what each tab does.
+    ttlRouteToPersonalized(profile, moodKey);
   }, 3600);
 }
 
@@ -7403,15 +7494,21 @@ retuneBtn.addEventListener("click", () => {
   ttlOnboardingEl.classList.remove("hidden");
 });
 
-// First-run only — returning visitors (or anyone who has clicked out) skip
-// straight in. A stored profile is re-applied silently; corrupted JSON
-// (loadProfile's try/catch) just falls back to showing the flow again.
+// First-run only -- brand-new visitors see the flow; returning visitors
+// with a stored profile get it silently re-applied AND a welcome-back
+// toast pointing at the Retune button, so it's obvious the quiz already
+// ran and can be re-taken (previously they landed on the tuned dashboard
+// with no acknowledgement that anything had happened, and had to hunt for
+// the Retune button to find the quiz again). Corrupted profile JSON
+// (loadProfile's try/catch) falls through to showing the flow fresh.
 function runFirstRunFlow() {
   const profile = loadProfile();
-  if (!safeStorageGet("vb_seen_onboarding")) {
+  if (!safeStorageGet("vb_seen_onboarding") || !profile) {
     ttlOnboardingEl.classList.remove("hidden");
-  } else if (profile) {
+  } else {
     applyStoredProfile(profile);
+    // Delay so the toast doesn't fight the initial page-render churn.
+    setTimeout(() => showToast("Welcome back — your Lounge is tuned. Retune anytime with the corner button.", 5000), 700);
   }
 }
 runFirstRunFlow();
