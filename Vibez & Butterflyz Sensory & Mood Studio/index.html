@@ -7163,7 +7163,14 @@ function showTTLStep(index, opts = {}) {
   const fromEl = ttlStepEl(fromName);
   const toEl = ttlStepEl(toName);
   const run = () => {
-    document.querySelectorAll(".ttl-step").forEach(el => el.classList.add("hidden"));
+    // Clear the fade-out state from every step -- otherwise the outgoing
+    // step keeps its opacity:0 class stuck on it, and a later retune that
+    // re-opens the flow at that same step (welcome, first pass through)
+    // reveals an invisible panel: the "blank box" bug.
+    document.querySelectorAll(".ttl-step").forEach(el => {
+      el.classList.add("hidden");
+      el.classList.remove("ttl-fade-out");
+    });
     ttlIndex = index;
     if (toName === "exclusions") renderTTLExclusions();
     else if (toName !== "welcome" && toName !== "complete") renderTTLQuestion(toName);
@@ -7387,7 +7394,11 @@ retuneBtn.classList.toggle("hidden", !loadProfile());
 retuneBtn.addEventListener("click", () => {
   ttlAnswers = {};
   ttlIndex = 0;
-  document.querySelectorAll(".ttl-step").forEach(el => el.classList.add("hidden"));
+  document.querySelectorAll(".ttl-step").forEach(el => {
+    el.classList.add("hidden");
+    el.classList.remove("ttl-fade-out");
+  });
+  ttlBackdropEl.classList.remove("intent-exhale", "intent-celebrate", "intent-romanticize");
   document.getElementById("ttl-step-welcome").classList.remove("hidden");
   ttlOnboardingEl.classList.remove("hidden");
 });
