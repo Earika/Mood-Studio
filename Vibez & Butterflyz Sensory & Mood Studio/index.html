@@ -1611,7 +1611,7 @@ h3 { position: relative; }
               <input id="moodlab-tagline" type="text" placeholder="Deep work. Quiet mind." />
             </label>
             <label>Attribution
-              <input id="moodlab-attribution" type="text" value="Diffuser set by @vibezandbutterflyz" />
+              <input id="moodlab-attribution" type="text" value="Diffused by @vibezandbutterflyz" />
             </label>
             <label>Card source
               <select id="moodlab-source">
@@ -1653,8 +1653,8 @@ h3 { position: relative; }
                 <div id="mood-card-affirmation" class="mood-card-affirmation">I know what matters, and I let the rest fall away.</div>
                 <div class="mood-card-divider"></div>
                 <div id="mood-card-oils" class="mood-card-oils"></div>
-                <div id="mood-card-attribution" class="mood-card-attribution">Diffuser set by @vibezandbutterflyz</div>
-                <div class="mood-card-footer">Made in Vibez &amp; Butterflyz</div>
+                <div id="mood-card-attribution" class="mood-card-attribution">Diffused by @vibezandbutterflyz</div>
+                <div class="mood-card-footer">Made in Vibez &amp; Butterflyz Sensory &amp; Mood Studio</div>
               </div>
             </div>
           </div>
@@ -6260,7 +6260,7 @@ function applyMoodlabSource(force = false) {
   if (force || !titleInput.dataset.touched) titleInput.value = data.title || "Mood Blend";
   if (force || !themeSelect.dataset.touched) themeSelect.value = data.mood || themeSelect.value || "clarity-focus";
   if (force || !taglineInput.dataset.touched) taglineInput.value = data.tagline || getDefaultMoodline(themeSelect.value);
-  if (!attributionInput.value) attributionInput.value = "Diffuser set by @vibezandbutterflyz";
+  if (!attributionInput.value) attributionInput.value = "Diffused by @vibezandbutterflyz";
 
   assignMoodlabAffirmation(themeSelect.value, true);
   syncMoodCard();
@@ -6283,7 +6283,7 @@ function syncMoodCard() {
   const data = resolveMoodlabBlendData();
   const title = document.getElementById("moodlab-title").value.trim() || data.title || "Mood Blend";
   const tagline = document.getElementById("moodlab-tagline").value.trim() || data.tagline || "Set the mood.";
-  const attribution = document.getElementById("moodlab-attribution").value.trim() || "Diffuser set by @vibezandbutterflyz";
+  const attribution = document.getElementById("moodlab-attribution").value.trim() || "Diffused by @vibezandbutterflyz";
   const theme = document.getElementById("moodlab-theme").value || data.mood || "clarity-focus";
   const card = document.getElementById("mood-card");
   const affirmation = assignMoodlabAffirmation(theme);
@@ -6353,7 +6353,7 @@ function downloadMoodCard() {
   const title = (document.getElementById("moodlab-title").value || data.title || "Mood Blend").trim();
   const tagline = (document.getElementById("moodlab-tagline").value || data.tagline || "Set the mood.").trim();
   const affirmation = getAssignedMoodlabAffirmation();
-  const attribution = (document.getElementById("moodlab-attribution").value || "Diffuser set by @vibezandbutterflyz").trim();
+  const attribution = (document.getElementById("moodlab-attribution").value || "Diffused by @vibezandbutterflyz").trim();
   const theme = document.getElementById("moodlab-theme").value || data.mood || "clarity-focus";
   const oils = (data.oils && data.oils.length ? data.oils : [data.placeholderChip || "Build a blend in Aroma Lab"]);
   const fileName = (title || 'mood-card').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'mood-card';
@@ -6429,7 +6429,7 @@ function downloadMoodCard() {
   wrapText(ctx, attribution, size / 2, 1110, 960, 38);
   ctx.globalAlpha = 0.72;
   ctx.font = '500 22px Satoshi, Arial, sans-serif';
-  ctx.fillText('MADE IN AROMA LAB', size / 2, 1210);
+  ctx.fillText('MADE IN VIBEZ & BUTTERFLYZ SENSORY & MOOD STUDIO', size / 2, 1210);
   ctx.globalAlpha = 1;
   const link = document.createElement('a');
   link.download = `${fileName}.png`;
@@ -7375,13 +7375,24 @@ function applyStoredProfile(profile) {
     else if (profile.applicationMethod === "topical") useCaseSel.value = "topical-body";
   }
 
-  renderAll();
-  renderInlineShelf();
+  // Return visits: state.blend doesn't persist across reloads, so preload
+  // a real curated blend from the profile's mood category (same logic as
+  // first-time completion) instead of leaving the Mood Card empty and
+  // the Moodlab shelf blank on every fresh page load. Sets preloaded on
+  // the return value so callers (finishTTL) can name-check the recipe
+  // that got loaded without preloading a second time and stomping on it.
+  let preloaded = null;
+  if (typeof ttlPreloadSignatureOils === "function" && !Object.keys(state.blend).length) {
+    preloaded = ttlPreloadSignatureOils(moodKey, profile);
+  } else {
+    renderAll();
+    renderInlineShelf();
+  }
   const blendOils = Object.keys(state.blend).map(id => OILS.find(o => o.id === id)).filter(Boolean);
   renderLoungeMatrix(blendOils);
   const retuneBtn = document.getElementById("retune-btn");
   if (retuneBtn) retuneBtn.classList.remove("hidden");
-  return moodKey;
+  return { moodKey, preloaded };
 }
 
 // Human-readable summary of what the profile actually changed. Fed into
@@ -7411,9 +7422,14 @@ function ttlProfileChangeSummary(profile) {
 // their answers actually changed, then leave a persistent invite to the
 // full walkthrough. Not the same as auto-opening the generic tour, which
 // yanks them off the personalized view -- that was the old bad option.
-function ttlRouteToPersonalized(profile, moodKey) {
+function ttlRouteToPersonalized(profile, moodKey, preloaded) {
   const cat = TTL_MOOD_TO_BLEND_CAT[moodKey];
   const landedOnRecipes = cat && MOOD_BLENDS.some(b => b.cat === cat);
+  // Default: take them to Moodlab so they can see the Mood Card that just
+  // got populated. If a curated blend was loaded, land in Curated Moods
+  // filtered to that blend's category so they see the recipe pool their
+  // answers unlocked -- but with a follow-up toast that names the specific
+  // recipe currently on their Mood Card so they can find it back.
   if (landedOnRecipes) {
     moodBlendState.cat = cat;
     moodBlendState.shown = 24;
@@ -7423,24 +7439,80 @@ function ttlRouteToPersonalized(profile, moodKey) {
   } else {
     if (typeof setView === "function") setView("moodlab");
   }
-  const intro = landedOnRecipes
-    ? (INTENT_TAB_LABEL[profile.sessionIntent] || "Recipes tuned to your answers")
-    : "Your Moodlab is tuned to your answers";
-  showToast(intro, 3800);
-  // 4 seconds later, tell them WHAT specifically changed. Split across
-  // two toasts so neither one is a wall of text.
+  const intro = preloaded
+    ? `Loaded "${preloaded.name}" — your Mood Card is ready.`
+    : (landedOnRecipes
+        ? (INTENT_TAB_LABEL[profile.sessionIntent] || "Recipes tuned to your answers")
+        : "Your Moodlab is tuned to your answers");
+  showToast(intro, 4200);
   const bits = ttlProfileChangeSummary(profile);
-  if (bits.length) {
-    setTimeout(() => showToast(bits.join(" · "), 6000), 4200);
-  }
-  // 11 seconds later, remind them the deeper tour is right there when
-  // they want it -- this replaces auto-forcing the tour on them.
-  setTimeout(() => showToast("Want a full walkthrough? Tap Tour in the corner.", 5000), 10800);
+  if (bits.length) setTimeout(() => showToast(bits.join(" · "), 6000), 4600);
+  setTimeout(() => showToast("Want a full walkthrough? Tap Tour in the corner.", 5000), 11400);
 }
 
-function ttlPreloadSignatureOils(moodKey) {
-  if (!moodKey) return;
-  applySessionMoodEffects(moodKey);
+// Pick a real curated recipe from the 250-blend library whose category
+// matches the resolved mood AND that doesn't hit any of the profile's
+// exclusions or safety flags. Loads its full oil list into state.blend
+// (mirrors openMoodBlendModal's "Load into Blend" behavior) and fills
+// Moodlab with the blend's own name + affirmation. Only falls back to
+// the generic 2-3 signature oils if no matching curated blend survives
+// the profile's filters -- what was happening before this rewrite for
+// EVERY profile, which is how "calm-peace" was landing users on a
+// single Lavender oil while 250 real recipes sat one function away.
+function ttlPreloadSignatureOils(moodKey, profile) {
+  if (!moodKey) return null;
+  const cat = TTL_MOOD_TO_BLEND_CAT[moodKey];
+  if (cat) {
+    const excluded = new Set(profile?.excludedOils || []);
+    const flags = profile?.safetyFlags || [];
+    const wantsPregnancySafe = flags.includes("pregnancy-nursing");
+    const candidates = MOOD_BLENDS.filter(b => {
+      if (b.cat !== cat) return false;
+      const libs = b.oils.map(o => findLibraryOil(o.n));
+      // Reject any blend containing an oil the user explicitly excluded.
+      if (libs.some(lib => lib && excluded.has(lib.id))) return false;
+      // Reject any blend with an oil the user's safety flags rule out.
+      if (libs.some(lib => lib && ttlSafetySuppressed(lib, flags))) return false;
+      if (wantsPregnancySafe && libs.some(lib => lib && /avoid/i.test(lib.pregnancy || ""))) return false;
+      return true;
+    });
+    if (candidates.length) {
+      const blend = candidates[Math.floor(Math.random() * candidates.length)];
+      const matched = blend.oils.map(o => ({ ...o, lib: findLibraryOil(o.n) }));
+      state.blend = {};
+      matched.forEach(m => { if (m.lib) state.blend[m.lib.id] = m.p; });
+      feedMoodlabFromBlend(blend);
+      state.mood = moodKey;
+      safeStorageSet("vb_session_mood", moodKey);
+      if (typeof renderAll === "function") renderAll();
+      if (typeof renderInlineShelf === "function") renderInlineShelf();
+      return { name: blend.name, oils: blend.oils.map(o => o.n) };
+    }
+  }
+  // Fall back: load the mood's full signature-oil list into state.blend
+  // (not just 2 -- these are already curated 3-oil combos), still filtered
+  // against exclusions/safety so the fallback stays honest to the profile.
+  const preset = MOODLAB_MOOD_PRESETS[moodKey];
+  if (!preset) return null;
+  const excluded = new Set(profile?.excludedOils || []);
+  const flags = profile?.safetyFlags || [];
+  state.blend = {};
+  const added = [];
+  preset.oils.forEach(name => {
+    const oil = OILS.find(o => o.name === name);
+    if (!oil) return;
+    if (excluded.has(oil.id)) return;
+    if (ttlSafetySuppressed(oil, flags)) return;
+    state.blend[oil.id] = 2;
+    added.push(oil.name);
+  });
+  state.mood = moodKey;
+  safeStorageSet("vb_session_mood", moodKey);
+  const themeSel = document.getElementById("moodlab-theme");
+  if (themeSel) themeSel.value = moodKey;
+  if (typeof renderAll === "function") renderAll();
+  if (typeof renderInlineShelf === "function") renderInlineShelf();
+  return added.length ? { name: preset.title, oils: added } : null;
 }
 
 function finishTTL() {
@@ -7467,16 +7539,14 @@ function finishTTL() {
   const dustTimer = setInterval(() => {
     goldDustBurst(window.innerWidth / 2 + (Math.random() - 0.5) * 120, window.innerHeight * 0.6);
   }, 700);
-  const moodKey = applyStoredProfile(profile);
-  ttlPreloadSignatureOils(moodKey);
+  // applyStoredProfile now handles the curated-blend preload itself and
+  // returns what it loaded, so we don't preload twice (which would clear
+  // state.blend and re-pick a random blend, causing a visible flash).
+  const { moodKey, preloaded } = applyStoredProfile(profile);
   setTimeout(() => {
     clearInterval(dustTimer);
     ttlOnboardingEl.classList.add("hidden");
-    // The completion ritual finishes -> we don't want to leave the user
-    // staring at the raw Library grid. Take them straight into the part
-    // of the app their answers actually unlocked, with an explanatory
-    // toast, then open the walkthrough so they know what each tab does.
-    ttlRouteToPersonalized(profile, moodKey);
+    ttlRouteToPersonalized(profile, moodKey, preloaded);
   }, 3600);
 }
 
@@ -7506,9 +7576,15 @@ function runFirstRunFlow() {
   if (!safeStorageGet("vb_seen_onboarding") || !profile) {
     ttlOnboardingEl.classList.remove("hidden");
   } else {
-    applyStoredProfile(profile);
+    const { preloaded } = applyStoredProfile(profile);
     // Delay so the toast doesn't fight the initial page-render churn.
-    setTimeout(() => showToast("Welcome back — your Lounge is tuned. Retune anytime with the corner button.", 5000), 700);
+    // If a real curated blend got auto-loaded, name it so the returning
+    // user sees exactly what's on their Mood Card, not just a vague
+    // "your Lounge is tuned" claim.
+    const backMsg = preloaded
+      ? `Welcome back — "${preloaded.name}" is on your Mood Card. Retune anytime with the corner button.`
+      : "Welcome back — your Lounge is tuned. Retune anytime with the corner button.";
+    setTimeout(() => showToast(backMsg, 5500), 700);
   }
 }
 runFirstRunFlow();
