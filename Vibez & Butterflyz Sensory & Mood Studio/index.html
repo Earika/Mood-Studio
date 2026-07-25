@@ -4505,12 +4505,39 @@ const LOUNGE_MAP = {
   }
 };
 
+// The 10 app-taxonomy moods map to LOUNGE_MAP's 8 lounge moods. Used to
+// bypass inferLoungeMood's narrow keyword matching -- most curated blends
+// use oils outside that keyword set and silently fell through to "Calm",
+// making the Lounge look stagnant no matter what quiz answer produced.
+const PROFILE_MOOD_TO_LOUNGE = {
+  "calm-peace": "Calm",
+  "clarity-focus": "Focus",
+  "motivation-drive": "Focus",
+  "reenergize-reignite": "Uplift",
+  "relaxation-rest": "Sleep",
+  "self-love-being-loved": "Sensual",
+  "joy-uplift": "Uplift",
+  "confidence-power": "Grounding",
+  "renewal-rejuvenation": "Breathe",
+  "protection-strength": "Grounding"
+};
+
 function inferLoungeMood(oils) {
+  // Profile-first: if the user completed the quiz, use their mood taxonomy
+  // to pick a Lounge pairing directly. Keyword-matching a 196-oil library
+  // through a 15-keyword regex was silently defaulting to "Calm" for
+  // almost every actual curated blend.
+  if (typeof loadProfile === "function") {
+    const profile = loadProfile();
+    if (profile) {
+      const stored = safeStorageGet("vb_session_mood");
+      const key = stored && PROFILE_MOOD_TO_LOUNGE[stored]
+        ? stored
+        : (INTENT_TO_MOOD && INTENT_TO_MOOD[profile.sessionIntent]);
+      if (key && PROFILE_MOOD_TO_LOUNGE[key]) return PROFILE_MOOD_TO_LOUNGE[key];
+    }
+  }
   if (!oils.length) return "Calm";
-  // Strip parenthetical qualifiers ("Chamomile (Roman)" -> "chamomile") and
-  // match on the base name so variant/chemotype names — with or without
-  // parens ("Eucalyptus Globulus", "Rosemary (ct. Cineole)") — still hit
-  // the keyword lists below instead of only matching an exact bare name.
   const names = oils.map(o => o.name.replace(/\s*\([^)]*\)/g, "").trim().toLowerCase());
   const has = (...keywords) => names.some(n => keywords.some(kw => n === kw || n.startsWith(kw + " ")));
   if (has("rosemary","peppermint","basil","lemon")) return "Focus";
@@ -6295,8 +6322,18 @@ function syncMoodCard() {
   document.getElementById("mood-card-tagline").textContent = tagline;
   document.getElementById("mood-card-affirmation").textContent = affirmation;
   document.getElementById("mood-card-attribution").textContent = attribution;
+  // Enrich each oil name with its drop count from state.blend so the
+  // downloaded Mood Card actually functions as a recipe -- previously it
+  // listed only oil names, which meant a downloader had the ingredients
+  // but no formula. state.blend is keyed by oil.id; look up id by name.
+  const chipHtml = name => {
+    const oil = OILS.find(o => o.name === name);
+    const drops = oil ? state.blend[oil.id] : 0;
+    const label = drops ? `${drops} drop${drops === 1 ? "" : "s"} ${name}` : name;
+    return `<span class="mood-card-chip">${label}</span>`;
+  };
   document.getElementById("mood-card-oils").innerHTML = oils.length
-    ? oils.map(o => `<span class="mood-card-chip">${o}</span>`).join("")
+    ? oils.map(chipHtml).join("")
     : `<span class="mood-card-chip">${placeholder}</span>`;
 
   // The Lounge Experience cards live alongside the mood card now — keep
@@ -6414,14 +6451,22 @@ function downloadMoodCard() {
   ctx.fill();
   let chipX = 220, chipY = dividerY + 70;
   const chipGap = 16;
+  // Same enrichment as the HTML preview -- the downloaded PNG is a Mood
+  // Card recipe now, not just an ingredient list. "3 drops Lavender".
+  const chipLabel = name => {
+    const oil = OILS.find(o => o.name === name);
+    const drops = oil ? state.blend[oil.id] : 0;
+    return drops ? `${drops} drop${drops === 1 ? "" : "s"} ${name}` : name;
+  };
   oils.forEach(name => {
     ctx.font = '500 22px Satoshi, Arial, sans-serif';
-    const w = ctx.measureText(name).width + 36;
+    const label = chipLabel(name);
+    const w = ctx.measureText(label).width + 36;
     if (chipX + w > size - 220) {
       chipX = 220;
       chipY += 58;
     }
-    chipX += drawChip(ctx, name, chipX, chipY) + chipGap;
+    chipX += drawChip(ctx, label, chipX, chipY) + chipGap;
   });
   ctx.fillStyle = '#fff';
   ctx.globalAlpha = 0.88;
