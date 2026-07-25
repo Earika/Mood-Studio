@@ -994,6 +994,34 @@ h3 { position: relative; }
 /* ---- Note balance bars ---- */
 .note-bar-fill { position: relative; }
 
+/* =================== PATH RIBBON =================== */
+.path-ribbon {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 18px; padding: 10px 14px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg);
+}
+.path-step { display: flex; align-items: center; gap: 7px; opacity: 0.5; transition: opacity .2s; }
+.path-num {
+  display: flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  font-size: 10.5px; font-weight: 700; font-variant-numeric: tabular-nums;
+  background: var(--line); color: var(--ink-2);
+}
+.path-label { font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-2); }
+.path-connector { flex: 1; height: 1px; background: var(--line); min-width: 12px; }
+.path-step.done { opacity: 0.85; }
+.path-step.done .path-num { background: var(--good, #4C7A63); color: #fff; }
+.path-step.done .path-label { color: var(--ink); }
+.path-step.current { opacity: 1; }
+.path-step.current .path-num { background: linear-gradient(135deg, var(--rose), var(--violet)); color: #fff; box-shadow: 0 0 12px rgba(157,127,212,0.55); }
+.path-step.current .path-label { color: var(--ink); }
+.path-step.current + .path-connector { background: var(--violet); }
+@media (max-width: 640px) {
+  .path-ribbon { overflow-x: auto; }
+  .path-label { display: none; }
+  .path-step.current .path-label { display: inline; }
+}
+
 /* =================== CONTEXTUAL TAB HELP =================== */
 .tab-help {
   position: relative; overflow: hidden;
@@ -1317,6 +1345,18 @@ h3 { position: relative; }
       </div>
     </header>
 
+    <!-- PATH RIBBON: the whole app in four steps, always visible so the
+         intended path is discoverable without the guided walkthrough -->
+    <nav class="path-ribbon" id="path-ribbon" aria-label="Your progress: build, analyze, personalize, download">
+      <div class="path-step" data-step="build"><span class="path-num">1</span><span class="path-label">Build</span></div>
+      <div class="path-connector" aria-hidden="true"></div>
+      <div class="path-step" data-step="analyze"><span class="path-num">2</span><span class="path-label">Analyze</span></div>
+      <div class="path-connector" aria-hidden="true"></div>
+      <div class="path-step" data-step="personalize"><span class="path-num">3</span><span class="path-label">Personalize</span></div>
+      <div class="path-connector" aria-hidden="true"></div>
+      <div class="path-step" data-step="download"><span class="path-num">4</span><span class="path-label">Download</span></div>
+    </nav>
+
     <!-- CONTEXTUAL TAB HELP -->
     <div id="tab-help" class="tab-help" aria-live="polite">
       <div class="tab-help-glow" aria-hidden="true"></div>
@@ -1491,8 +1531,8 @@ h3 { position: relative; }
             </label>
             <div class="muted" style="margin:0;">A matching affirmation is assigned automatically.</div>
             <div class="moodlab-actions">
-              <button id="moodlab-generate" class="btn-primary" type="button">Preview Card</button>
-              <button id="moodlab-download" class="btn-secondary" type="button">Download PNG</button>
+              <button id="moodlab-generate" class="btn-secondary" type="button">Preview Card</button>
+              <button id="moodlab-download" class="btn-primary" type="button">Download or send your card</button>
             </div>
           </div>
           <div class="moodlab-preview-wrap">
@@ -4530,6 +4570,26 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ============ VIEW SWITCHING ============
+// Build -> Analyze -> Personalize -> Download: the whole app's intended
+// path, in four steps. Terpenes/Curated Moods are reference tools used
+// while building, so they map to the same "Build" step as the Library.
+// Reaching Moodlab means Personalize is already underway and Download is
+// the immediate, presented goal -- so it's highlighted as current there,
+// with the first three steps shown as done.
+const PATH_STEPS = ["build", "analyze", "personalize", "download"];
+function pathStepForView(v) {
+  if (v === "blend") return 1;
+  if (v === "moodlab") return 3;
+  return 0;
+}
+function updatePathRibbon() {
+  const current = pathStepForView(state.view);
+  document.querySelectorAll(".path-step").forEach((el, i) => {
+    el.classList.toggle("current", i === current);
+    el.classList.toggle("done", i < current);
+  });
+}
+
 function setView(v) {
   state.view = v;
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -4537,6 +4597,7 @@ function setView(v) {
   document.querySelectorAll(".view").forEach(el => el.classList.add("hidden"));
   document.getElementById(`view-${v}`).classList.remove("hidden");
   clearTabNudge(v); // visiting a tab is the whole point of its nudge -- clear it
+  updatePathRibbon();
   if (v === "blend") renderBlendView();
   if (v === "recipes") renderPairingSuggestions();
   if (v === "terpenes") renderTerpenes();
@@ -6408,6 +6469,7 @@ document.addEventListener("keydown", e => {
 // while the email gate / onboarding overlay is still covering the page),
 // so it must never move the page's scroll position.
 renderTabHelp("library", { scroll: false });
+updatePathRibbon();
 
 /* =================================================================== */
 /* ============ ONBOARDING: WELCOME -> MOOD QUIZ -> GUIDE ============ */
