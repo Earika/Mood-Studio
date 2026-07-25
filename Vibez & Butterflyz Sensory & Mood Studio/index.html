@@ -1241,6 +1241,59 @@ h3 { position: relative; }
   .onboarding-mood-tile { min-height: 76px; padding: 12px 8px; }
 }
 
+/* ============ TUNE THE LOUNGE — sensory profile onboarding ============ */
+/* Backdrop shifts tone per Q1 answer -- transition lives on the base rule
+   so any modifier class swap animates instead of snapping. */
+.onboarding-backdrop { transition: background 1s ease; }
+.onboarding-backdrop.intent-exhale      { background: radial-gradient(120% 100% at 50% 0%, rgba(90,60,160,0.28), rgba(8,6,16,0.88) 65%); }
+.onboarding-backdrop.intent-celebrate   { background: radial-gradient(120% 100% at 50% 0%, rgba(201,168,92,0.22), rgba(8,6,16,0.88) 65%); }
+.onboarding-backdrop.intent-romanticize { background: radial-gradient(120% 100% at 50% 0%, rgba(180,60,100,0.22), rgba(8,6,16,0.88) 65%); }
+
+/* z-index:0 here (not 1 like .onboarding-step) so the corner X (z-index:1)
+   stays clickable -- text inside a full-width eyebrow div otherwise paints
+   over the top-right corner and intercepts pointer events for the X. */
+.ttl-step { position: relative; z-index: 0; opacity: 1; transform: translateY(0); transition: opacity .3s cubic-bezier(0.22,1,0.36,1), transform .3s cubic-bezier(0.22,1,0.36,1); }
+#ttl-skip { z-index: 2; }
+.ttl-step.hidden { display: none; }
+.ttl-step.ttl-fade-out { opacity: 0; transform: translateY(8px); }
+.ttl-question-prompt { font-family: 'Zodiak', serif; }
+
+.onboarding-mood-tile.selected { border-color: var(--violet); background: var(--violet-glow); box-shadow: var(--glow-violet); }
+.onboarding-mood-tile.selected .onboarding-mood-label { color: var(--violet); }
+
+.ttl-chip-scroll {
+  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+  max-height: 40vh; max-height: 40dvh; overflow-y: auto;
+  margin-bottom: 14px; padding: 2px;
+}
+.ttl-chip-scroll .chip { min-height: 40px; }
+.ttl-chip-scroll .chip.selected { background: var(--violet-glow); border-color: var(--violet); color: var(--ink); }
+#ttl-exclude-search { margin-bottom: 12px; }
+
+.ttl-ritual-text { font-size: 15px; color: var(--ink-2); margin-top: 18px; }
+.ttl-ritual-glow { animation: ttlRitualGlow 1s ease-in-out 3; }
+@keyframes ttlRitualGlow {
+  0%, 100% { filter: drop-shadow(0 8px 14px rgba(0,0,0,0.5)) drop-shadow(0 0 16px rgba(157,127,212,0.6)); }
+  50% { filter: drop-shadow(0 10px 22px rgba(0,0,0,0.55)) drop-shadow(0 0 42px rgba(157,127,212,0.95)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ttl-step { transition: opacity .01s; }
+  .ttl-ritual-glow { animation: none; filter: drop-shadow(0 10px 22px rgba(0,0,0,0.55)) drop-shadow(0 0 30px rgba(157,127,212,0.8)); }
+}
+
+.retune-btn { bottom: 74px; }
+.retune-btn.hidden { display: none; }
+@media (max-width: 600px) {
+  .retune-btn { bottom: 64px; }
+}
+
+.bfly-gem-badge {
+  position: absolute; top: 10px; right: 10px; z-index: 1;
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700;
+  padding: 3px 7px; border-radius: 999px; color: var(--gold);
+  background: var(--gold-glow); border: 1px solid rgba(201,168,92,0.4);
+}
+
 /* Mood Quiz — multi-question, scored (see QUIZ_QUESTIONS in JS) */
 .quiz-progress { display: flex; gap: 6px; justify-content: center; margin-bottom: 16px; }
 .quiz-progress-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); transition: background 0.15s; }
@@ -1379,7 +1432,7 @@ h3 { position: relative; }
     <header class="topbar">
       <div>
         <h1>Vibez &amp; Butterflyz Sensory &amp; Mood Studio</h1>
-        <p class="lede">Load a scent, tune the mix, let the lounge meet you there. <button id="open-guide-inline" class="lede-guide-link" type="button">New here? Walk me through it →</button></p>
+        <p class="lede"><span id="lede-text">Load a scent, tune the mix, let the lounge meet you there.</span> <button id="open-guide-inline" class="lede-guide-link" type="button">New here? Walk me through it →</button></p>
       </div>
       <div class="console-nav">
         <button id="walk-me-through" class="walkme-cta" type="button">
@@ -1701,6 +1754,10 @@ h3 { position: relative; }
 </div>
 
 <!-- ============ ONBOARDING: WELCOME + MOOD QUIZ ============ -->
+<!-- TTL-LEGACY-ONBOARDING — restore on rollback. Superseded by #ttl-onboarding
+     below (the "Tune the Lounge" sensory-profile flow), which replaces both
+     the original one-tap mood grid AND the later 5-question scored quiz
+     built in commit b85c4b8. Kept commented, not deleted, per rollback policy.
 <div id="onboarding" class="onboarding hidden" role="dialog" aria-modal="true" aria-label="Welcome to Vibez & Butterflyz">
   <div class="onboarding-backdrop" id="onboarding-backdrop"></div>
   <div class="onboarding-panel">
@@ -1745,10 +1802,52 @@ h3 { position: relative; }
     </div>
   </div>
 </div>
+-->
+
+<!-- ============ TUNE THE LOUNGE — sensory profile onboarding ============ -->
+<div id="ttl-onboarding" class="onboarding hidden" role="dialog" aria-modal="true" aria-label="Tune the Lounge">
+  <div class="onboarding-backdrop" id="ttl-backdrop"></div>
+  <div class="onboarding-panel">
+    <button class="onboarding-skip" id="ttl-skip" type="button" aria-label="Skip intro">&times;</button>
+
+    <div class="ttl-step" id="ttl-step-welcome">
+      <div class="onboarding-icon" aria-hidden="true"><svg class="onboarding-emblem" viewBox="0 0 100 100"><use href="#vb-butterfly"/></svg></div>
+      <h2>Welcome to Vibez &amp; Butterflyz.</h2>
+      <p class="onboarding-lede">Before we build your experience, let's get to know your senses.<br>No right answers. Just follow your instincts.</p>
+      <button class="btn-primary onboarding-begin" id="ttl-begin" type="button">Enter the Lounge</button>
+      <button class="btn-secondary" id="ttl-skip-all" type="button">I'll explore on my own</button>
+    </div>
+
+    <div class="ttl-step hidden" id="ttl-step-question">
+      <div class="onboarding-quiz-title" id="ttl-question-eyebrow"></div>
+      <h2 class="ttl-question-prompt" id="ttl-question-prompt"></h2>
+      <div class="onboarding-mood-grid" id="ttl-question-tiles"></div>
+      <button class="btn-primary onboarding-begin hidden" id="ttl-question-next" type="button">Next &rarr;</button>
+      <button class="btn-secondary" id="ttl-question-skip" type="button">I'll explore on my own</button>
+    </div>
+
+    <div class="ttl-step hidden" id="ttl-step-exclusions">
+      <div class="onboarding-quiz-title">Before we blend anything...</div>
+      <h2 class="ttl-question-prompt">Which scents instantly ruin the vibe?</h2>
+      <input type="text" id="ttl-exclude-search" class="email-gate-input" placeholder="Search all oils…" autocomplete="off" />
+      <div class="ttl-chip-scroll" id="ttl-exclude-chips"></div>
+      <button class="btn-primary onboarding-begin" id="ttl-exclude-next" type="button">Next &rarr;</button>
+      <button class="btn-secondary" id="ttl-exclude-skip" type="button">I'll explore on my own</button>
+    </div>
+
+    <div class="ttl-step hidden" id="ttl-step-complete">
+      <div class="onboarding-icon" aria-hidden="true"><svg class="onboarding-emblem ttl-ritual-glow" viewBox="0 0 100 100"><use href="#vb-butterfly"/></svg></div>
+      <p class="ttl-ritual-text">The Lounge is tuning itself to you&hellip;</p>
+    </div>
+  </div>
+</div>
 
 <!-- ============ ALWAYS-AVAILABLE CORNER TOUR ============ -->
 <button class="site-tour-btn" id="site-tour-btn" type="button" aria-label="Take a tour of this page">
   <svg class="tour-emblem" viewBox="0 0 100 100" aria-hidden="true"><use href="#vb-butterfly"/></svg> Tour
+</button>
+<button class="site-tour-btn retune-btn hidden" id="retune-btn" type="button" aria-label="Tune the Lounge again">
+  <svg class="tour-emblem" viewBox="0 0 100 100" aria-hidden="true"><use href="#vb-butterfly"/></svg> Retune
 </button>
 
 <!-- golden dust transition layer -->
@@ -4435,6 +4534,7 @@ function renderLoungeMatrix(oils) {
   document.getElementById("lounge-mocktail-desc").textContent = data.mocktail.desc;
   document.getElementById("lounge-food-name").textContent = data.food.name;
   document.getElementById("lounge-food-desc").textContent = data.food.desc;
+  if (typeof applyLoungeVisibility === "function") applyLoungeVisibility(loadProfile());
 }
 
 // ============ INLINE PAIRING SHELF ============
@@ -4474,6 +4574,7 @@ function renderInlineShelf() {
   }
 
   // Score suggestions
+  const ttlProfile = loadProfile();
   const scores = {};
   currentIds.forEach(id => {
     const oil = OILS.find(o => o.id === id);
@@ -4484,6 +4585,8 @@ function renderInlineShelf() {
         pairName.toLowerCase().includes(x.name.toLowerCase())
       );
       if (match && !state.blend[match.id]) {
+        if (ttlProfile?.excludedOils?.includes(match.id)) return;
+        if (ttlProfile && ttlSafetySuppressed(match, ttlProfile.safetyFlags)) return;
         scores[match.id] = (scores[match.id] || 0) + 1;
       }
     });
@@ -4696,15 +4799,18 @@ function alphabetizeOils(oils) {
 
 function filteredOils() {
   const f = state.filters;
+  const profile = loadProfile();
   const filtered = OILS.filter(o => {
     if (f.search && !(`${o.name} ${o.latin} ${o.aroma.join(" ")} ${o.category}`.toLowerCase().includes(f.search))) return false;
     if (f.type.length && !f.type.includes(o.type)) return false;
     if (f.note.length && !f.note.includes(o.note)) return false;
     if (f.phototoxic && o.phototoxic) return false;
     if (f.category && o.category !== f.category) return false;
+    if (profile?.excludedOils?.includes(o.id)) return false;
+    if (profile && ttlSafetySuppressed(o, profile.safetyFlags)) return false;
     return true;
   });
-  return alphabetizeOils(filtered);
+  return ttlApplyAdventureSort(alphabetizeOils(filtered), profile);
 }
 
 // ============ BUTTERFLY CARD HELPERS ============
@@ -4764,11 +4870,14 @@ function bflyCardHTML(oil, index) {
   const inBlend = state.blend[oil.id] > 0;
   const noteClass = oil.note === "Top" ? "top" : oil.note === "Middle" ? "mid" : "base";
   const showFlipHint = index === 0 && !flipHintDismissed;
+  const ttlProfile = loadProfile();
+  const showGem = ttlProfile?.adventureLevel === "trust" && !isCommonOil(oil);
   return `
     <div class="butterfly-card ${inBlend ? "in-blend" : ""}${showFlipHint ? " show-flip-hint" : ""}" data-note="${oil.note}" data-id="${oil.id}" role="button" tabindex="0" aria-haspopup="dialog" aria-pressed="false" aria-label="${oil.name}. Tap to flip for safety details.">
       <div class="butterfly-card-inner">
         <div class="butterfly-card-face butterfly-card-front">
           ${renderBflyDust()}
+          ${showGem ? '<span class="bfly-gem-badge" aria-label="Hidden Gem — a less common oil surfaced for you">Hidden Gem</span>' : ""}
           ${showFlipHint ? '<div class="bfly-flip-hint" aria-hidden="true">Tap to flip for safety notes</div>' : ""}
           <div class="bfly-content">
             ${bflyEmblem()}
@@ -5579,14 +5688,34 @@ function findLibraryOil(name) {
 }
 
 function filteredMoodBlends() {
-  return MOOD_BLENDS.filter(b => {
+  const ttlProfile = loadProfile();
+  const filtered = MOOD_BLENDS.filter(b => {
     if (moodBlendState.cat && b.cat !== moodBlendState.cat) return false;
     if (moodBlendState.search) {
       const hay = `${b.name} ${b.cat} ${b.oils.map(o => o.n).join(" ")}`.toLowerCase();
       if (!hay.includes(moodBlendState.search)) return false;
     }
+    if (ttlProfile?.excludedOils?.length) {
+      const matchedIds = b.oils.map(o => findLibraryOil(o.n)?.id).filter(Boolean);
+      const excludedCount = matchedIds.filter(id => ttlProfile.excludedOils.includes(id)).length;
+      if (matchedIds.length && excludedCount / matchedIds.length > 0.5) return false;
+    }
+    if (ttlProfile?.safetyFlags?.includes("pregnancy-nursing")) {
+      const hasAvoidOil = b.oils.some(o => {
+        const lib = findLibraryOil(o.n);
+        return lib && /avoid/i.test(lib.pregnancy || "");
+      });
+      if (hasAvoidOil) return false;
+    }
     return true;
   });
+  // Trust adventurers get rare/experimental blends first.
+  if (ttlProfile?.adventureLevel === "trust") {
+    const rare = filtered.filter(b => b.oils.some(o => RARE_OIL_NAMES.some(rn => o.n.toLowerCase().includes(rn))));
+    const rest = filtered.filter(b => !rare.includes(b));
+    return [...rare, ...rest];
+  }
+  return filtered;
 }
 
 function renderMoodBlendCats() {
@@ -6559,10 +6688,10 @@ renderTabHelp("library", { scroll: false });
 updatePathRibbon();
 
 /* =================================================================== */
-/* ============ ONBOARDING: WELCOME -> MOOD QUIZ -> GUIDE ============ */
-/* ============ + ALWAYS-AVAILABLE CORNER TOUR ======================= */
+/* ============ LEGACY ONBOARDING/QUIZ — commented out, kept for  ==== */
+/* ============ rollback per TTL build plan. See TTL section below. == */
 /* =================================================================== */
-
+/* TTL-LEGACY-ONBOARDING
 const ONBOARDING_MOODS = [
   { key: "calm-peace", label: "Calm & Peace" },
   { key: "motivation-drive", label: "Motivation & Drive" },
@@ -6576,11 +6705,6 @@ const ONBOARDING_MOODS = [
   { key: "clarity-focus", label: "Clarity & Focus" }
 ];
 
-// The Mood Quiz — each answer awards weighted points toward one or more of
-// the 10 keys above. After the last question the highest-scoring key wins
-// and drives the recommendation (see computeQuizResult/showQuizResult below).
-// This is a first-draft question set: swap in your own copy freely, the
-// engine only cares about the shape -- { prompt, answers: [{ label, scores }] }.
 const QUIZ_QUESTIONS = [
   {
     prompt: "How does your body feel right now?",
@@ -6629,10 +6753,6 @@ const QUIZ_QUESTIONS = [
   }
 ];
 
-// Reverse of BLEND_CAT_MOOD (defined earlier, near the Curated Moods library):
-// lets a winning quiz mood look up which curated-blend category (if any)
-// actually has matching recipes, so the result can suggest a real named
-// blend instead of only the mood's 3 generic signature oils.
 const MOOD_TO_BLEND_CAT = Object.fromEntries(
   Object.entries(BLEND_CAT_MOOD).map(([cat, mood]) => [mood, cat])
 );
@@ -6670,9 +6790,6 @@ function renderOnboardingMoodGrid() {
   });
 }
 
-// Selecting a mood pre-loads its signature oils into the blend, which in turn
-// drives the Lounge pairing (inferLoungeMood reads state.blend) and Suggestions —
-// this is the single hook that ties the mood quiz to the rest of the app.
 function applySessionMoodEffects(moodKey) {
   state.mood = moodKey;
   safeStorageSet("vb_session_mood", moodKey);
@@ -6694,14 +6811,9 @@ function startOnboarding() {
   showOnboardingStep("welcome");
   renderOnboardingMoodGrid();
 }
-// Hides the panel without marking onboarding "seen" -- for accidental
-// dismissals (a stray tap on the backdrop, the corner X) that shouldn't
-// permanently skip the quiz on future visits.
 function dismissOnboarding() {
   onboardingEl.classList.add("hidden");
 }
-// Hides AND permanently marks onboarding "seen" -- only for deliberate
-// opt-outs (the labeled Skip buttons) or actually completing the quiz.
 function finishOnboarding() {
   onboardingEl.classList.add("hidden");
   safeStorageSet("vb_seen_onboarding", "true");
@@ -6712,11 +6824,6 @@ function selectOnboardingMood(moodKey) {
   openGuide({ mode: "onboarding", startAt: 0 });
 }
 
-// ---- Quiz engine ----------------------------------------------------
-// quizState.answers[i] holds the scores object for question i once
-// answered. Storing per-question (not a running total) makes Back safe:
-// re-answering a question just overwrites its slot, so totals are always
-// recomputed fresh from whatever's currently answered -- no double-counting.
 let quizState = { index: 0, answers: [] };
 let quizResultState = { topKey: null, blend: null };
 
@@ -6796,9 +6903,6 @@ function showQuizResult() {
   showOnboardingStep("result");
 }
 
-// Loading a full suggested curated blend mirrors openMoodBlendModal's
-// "Load into Blend" behavior (same state.blend shape, same Moodlab feed)
-// so the quiz result is as rich as manually browsing Curated Moods.
 function acceptQuizResult() {
   const { topKey, blend } = quizResultState;
   if (blend) {
@@ -6840,10 +6944,6 @@ document.getElementById("quiz-result-manual").addEventListener("click", () => {
   showOnboardingStep("manual");
 });
 
-// First-run only — returning visitors (or anyone who has clicked out) skip straight in.
-// No longer gated behind email capture -- the app is fully navigable from
-// the first load; see the EMAIL GATE section below for where that ask
-// actually happens now.
 function runFirstRunFlow() {
   if (!safeStorageGet("vb_seen_onboarding")) {
     startOnboarding();
@@ -6854,6 +6954,453 @@ function runFirstRunFlow() {
       const themeSel = document.getElementById("moodlab-theme");
       if (themeSel) themeSel.value = savedMood;
     }
+  }
+}
+runFirstRunFlow();
+END TTL-LEGACY-ONBOARDING */
+
+/* =================================================================== */
+/* ============ TUNE THE LOUNGE — sensory profile onboarding ========= */
+/* ============ + ALWAYS-AVAILABLE CORNER TOUR ======================= */
+/* =================================================================== */
+
+function loadProfile() {
+  try {
+    const raw = safeStorageGet("vb_sensory_profile");
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+// Bridges Q1's single-tap sessionIntent to the mood taxonomy the rest of
+// the app already runs on (Moodlab themes, Curated Moods categories).
+// "surprise" has no fixed mapping -- resolved to a random mood at answer time.
+const INTENT_TO_MOOD = {
+  exhale: "relaxation-rest",
+  spark: "reenergize-reignite",
+  romanticize: "self-love-being-loved",
+  "slow-down": "calm-peace",
+  celebrate: "joy-uplift",
+  surprise: null
+};
+const INTENT_LEDE = {
+  exhale: "Tonight feels like a reset. Let the room match.",
+  spark: "Let's get your spark back — starting now.",
+  romanticize: "Let's romanticize today, one drop at a time.",
+  "slow-down": "Let's help your mind slow down.",
+  celebrate: "We're celebrating. Let's build something worthy of the occasion.",
+  surprise: "Let's see where your senses take you."
+};
+
+// The 10 common, easy-to-find oils used by Q8's adventure sort. Matched
+// against the base name (parenthetical chemotype/origin qualifiers
+// stripped) so "Cedarwood (Atlas)" still counts as "Cedarwood" -- same
+// base-name approach as inferLoungeMood() above.
+const COMMON_OIL_NAMES = ["lavender","sweet orange","peppermint","cedarwood","rosemary","frankincense","eucalyptus","lemon","geranium","ylang ylang"];
+function isCommonOil(oil) {
+  const base = oil.name.replace(/\s*\([^)]*\)/g, "").trim().toLowerCase();
+  return COMMON_OIL_NAMES.includes(base);
+}
+// Rare/unusual oils that surface experimental Curated Moods blends first
+// when adventureLevel is "trust".
+const RARE_OIL_NAMES = ["blue tansy","galbanum","neroli","rose otto","vetiver","helichrysum"];
+
+// Reused by both the completion ritual (first-time signature-oil preload)
+// and, formerly, the legacy one-tap picker. Kept as live shared infra.
+function applySessionMoodEffects(moodKey) {
+  state.mood = moodKey;
+  safeStorageSet("vb_session_mood", moodKey);
+  const preset = MOODLAB_MOOD_PRESETS[moodKey];
+  const added = [];
+  if (preset) {
+    preset.oils.slice(0, 2).forEach(name => {
+      const oil = OILS.find(o => o.name === name);
+      if (oil) { addToBlend(oil.id, 2); added.push(oil.name); }
+    });
+  }
+  const themeSel = document.getElementById("moodlab-theme");
+  if (themeSel) themeSel.value = moodKey;
+  if (added.length) showToast(`Added ${added.join(" + ")} to your blend`);
+}
+
+// Hard filters used by filteredOils()/renderInlineShelf()/filteredMoodBlends()
+// -- maps Q6 safety flags to the oil properties already tracked in the data
+// (phototoxic, pregnancy, cautions text), same fields renderSafetyReport reads.
+function ttlSafetySuppressed(oil, flags) {
+  if (!flags || !flags.length) return false;
+  const cautionText = (oil.cautions || []).join(" ").toLowerCase();
+  if (flags.includes("pregnancy-nursing") && /avoid/i.test(oil.pregnancy || "")) return true;
+  if (flags.includes("citrus-sun") && oil.phototoxic) return true;
+  if (flags.includes("sensitive-skin") && /sensit|irritat/.test(cautionText)) return true;
+  if (flags.includes("respiratory") && /respirat|laryngospasm|asthma/.test(cautionText)) return true;
+  if (flags.includes("pets") && /\bpet[s]?\b|\bcat[s]?\b|\bdog[s]?\b/.test(cautionText)) return true;
+  return false;
+}
+
+function ttlApplyAdventureSort(sorted, profile) {
+  const level = profile?.adventureLevel;
+  if (!level || level === "some-surprise") return sorted;
+  const commons = sorted.filter(isCommonOil);
+  const others = sorted.filter(o => !isCommonOil(o));
+  if (level === "familiar") return [...commons, ...others];
+  return [...others, ...commons]; // "unexpected" and "trust" both surface non-common oils first
+}
+
+const ttlBackdropEl = document.getElementById("ttl-backdrop");
+const ttlOnboardingEl = document.getElementById("ttl-onboarding");
+
+// ---- Question configuration -----------------------------------------
+// Each entry drives the shared #ttl-step-question view. `key` is the
+// vb_sensory_profile field it writes to; `multi`+`max` govern selection;
+// `clearValues` are options that clear any selection and advance
+// immediately ("Nothing comes to mind" / "honestly-no-idea" style skips).
+const TTL_QUESTIONS = {
+  intent: {
+    key: "sessionIntent", eyebrow: "Before we blend anything...",
+    prompt: "What pulled you in today?", multi: false,
+    options: [
+      { value: "exhale", label: "I need to exhale." },
+      { value: "spark", label: "I need my spark back." },
+      { value: "romanticize", label: "I want to romanticize today." },
+      { value: "slow-down", label: "My brain won't slow down." },
+      { value: "celebrate", label: "I'm celebrating something." },
+      { value: "surprise", label: "I don't even know. Surprise me." }
+    ]
+  },
+  scent: {
+    key: "preferredFamilies", eyebrow: "Getting to know your senses",
+    prompt: "What usually catches your attention first?", multi: true, max: 3,
+    clearValues: ["honestly-no-idea"],
+    options: [
+      { value: "fresh-citrus", label: "Fresh Citrus" },
+      { value: "cozy-woods", label: "Cozy Woods" },
+      { value: "clean-herbs", label: "Clean Herbs" },
+      { value: "florals", label: "Florals" },
+      { value: "deep-resin", label: "Deep Resin" },
+      { value: "sweet-comforts", label: "Sweet Comforts" },
+      { value: "earth-rain", label: "Earth & Rain" },
+      { value: "honestly-no-idea", label: "Honestly, no idea." }
+    ]
+  },
+  atmosphere: {
+    key: "atmospherePreference", eyebrow: "Setting the room",
+    prompt: "When someone walks into your space, what do you hope they notice first?", multi: false,
+    options: [
+      { value: "peaceful", label: "Peaceful" },
+      { value: "luxurious", label: "Luxurious" },
+      { value: "clean", label: "Clean" },
+      { value: "warm", label: "Warm" },
+      { value: "alive", label: "Alive" },
+      { value: "incredible-scent", label: "Incredible scent" }
+    ]
+  },
+  application: {
+    key: "applicationMethod", eyebrow: "Where it lives",
+    prompt: "Where will today's blend live?", multi: false,
+    options: [
+      { value: "diffuser", label: "Floating through the room" },
+      { value: "topical", label: "Worn on my skin" },
+      { value: "both", label: "Both" }
+    ]
+  },
+  safety: {
+    key: "safetyFlags", eyebrow: "Quick check",
+    prompt: "Anything the lounge should know?", multi: true,
+    clearValues: ["nothing"],
+    options: [
+      { value: "sensitive-skin", label: "Sensitive skin" },
+      { value: "pregnancy-nursing", label: "Pregnancy / nursing" },
+      { value: "respiratory", label: "Respiratory sensitivity" },
+      { value: "pets", label: "Pets in the home" },
+      { value: "citrus-sun", label: "Sun exposure planned" },
+      { value: "nothing", label: "Nothing comes to mind" }
+    ]
+  },
+  pairing: {
+    key: "pairingPreference", eyebrow: "Setting the table",
+    prompt: "What's joining us tonight?", multi: false,
+    options: [
+      { value: "tea", label: "Tea" },
+      { value: "cocktail", label: "Cocktail" },
+      { value: "wine", label: "Wine" },
+      { value: "mocktail", label: "Mocktail" },
+      { value: "food", label: "Food" },
+      { value: "aromas-only", label: "Aromas only" }
+    ]
+  },
+  adventure: {
+    key: "adventureLevel", eyebrow: "Last one",
+    prompt: "How adventurous are your senses?", multi: false,
+    options: [
+      { value: "familiar", label: "Keep it familiar." },
+      { value: "some-surprise", label: "A little surprise is nice." },
+      { value: "unexpected", label: "Show me something unexpected." },
+      { value: "trust", label: "I trust the Lounge." }
+    ]
+  }
+};
+
+// Order of logical steps. "exclusions" is its own bespoke view (searchable
+// chip picker); everything else reuses #ttl-step-question.
+const TTL_FLOW = ["welcome", "intent", "scent", "exclusions", "atmosphere", "application", "safety", "pairing", "adventure", "complete"];
+
+let ttlIndex = 0;
+let ttlAnswers = {};
+let ttlSelectedTiles = []; // working multi-select state for the current question
+
+function ttlStepEl(name) {
+  if (name === "welcome") return document.getElementById("ttl-step-welcome");
+  if (name === "exclusions") return document.getElementById("ttl-step-exclusions");
+  if (name === "complete") return document.getElementById("ttl-step-complete");
+  return document.getElementById("ttl-step-question");
+}
+
+// Fades the current step out, swaps content, fades the next step in --
+// steps 1/2/4/5/6/7/8 all share the same #ttl-step-question container, so
+// "swap content" for those means re-rendering the question inside it.
+function showTTLStep(index, opts = {}) {
+  const fromName = TTL_FLOW[ttlIndex];
+  const toName = TTL_FLOW[index];
+  const fromEl = ttlStepEl(fromName);
+  const toEl = ttlStepEl(toName);
+  const run = () => {
+    document.querySelectorAll(".ttl-step").forEach(el => el.classList.add("hidden"));
+    ttlIndex = index;
+    if (toName === "exclusions") renderTTLExclusions();
+    else if (toName !== "welcome" && toName !== "complete") renderTTLQuestion(toName);
+    toEl.classList.remove("hidden");
+    toEl.classList.add("ttl-fade-out");
+    requestAnimationFrame(() => requestAnimationFrame(() => toEl.classList.remove("ttl-fade-out")));
+  };
+  if (opts.immediate || !fromEl || fromEl === toEl) { run(); return; }
+  fromEl.classList.add("ttl-fade-out");
+  setTimeout(run, 300);
+}
+
+function ttlAdvance() {
+  // The step immediately before "complete" is the adventure question;
+  // moving off it triggers finishTTL (which handles the ritual + save +
+  // profile apply + eventual overlay dismiss) instead of a plain fade.
+  if (ttlIndex >= TTL_FLOW.length - 2) { finishTTL(); return; }
+  showTTLStep(ttlIndex + 1);
+}
+
+function renderTTLQuestion(name) {
+  const cfg = TTL_QUESTIONS[name];
+  ttlSelectedTiles = [];
+  document.getElementById("ttl-question-eyebrow").textContent = cfg.eyebrow;
+  document.getElementById("ttl-question-prompt").textContent = cfg.prompt;
+  const tiles = document.getElementById("ttl-question-tiles");
+  const nextBtn = document.getElementById("ttl-question-next");
+  tiles.innerHTML = cfg.options.map(o => `
+    <button class="onboarding-mood-tile" data-value="${o.value}" type="button">
+      <span class="onboarding-mood-label">${o.label}</span>
+    </button>`).join("");
+
+  const commit = () => {
+    ttlAnswers[cfg.key] = cfg.multi ? [...ttlSelectedTiles] : ttlSelectedTiles[0];
+    if (name === "intent") ttlApplyIntentBackdrop(ttlSelectedTiles[0]);
+    ttlAdvance();
+  };
+
+  tiles.querySelectorAll(".onboarding-mood-tile").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const value = btn.dataset.value;
+      if (cfg.clearValues && cfg.clearValues.includes(value)) {
+        ttlSelectedTiles = [];
+        commit();
+        return;
+      }
+      if (cfg.multi) {
+        const already = ttlSelectedTiles.includes(value);
+        if (already) {
+          ttlSelectedTiles = ttlSelectedTiles.filter(v => v !== value);
+        } else {
+          if (cfg.max && ttlSelectedTiles.length >= cfg.max) return;
+          ttlSelectedTiles.push(value);
+        }
+        btn.classList.toggle("selected", !already);
+        nextBtn.classList.toggle("hidden", ttlSelectedTiles.length === 0);
+      } else {
+        ttlSelectedTiles = [value];
+        commit();
+      }
+    });
+  });
+  nextBtn.classList.toggle("hidden", !cfg.multi);
+  nextBtn.onclick = commit;
+}
+
+function ttlApplyIntentBackdrop(intent) {
+  ttlBackdropEl.classList.remove("intent-exhale", "intent-celebrate", "intent-romanticize");
+  if (intent === "exhale" || intent === "celebrate" || intent === "romanticize") {
+    ttlBackdropEl.classList.add(`intent-${intent}`);
+  }
+}
+
+// ---- Step 3: searchable oil-exclusion chip picker --------------------
+let ttlExcludeSelected = [];
+function renderTTLExclusions() {
+  ttlExcludeSelected = [];
+  const chipsEl = document.getElementById("ttl-exclude-chips");
+  const searchEl = document.getElementById("ttl-exclude-search");
+  searchEl.value = "";
+  const names = OILS.map(o => ({ id: o.id, name: o.name })).sort((a, b) => a.name.localeCompare(b.name));
+  chipsEl.innerHTML = names.map(o => `<button class="chip" type="button" data-id="${o.id}">${o.name}</button>`).join("");
+  chipsEl.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const id = chip.dataset.id;
+      const idx = ttlExcludeSelected.indexOf(id);
+      if (idx === -1) { ttlExcludeSelected.push(id); chip.classList.add("selected"); }
+      else { ttlExcludeSelected.splice(idx, 1); chip.classList.remove("selected"); }
+    });
+  });
+  // No autofocus: focusing an input inside a fixed-position overlay makes
+  // mobile browsers scroll the whole document trying to bring it into view.
+  searchEl.oninput = () => {
+    const q = searchEl.value.trim().toLowerCase();
+    chipsEl.querySelectorAll(".chip").forEach(chip => {
+      chip.style.display = chip.textContent.toLowerCase().includes(q) ? "" : "none";
+    });
+  };
+}
+document.getElementById("ttl-exclude-next").addEventListener("click", () => {
+  ttlAnswers.excludedOils = [...ttlExcludeSelected];
+  ttlAdvance();
+});
+document.getElementById("ttl-exclude-skip").addEventListener("click", finishTTLSkip);
+
+document.getElementById("ttl-begin").addEventListener("click", () => showTTLStep(1));
+document.getElementById("ttl-skip-all").addEventListener("click", finishTTLSkip);
+document.getElementById("ttl-question-skip").addEventListener("click", finishTTLSkip);
+document.getElementById("ttl-skip").addEventListener("click", dismissTTL);
+document.getElementById("ttl-backdrop").addEventListener("click", dismissTTL);
+
+// Hides the panel without marking onboarding "seen" -- an accidental
+// dismissal (stray backdrop tap, corner X) shouldn't permanently skip the
+// flow on future visits. Mirrors the legacy dismissOnboarding() behavior.
+function dismissTTL() {
+  ttlOnboardingEl.classList.add("hidden");
+}
+// Deliberate opt-out ("I'll explore on my own"): hide + mark seen, but
+// write nothing to vb_sensory_profile -- current app behavior stays as-is.
+function finishTTLSkip() {
+  ttlOnboardingEl.classList.add("hidden");
+  safeStorageSet("vb_seen_onboarding", "true");
+}
+
+function ttlTriggerButterflyScatter() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const w = window.innerWidth, h = window.innerHeight;
+  [0, 220, 440].forEach(delay => {
+    setTimeout(() => goldDustBurst(w * (0.25 + Math.random() * 0.5), h * (0.25 + Math.random() * 0.5)), delay);
+  });
+}
+
+// Post-completion Lounge card visibility/order -- kept separate from
+// inferLoungeMood() and called at the tail of renderLoungeMatrix() so it
+// never has to be chased down at every one of that function's call sites.
+function applyLoungeVisibility(profile) {
+  if (!profile) return;
+  const hideAll = profile.pairingPreference === "aromas-only";
+  ["wine", "cocktail", "mocktail", "food"].forEach(key => {
+    const card = document.getElementById(`lounge-${key}-name`)?.closest(".lounge-card");
+    if (card) card.classList.toggle("hidden", hideAll);
+  });
+  if (hideAll) return;
+  const priority = ["cocktail", "wine", "mocktail"].includes(profile.pairingPreference) ? profile.pairingPreference : null;
+  if (!priority) return;
+  const grid = document.querySelector(".lounge-grid");
+  const priorityCard = document.getElementById(`lounge-${priority}-name`)?.closest(".lounge-card");
+  if (grid && priorityCard) grid.prepend(priorityCard);
+}
+
+// Silent sync used both right after completion and on every return visit --
+// must never mutate state.blend (that only happens once, via
+// ttlPreloadSignatureOils at first completion) or it would re-add oils to
+// the blend on every single page load.
+function applyStoredProfile(profile) {
+  if (!profile) return null;
+  const moodKeys = Object.keys(MOODLAB_MOOD_PRESETS);
+  const moodKey = INTENT_TO_MOOD[profile.sessionIntent] || moodKeys[Math.floor(Math.random() * moodKeys.length)];
+  state.mood = moodKey;
+  safeStorageSet("vb_session_mood", moodKey);
+  const themeSel = document.getElementById("moodlab-theme");
+  if (themeSel) themeSel.value = moodKey;
+
+  const ledeText = document.getElementById("lede-text");
+  if (ledeText && INTENT_LEDE[profile.sessionIntent]) ledeText.textContent = INTENT_LEDE[profile.sessionIntent];
+
+  const useCaseSel = document.getElementById("use-case");
+  if (useCaseSel) {
+    if (profile.applicationMethod === "diffuser") useCaseSel.value = "diffusion";
+    else if (profile.applicationMethod === "topical") useCaseSel.value = "topical-body";
+  }
+
+  renderAll();
+  renderInlineShelf();
+  const blendOils = Object.keys(state.blend).map(id => OILS.find(o => o.id === id)).filter(Boolean);
+  renderLoungeMatrix(blendOils);
+  const retuneBtn = document.getElementById("retune-btn");
+  if (retuneBtn) retuneBtn.classList.remove("hidden");
+  return moodKey;
+}
+
+function ttlPreloadSignatureOils(moodKey) {
+  if (!moodKey) return;
+  applySessionMoodEffects(moodKey);
+}
+
+function finishTTL() {
+  const profile = {
+    sessionIntent: ttlAnswers.sessionIntent ?? "surprise",
+    preferredFamilies: ttlAnswers.preferredFamilies ?? [],
+    excludedOils: ttlAnswers.excludedOils ?? [],
+    atmospherePreference: ttlAnswers.atmospherePreference ?? null,
+    applicationMethod: ttlAnswers.applicationMethod ?? "both",
+    safetyFlags: ttlAnswers.safetyFlags ?? [],
+    pairingPreference: ttlAnswers.pairingPreference ?? "aromas-only",
+    adventureLevel: ttlAnswers.adventureLevel ?? "some-surprise"
+  };
+  safeStorageSet("vb_sensory_profile", JSON.stringify(profile));
+  safeStorageSet("vb_seen_onboarding", "true");
+  // Directly reveal the complete step (skipping the shared question
+  // fade-transition to avoid the ritual flashing before content mounts).
+  document.querySelectorAll(".ttl-step").forEach(el => el.classList.add("hidden"));
+  ttlIndex = TTL_FLOW.length - 1;
+  document.getElementById("ttl-step-complete").classList.remove("hidden");
+  if (profile.adventureLevel === "trust") ttlTriggerButterflyScatter();
+  // Ambient dust drift while the ritual text is up, reusing the existing
+  // particle system (already a no-op under prefers-reduced-motion).
+  const dustTimer = setInterval(() => {
+    goldDustBurst(window.innerWidth / 2 + (Math.random() - 0.5) * 120, window.innerHeight * 0.6);
+  }, 700);
+  const moodKey = applyStoredProfile(profile);
+  ttlPreloadSignatureOils(moodKey);
+  setTimeout(() => {
+    clearInterval(dustTimer);
+    ttlOnboardingEl.classList.add("hidden");
+  }, 3600);
+}
+
+const retuneBtn = document.getElementById("retune-btn");
+retuneBtn.classList.toggle("hidden", !loadProfile());
+retuneBtn.addEventListener("click", () => {
+  ttlAnswers = {};
+  ttlIndex = 0;
+  document.querySelectorAll(".ttl-step").forEach(el => el.classList.add("hidden"));
+  document.getElementById("ttl-step-welcome").classList.remove("hidden");
+  ttlOnboardingEl.classList.remove("hidden");
+});
+
+// First-run only — returning visitors (or anyone who has clicked out) skip
+// straight in. A stored profile is re-applied silently; corrupted JSON
+// (loadProfile's try/catch) just falls back to showing the flow again.
+function runFirstRunFlow() {
+  const profile = loadProfile();
+  if (!safeStorageGet("vb_seen_onboarding")) {
+    ttlOnboardingEl.classList.remove("hidden");
+  } else if (profile) {
+    applyStoredProfile(profile);
   }
 }
 runFirstRunFlow();
