@@ -790,6 +790,11 @@ a { color: var(--violet); }
 /* soft dark vignette so white text stays legible on lighter mood themes */
 .mood-card-inner::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(120% 90% at 50% 60%, transparent 40%, rgba(0,0,0,0.22) 100%); border-radius: inherit; }
 .mood-card-brand { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.8; margin-bottom: 16px; }
+/* Butterfly emblem now replaces the top brand text on the Mood Card.
+   One clean visual mark instead of a wordy small-caps line -- reads
+   as a recognizable brand icon on social shares. */
+.mood-card-emblem { display: flex; justify-content: center; margin-bottom: 16px; }
+.mood-card-emblem svg { width: 44px; height: 44px; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3)) drop-shadow(0 0 12px rgba(255,255,255,0.15)); }
 .mood-card h2 { color: #fff; font-size: 28px; margin-bottom: 8px; }
 .mood-card-tagline { font-size: 14px; line-height: 1.4; opacity: 0.9; margin-bottom: 14px; }
 .mood-card-affirmation { font-size: 16px; line-height: 1.6; max-width: 340px; margin: 0 auto 20px; opacity: 0.95; }
@@ -841,6 +846,8 @@ a { color: var(--violet); }
   .mood-card { width: 100%; aspect-ratio: auto; min-height: 380px; }
   .mood-card-inner { padding: 24px 20px; justify-content: flex-start; }
   .mood-card-brand { font-size: 9px; margin-bottom: 12px; }
+  .mood-card-emblem svg { width: 38px; height: 38px; }
+  .mood-card-emblem { margin-bottom: 12px; }
   .mood-card h2 { font-size: 22px; margin-bottom: 6px; }
   .mood-card-tagline { font-size: 13px; margin-bottom: 10px; }
   .mood-card-affirmation { font-size: 14px; line-height: 1.5; margin-bottom: 16px; }
@@ -1716,7 +1723,9 @@ h3 { position: relative; }
           <div class="moodlab-preview-wrap">
             <div id="mood-card" class="mood-card theme-clarity-focus">
               <div class="mood-card-inner">
-                <div class="mood-card-brand">Vibez &amp; Butterflyz Blendz</div>
+                <div class="mood-card-emblem" aria-label="Vibez &amp; Butterflyz emblem">
+                  <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#vb-butterfly"/></svg>
+                </div>
                 <h2 id="mood-card-title">Focus Blend</h2>
                 <div id="mood-card-tagline" class="mood-card-tagline">Deep work. Quiet mind.</div>
                 <div id="mood-card-affirmation" class="mood-card-affirmation">I know what matters, and I let the rest fall away.</div>
@@ -6466,7 +6475,25 @@ function drawChip(ctx, text, x, y) {
   return w;
 }
 
-function downloadMoodCard() {
+// Preload the butterfly emblem as an Image once, cached, so canvas
+// download can drawImage it. The SVG symbol embeds a base64 PNG; we
+// pull the data URI straight from the DOM.
+let _butterflyImagePromise = null;
+function loadButterflyImage() {
+  if (_butterflyImagePromise) return _butterflyImagePromise;
+  _butterflyImagePromise = new Promise((resolve) => {
+    const src = document.querySelector('#vb-butterfly image');
+    const href = src && (src.getAttribute('href') || src.getAttribute('xlink:href'));
+    if (!href) return resolve(null);
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = href;
+  });
+  return _butterflyImagePromise;
+}
+
+async function downloadMoodCard() {
   const data = resolveMoodlabBlendData();
   const title = (document.getElementById("moodlab-title").value || data.title || "Mood Blend").trim();
   const tagline = (document.getElementById("moodlab-tagline").value || data.tagline || "Set the mood.").trim();
@@ -6511,9 +6538,16 @@ function downloadMoodCard() {
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  ctx.font = '500 30px Satoshi, Arial, sans-serif';
-  ctx.globalAlpha = 0.9;
-  ctx.fillText('VIBEZ & BUTTERFLYZ BLENDZ', size / 2, 170);
+  // Butterfly emblem replaces the old "VIBEZ & BUTTERFLYZ BLENDZ" text
+  // line -- matches the site-preview card design. Skip silently if the
+  // image can't load; the card still ships without the mark rather than
+  // crashing the download.
+  const butterfly = await loadButterflyImage();
+  if (butterfly) {
+    const bSize = 130;
+    ctx.globalAlpha = 0.95;
+    ctx.drawImage(butterfly, (size - bSize) / 2, 90, bSize, bSize);
+  }
   ctx.globalAlpha = 1;
   ctx.font = '600 88px Georgia, Times New Roman, serif';
   const titleLines = wrapText(ctx, title, size / 2, 340, 980, 98);
