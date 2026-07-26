@@ -1664,27 +1664,23 @@ h3 { position: relative; }
         <p class="muted">Turn your current blend into a shareable mood card for Vibez & Butterflyz.</p>
         <div class="moodlab-layout">
           <div class="moodlab-controls">
+            <label>Card source
+              <select id="moodlab-source">
+                <option value="my-blend">My blend</option>
+                <option value="curated">A curated blend</option>
+              </select>
+            </label>
+            <label id="moodlab-curated-wrap" class="moodlab-conditional hidden">
+              Which curated blend?
+              <select id="moodlab-curated"></select>
+            </label>
             <label>Blend title
               <input id="moodlab-title" type="text" placeholder="Focus Blend" />
             </label>
-            <label>Mood line
+            <label>Subtitle
               <input id="moodlab-tagline" type="text" placeholder="Deep work. Quiet mind." />
             </label>
-            <label>Attribution
-              <input id="moodlab-attribution" type="text" value="Diffused by @vibezandbutterflyz" />
-            </label>
-            <label>Card source
-              <select id="moodlab-source">
-                <option value="mood-preset">Mood preset</option>
-                <option value="suggested">Suggested blend</option>
-                <option value="my-blend">My current blend</option>
-              </select>
-            </label>
-            <label id="moodlab-suggested-wrap" class="moodlab-conditional hidden">
-              Suggested blend
-              <select id="moodlab-suggested"></select>
-            </label>
-            <label>Mood
+            <label>Vibez
               <select id="moodlab-theme">
                 <option value="calm-peace">Calm &amp; Peace</option>
                 <option value="motivation-drive">Motivation &amp; Drive</option>
@@ -1698,7 +1694,10 @@ h3 { position: relative; }
                 <option value="clarity-focus">Clarity &amp; Focus</option>
               </select>
             </label>
-            <div class="muted" style="margin:0;">A matching affirmation is assigned automatically.</div>
+            <label>Diffused by (optional)
+              <input id="moodlab-attribution" type="text" placeholder="@yourhandle" />
+            </label>
+            <div class="muted" style="margin:0;">A matching affirmation is assigned automatically for the vibe you set.</div>
             <div class="moodlab-actions">
               <button id="moodlab-generate" class="btn-secondary" type="button">Preview Card</button>
               <button id="moodlab-download" class="btn-primary" type="button">Download or send your card</button>
@@ -4802,18 +4801,15 @@ document.addEventListener("DOMContentLoaded", () => {
     applyMoodlabSource(true);
   });
 
-  document.getElementById("moodlab-suggested").addEventListener("change", e => {
-    e.target.dataset.selectedIndex = e.target.value;
+  document.getElementById("moodlab-curated").addEventListener("change", e => {
+    e.target.dataset.touched = "true";
+    moodlabAffirmationOverride = null;
     applyMoodlabSource(true);
   });
 
   document.getElementById("moodlab-theme").addEventListener("change", e => {
     e.target.dataset.touched = "true";
     moodlabAffirmationOverride = null; // manual mood change → fresh affirmation for that mood
-    if (document.getElementById("moodlab-source").value === "mood-preset") {
-      applyMoodlabSource(true);
-      return;
-    }
     if (!document.getElementById("moodlab-tagline").dataset.touched) {
       document.getElementById("moodlab-tagline").value = getDefaultMoodline(e.target.value);
     }
@@ -6217,17 +6213,6 @@ function titleFromOilNames(names) {
   return `${names[0]} + Blend`;
 }
 
-function getMoodPresetData(theme) {
-  const preset = MOODLAB_MOOD_PRESETS[theme] || MOODLAB_MOOD_PRESETS["clarity-focus"];
-  return {
-    title: preset.title,
-    tagline: preset.tagline,
-    oils: [...preset.oils],
-    mood: theme,
-    placeholderChip: ""
-  };
-}
-
 function getMyBlendData() {
   const names = getCurrentBlendNames();
   const mood = names.length ? getMoodlabThemeFromBlend(names) : document.getElementById("moodlab-theme").value || "clarity-focus";
@@ -6236,115 +6221,61 @@ function getMyBlendData() {
     tagline: getDefaultMoodline(mood),
     oils: names,
     mood,
-    placeholderChip: names.length ? "" : "Build a blend or load a Curated Mood"
+    placeholderChip: names.length ? "" : "Build a blend in Oil Library, or switch to \"A curated blend\""
   };
 }
 
-function computeSuggestedBlendOptions() {
-  const currentIds = Object.keys(state.blend);
-  if (!currentIds.length) return [];
-
-  const scores = {};
-  currentIds.forEach(id => {
-    const oil = OILS.find(o => o.id === id);
-    if (!oil) return;
-    oil.pairs_with.forEach(pairName => {
-      const matched = OILS.find(o => o.name.toLowerCase().includes(pairName.toLowerCase()) || pairName.toLowerCase().includes(o.name.toLowerCase()));
-      if (matched && !state.blend[matched.id]) scores[matched.id] = (scores[matched.id] || 0) + 1;
-    });
-  });
-
-  const ranked = Object.entries(scores)
-    .sort((a, b) => b[1] - a[1])
-    .map(([id]) => OILS.find(o => o.id === id))
-    .filter(Boolean)
-    .slice(0, 4);
-
-  const baseNames = getCurrentBlendNames().slice(0, 3);
-  const options = [];
-
-  if (ranked[0]) {
-    const oils = [...baseNames, ranked[0].name];
-    const mood = getMoodlabThemeFromBlend(oils);
-    options.push({
-      label: `${baseNames[0] || "Blend"} + ${ranked[0].name}`,
-      title: `${ranked[0].name} Lift`,
-      tagline: getDefaultMoodline(mood),
-      oils,
-      mood
-    });
-  }
-
-  if (ranked[0] && ranked[1]) {
-    const oils = [...baseNames.slice(0, 2), ranked[0].name, ranked[1].name];
-    const mood = getMoodlabThemeFromBlend(oils);
-    options.push({
-      label: `${ranked[0].name} + ${ranked[1].name} support`,
-      title: `${ranked[0].name} Harmony`,
-      tagline: getDefaultMoodline(mood),
-      oils,
-      mood
-    });
-  }
-
-  if (ranked[0] && ranked[1] && ranked[2]) {
-    const oils = [ranked[0].name, ranked[1].name, ranked[2].name];
-    const mood = getMoodlabThemeFromBlend(oils);
-    options.push({
-      label: `${ranked[0].name}, ${ranked[1].name} & ${ranked[2].name}`,
-      title: "Harmonizing Trio",
-      tagline: getDefaultMoodline(mood),
-      oils,
-      mood
-    });
-  }
-
-  return options;
-}
-
-function populateSuggestedBlendOptions() {
-  const wrap = document.getElementById("moodlab-suggested-wrap");
-  const select = document.getElementById("moodlab-suggested");
-  const options = computeSuggestedBlendOptions();
-  if (!options.length) {
-    wrap.classList.add("hidden");
-    select.innerHTML = "";
-    return options;
-  }
-  wrap.classList.remove("hidden");
-  select.innerHTML = options.map((opt, idx) => `<option value="${idx}">${opt.label}</option>`).join("");
-  if (select.dataset.selectedIndex && Number(select.dataset.selectedIndex) < options.length) {
-    select.value = select.dataset.selectedIndex;
-  } else {
-    select.value = "0";
-    select.dataset.selectedIndex = "0";
-  }
-  return options;
-}
-
-function getSuggestedBlendData() {
-  const options = computeSuggestedBlendOptions();
-  if (!options.length) {
-    const mood = document.getElementById("moodlab-theme").value || "clarity-focus";
+// A curated blend as the Mood Card source: reads from MOOD_BLENDS by
+// the picker's selected index. Doesn't touch state.blend -- lets the
+// user preview any of the 500 recipes as a card without overwriting
+// what they've been building in Blend Analyzer.
+function getCuratedBlendData() {
+  const select = document.getElementById("moodlab-curated");
+  const idx = Number(select.value);
+  const blend = MOOD_BLENDS[idx];
+  if (!blend) {
+    const themeSel = document.getElementById("moodlab-theme");
     return {
-      title: "Suggested Blend",
-      tagline: getDefaultMoodline(mood),
+      title: "Curated Blend",
+      tagline: getDefaultMoodline(themeSel.value || "clarity-focus"),
       oils: [],
-      mood,
-      placeholderChip: "Build a blend to unlock suggestions"
+      mood: themeSel.value || "clarity-focus",
+      placeholderChip: "Pick a curated blend from the dropdown"
     };
   }
-  const select = document.getElementById("moodlab-suggested");
-  const idx = Math.min(Number(select.value) || 0, options.length - 1);
-  select.dataset.selectedIndex = String(idx);
-  return { ...options[idx], placeholderChip: "" };
+  return {
+    title: blend.name,
+    tagline: getDefaultMoodline(BLEND_CAT_MOOD[blend.cat] || "clarity-focus"),
+    oils: blend.oils.map(o => o.n),
+    mood: BLEND_CAT_MOOD[blend.cat] || "clarity-focus",
+    // Drop counts for the curated blend come from the recipe's own
+    // parts (b.oils[i].p) rather than state.blend, so the card reads
+    // as a real recipe even when the user hasn't loaded it into their
+    // active blend.
+    oilDrops: Object.fromEntries(blend.oils.map(o => [o.n, o.p])),
+    placeholderChip: ""
+  };
+}
+
+function populateCuratedBlendOptions() {
+  const select = document.getElementById("moodlab-curated");
+  if (select.dataset.populated === "true") return;
+  // Group by category so 500 blends stay browsable via native optgroup.
+  const byCat = {};
+  MOOD_BLENDS.forEach((b, idx) => {
+    if (!byCat[b.cat]) byCat[b.cat] = [];
+    byCat[b.cat].push({ idx, name: b.name });
+  });
+  const html = Object.entries(byCat).map(([cat, blends]) =>
+    `<optgroup label="${cat}">${blends.map(b => `<option value="${b.idx}">${b.name}</option>`).join("")}</optgroup>`
+  ).join("");
+  select.innerHTML = html;
+  select.dataset.populated = "true";
 }
 
 function resolveMoodlabBlendData() {
   const source = document.getElementById("moodlab-source").value;
-  const theme = document.getElementById("moodlab-theme").value || "clarity-focus";
-  if (source === "mood-preset") return getMoodPresetData(theme);
-  if (source === "suggested") return getSuggestedBlendData();
+  if (source === "curated") return getCuratedBlendData();
   return getMyBlendData();
 }
 
@@ -6353,13 +6284,15 @@ function applyMoodlabSource(force = false) {
   const themeSelect = document.getElementById("moodlab-theme");
   const titleInput = document.getElementById("moodlab-title");
   const taglineInput = document.getElementById("moodlab-tagline");
-  const attributionInput = document.getElementById("moodlab-attribution");
-  const suggestedWrap = document.getElementById("moodlab-suggested-wrap");
+  const curatedWrap = document.getElementById("moodlab-curated-wrap");
 
-  if (sourceSelect.value === "suggested") {
-    populateSuggestedBlendOptions();
+  // Show the curated picker only when "A curated blend" is the source.
+  // Populate lazily on first reveal (500 optgroup entries).
+  if (sourceSelect.value === "curated") {
+    populateCuratedBlendOptions();
+    curatedWrap.classList.remove("hidden");
   } else {
-    suggestedWrap.classList.add("hidden");
+    curatedWrap.classList.add("hidden");
   }
 
   const data = resolveMoodlabBlendData();
@@ -6367,7 +6300,10 @@ function applyMoodlabSource(force = false) {
   if (force || !titleInput.dataset.touched) titleInput.value = data.title || "Mood Blend";
   if (force || !themeSelect.dataset.touched) themeSelect.value = data.mood || themeSelect.value || "clarity-focus";
   if (force || !taglineInput.dataset.touched) taglineInput.value = data.tagline || getDefaultMoodline(themeSelect.value);
-  if (!attributionInput.value) attributionInput.value = "Diffused by @vibezandbutterflyz";
+  // Attribution: never pre-fill. The old default value "Diffused by
+  // @vibezandbutterflyz" got mistaken for a locked system label. Users
+  // choose whether to add a handle; if the field is empty the card
+  // simply omits the attribution line (see syncMoodCard/downloadMoodCard).
 
   assignMoodlabAffirmation(themeSelect.value, true);
   syncMoodCard();
@@ -6379,9 +6315,10 @@ function renderMoodlab() {
   const themeSelect = document.getElementById("moodlab-theme");
   const inferredMood = currentNames.length ? getMoodlabThemeFromBlend(currentNames) : (themeSelect.value || "clarity-focus");
 
-  if (!sourceSelect.dataset.touched) sourceSelect.value = currentNames.length ? "my-blend" : "mood-preset";
+  // Default source is My blend when the user has anything in state.blend,
+  // otherwise A curated blend (so the card isn't empty on first visit).
+  if (!sourceSelect.dataset.touched) sourceSelect.value = currentNames.length ? "my-blend" : "curated";
   if (!themeSelect.dataset.touched && sourceSelect.value === "my-blend") themeSelect.value = inferredMood;
-  if (!themeSelect.dataset.touched && sourceSelect.value === "mood-preset") themeSelect.value = themeSelect.value || "clarity-focus";
 
   applyMoodlabSource(false);
 }
@@ -6390,25 +6327,40 @@ function syncMoodCard() {
   const data = resolveMoodlabBlendData();
   const title = document.getElementById("moodlab-title").value.trim() || data.title || "Mood Blend";
   const tagline = document.getElementById("moodlab-tagline").value.trim() || data.tagline || "Set the mood.";
-  const attribution = document.getElementById("moodlab-attribution").value.trim() || "Diffused by @vibezandbutterflyz";
+  // Attribution is now optional -- empty means don't render the line at
+  // all, so the card doesn't awkwardly display "Diffused by " with no
+  // handle after it. The @handle prefix is added automatically if the
+  // user typed a bare handle without one.
+  let attribution = document.getElementById("moodlab-attribution").value.trim();
+  if (attribution && !attribution.startsWith("@") && !attribution.toLowerCase().includes("by ")) {
+    attribution = "@" + attribution.replace(/^@/, "");
+  }
+  const attributionLine = attribution ? (attribution.toLowerCase().includes("diffused by") ? attribution : `Diffused by ${attribution}`) : "";
   const theme = document.getElementById("moodlab-theme").value || data.mood || "clarity-focus";
   const card = document.getElementById("mood-card");
   const affirmation = assignMoodlabAffirmation(theme);
   const oils = data.oils || [];
   const placeholder = data.placeholderChip || "Add oils to your blend";
+  // Drop counts source: for a My-blend card, from state.blend (keyed by
+  // oil id); for a curated card, from data.oilDrops (recipe's own parts).
+  // Falls back to plain name when no drops are known so no chip ever
+  // renders "undefined drops X".
+  const dropsFor = name => {
+    if (data.oilDrops && data.oilDrops[name]) return data.oilDrops[name];
+    const oil = OILS.find(o => o.name === name);
+    return oil ? state.blend[oil.id] : 0;
+  };
 
   card.className = `mood-card theme-${theme}`;
   document.getElementById("mood-card-title").textContent = title;
   document.getElementById("mood-card-tagline").textContent = tagline;
   document.getElementById("mood-card-affirmation").textContent = affirmation;
-  document.getElementById("mood-card-attribution").textContent = attribution;
-  // Enrich each oil name with its drop count from state.blend so the
-  // downloaded Mood Card actually functions as a recipe -- previously it
-  // listed only oil names, which meant a downloader had the ingredients
-  // but no formula. state.blend is keyed by oil.id; look up id by name.
+  const attrEl = document.getElementById("mood-card-attribution");
+  attrEl.textContent = attributionLine;
+  attrEl.style.display = attributionLine ? "" : "none";
+
   const chipHtml = name => {
-    const oil = OILS.find(o => o.name === name);
-    const drops = oil ? state.blend[oil.id] : 0;
+    const drops = dropsFor(name);
     const label = drops ? `${drops} drop${drops === 1 ? "" : "s"} ${name}` : name;
     return `<span class="mood-card-chip">${label}</span>`;
   };
@@ -6418,7 +6370,7 @@ function syncMoodCard() {
 
   // The Lounge Experience cards live alongside the mood card now — keep
   // them in sync with whatever oils are driving it (live blend if any,
-  // else the resolved preset/suggested blend's oils).
+  // else the picked curated blend's oils).
   renderLoungeMatrix(oils.map(name => ({ name })));
 }
 
@@ -6470,7 +6422,13 @@ function downloadMoodCard() {
   const title = (document.getElementById("moodlab-title").value || data.title || "Mood Blend").trim();
   const tagline = (document.getElementById("moodlab-tagline").value || data.tagline || "Set the mood.").trim();
   const affirmation = getAssignedMoodlabAffirmation();
-  const attribution = (document.getElementById("moodlab-attribution").value || "Diffused by @vibezandbutterflyz").trim();
+  // Attribution: optional. Empty -> the line is skipped on the canvas.
+  // Bare handles get "Diffused by " prefixed automatically.
+  let rawAttr = (document.getElementById("moodlab-attribution").value || "").trim();
+  if (rawAttr && !rawAttr.startsWith("@") && !rawAttr.toLowerCase().includes("by ")) {
+    rawAttr = "@" + rawAttr.replace(/^@/, "");
+  }
+  const attribution = rawAttr ? (rawAttr.toLowerCase().includes("diffused by") ? rawAttr : `Diffused by ${rawAttr}`) : "";
   const theme = document.getElementById("moodlab-theme").value || data.mood || "clarity-focus";
   const oils = (data.oils && data.oils.length ? data.oils : [data.placeholderChip || "Build a blend in Aroma Lab"]);
   const fileName = (title || 'mood-card').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'mood-card';
@@ -6533,9 +6491,15 @@ function downloadMoodCard() {
   const chipGap = 16;
   // Same enrichment as the HTML preview -- the downloaded PNG is a Mood
   // Card recipe now, not just an ingredient list. "3 drops Lavender".
+  // Drop counts source: for a curated card, use the recipe's own parts
+  // (data.oilDrops); for a My-blend card, use state.blend.
   const chipLabel = name => {
-    const oil = OILS.find(o => o.name === name);
-    const drops = oil ? state.blend[oil.id] : 0;
+    let drops = 0;
+    if (data.oilDrops && data.oilDrops[name]) drops = data.oilDrops[name];
+    else {
+      const oil = OILS.find(o => o.name === name);
+      drops = oil ? state.blend[oil.id] : 0;
+    }
     return drops ? `${drops} drop${drops === 1 ? "" : "s"} ${name}` : name;
   };
   oils.forEach(name => {
@@ -6548,10 +6512,16 @@ function downloadMoodCard() {
     }
     chipX += drawChip(ctx, label, chipX, chipY) + chipGap;
   });
+  // Skip the attribution line entirely when user didn't set one, so the
+  // downloaded card doesn't render a floating "Diffused by " with a
+  // trailing blank space.
+  if (attribution) {
+    ctx.fillStyle = '#fff';
+    ctx.globalAlpha = 0.88;
+    ctx.font = '400 28px Satoshi, Arial, sans-serif';
+    wrapText(ctx, attribution, size / 2, 1110, 960, 38);
+  }
   ctx.fillStyle = '#fff';
-  ctx.globalAlpha = 0.88;
-  ctx.font = '400 28px Satoshi, Arial, sans-serif';
-  wrapText(ctx, attribution, size / 2, 1110, 960, 38);
   ctx.globalAlpha = 0.72;
   ctx.font = '500 22px Satoshi, Arial, sans-serif';
   ctx.fillText('MADE IN VIBEZ & BUTTERFLYZ SENSORY & MOOD STUDIO', size / 2, 1210);
