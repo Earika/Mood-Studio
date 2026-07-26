@@ -618,6 +618,18 @@ a { color: var(--violet); }
 .preset-oils { font-size: 10px; color: var(--violet); }
 
 .moodblend-card { position: relative; padding-top: 16px; }
+.moodblend-card.moodblend-loaded {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px var(--gold), 0 8px 26px rgba(201,168,92,0.22);
+  background: linear-gradient(180deg, rgba(201,168,92,0.08), var(--paper-2));
+  padding-top: 30px;
+}
+.moodblend-loaded-badge {
+  position: absolute; top: 8px; left: 12px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--gold); padding: 3px 8px; border-radius: 999px;
+  background: var(--gold-glow); border: 1px solid rgba(201,168,92,0.5);
+}
 .moodblend-swatch {
   position: absolute; top: 12px; right: 12px;
   width: 14px; height: 14px; border-radius: 50%;
@@ -5683,7 +5695,11 @@ function renderPresets() {
 
 // ============ CURATED MOODS — 250 BLEND LIBRARY ============
 const MOOD_BLEND_CATS = [...new Set(MOOD_BLENDS.map(b => b.cat))];
-const moodBlendState = { cat: "", search: "", shown: 24 };
+// pinnedName -- the currently-loaded curated blend's name, so
+// filteredMoodBlends can float it to the top of the grid and
+// renderMoodBlends can highlight+scroll to it instead of leaving it
+// buried in a 50-card list.
+const moodBlendState = { cat: "", search: "", shown: 24, pinnedName: null };
 
 // Each blend category maps to a Moodlab theme — drives card color + affirmation.
 const BLEND_CAT_MOOD = {
@@ -5758,7 +5774,17 @@ function filteredMoodBlends() {
   if (ttlProfile?.adventureLevel === "trust") {
     const rare = filtered.filter(b => b.oils.some(o => RARE_OIL_NAMES.some(rn => o.n.toLowerCase().includes(rn))));
     const rest = filtered.filter(b => !rare.includes(b));
-    return [...rare, ...rest];
+    filtered.length = 0;
+    filtered.push(...rare, ...rest);
+  }
+  // Float the currently-loaded blend to the top so a returning user or a
+  // just-completed-quiz user lands directly on the recipe they were told
+  // about in the toast, without having to scroll through 50 cards to
+  // find it. Runs AFTER other sorts so pinning wins.
+  if (moodBlendState.pinnedName) {
+    const pin = filtered.filter(b => b.name === moodBlendState.pinnedName);
+    const rest = filtered.filter(b => b.name !== moodBlendState.pinnedName);
+    return [...pin, ...rest];
   }
   return filtered;
 }
@@ -5789,8 +5815,10 @@ function renderMoodBlends() {
     grid.innerHTML = visible.map(b => {
       const idx = MOOD_BLENDS.indexOf(b);
       const theme = BLEND_CAT_MOOD[b.cat] || "clarity-focus";
+      const isPinned = moodBlendState.pinnedName && b.name === moodBlendState.pinnedName;
       return `
-        <div class="preset-card moodblend-card" data-moodblend="${idx}" role="button" tabindex="0" aria-label="${b.name}, ${b.cat}. View recipe and load into your blend.">
+        <div class="preset-card moodblend-card${isPinned ? ' moodblend-loaded' : ''}" data-moodblend="${idx}" role="button" tabindex="0" aria-label="${b.name}, ${b.cat}${isPinned ? '. Currently loaded on your Mood Card' : ''}. View recipe and load into your blend.">
+          ${isPinned ? '<span class="moodblend-loaded-badge" aria-hidden="true">On your Mood Card</span>' : ''}
           <span class="moodblend-swatch theme-${theme}" title="${b.cat}" aria-hidden="true"></span>
           <div class="preset-name">${b.name}</div>
           <div class="moodblend-oils">${b.oils.map(o => o.n).join(" · ")}</div>
@@ -7447,6 +7475,13 @@ function applyStoredProfile(profile) {
   let preloaded = null;
   if (typeof ttlPreloadSignatureOils === "function" && !Object.keys(state.blend).length) {
     preloaded = ttlPreloadSignatureOils(moodKey, profile);
+    // Same pinning as ttlRouteToPersonalized -- returning visitors also
+    // need the pinned card visible in Curated Moods so they can find the
+    // recipe that's currently on their Mood Card.
+    if (preloaded && typeof moodBlendState !== "undefined") {
+      moodBlendState.pinnedName = preloaded.name;
+      if (typeof renderMoodBlends === "function") renderMoodBlends();
+    }
   } else {
     renderAll();
     renderInlineShelf();
@@ -7496,9 +7531,20 @@ function ttlRouteToPersonalized(profile, moodKey, preloaded) {
   if (landedOnRecipes) {
     moodBlendState.cat = cat;
     moodBlendState.shown = 24;
+    // Pin the just-loaded blend to the top of the grid + mark it with a
+    // "On your Mood Card" badge, so the user doesn't have to scroll a
+    // 50-card list to find the recipe the toast told them about.
+    moodBlendState.pinnedName = preloaded ? preloaded.name : null;
     if (typeof renderMoodBlendCats === "function") renderMoodBlendCats();
     if (typeof renderMoodBlends === "function") renderMoodBlends();
     if (typeof setView === "function") setView("recipes");
+    // Bring the pinned card into view once render + tab switch settle.
+    if (preloaded) {
+      setTimeout(() => {
+        const pinned = document.querySelector(".moodblend-loaded");
+        if (pinned) pinned.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 200);
+    }
   } else {
     if (typeof setView === "function") setView("moodlab");
   }
