@@ -7586,28 +7586,6 @@ function applyStoredProfile(profile, opts = {}) {
   return { moodKey, preloaded };
 }
 
-// Human-readable summary of what the profile actually changed. Fed into
-// the post-completion orientation toast(s) so the user hears BACK the
-// answers they gave, not just a generic "tuned" claim -- which was the
-// core of the "nothing happened / waste of time" complaint.
-function ttlProfileChangeSummary(profile) {
-  const bits = [];
-  if (profile.excludedOils?.length) {
-    const names = profile.excludedOils.slice(0, 3).map(id => OILS.find(o => o.id === id)?.name).filter(Boolean);
-    if (names.length) bits.push(`Excluded ${names.join(", ")}${profile.excludedOils.length > 3 ? " (+" + (profile.excludedOils.length - 3) + " more)" : ""}`);
-  }
-  if (profile.safetyFlags?.length && !profile.safetyFlags.includes("nothing")) {
-    bits.push(`Filtered for ${profile.safetyFlags.filter(f => f !== "nothing").join(" / ")}`);
-  }
-  const prefs = Array.isArray(profile.pairingPreference) ? profile.pairingPreference : [profile.pairingPreference];
-  const drinkPrefs = prefs.filter(p => ["cocktail","wine","mocktail"].includes(p));
-  if (drinkPrefs.length) bits.push(`${drinkPrefs.join(" + ")} surfaced first in the Lounge`);
-  else if (prefs.includes("aromas-only")) bits.push("Drink/food cards hidden");
-  if (profile.adventureLevel === "trust") bits.push("Rare oils and blends surfaced");
-  else if (profile.adventureLevel === "familiar") bits.push("Common oils sorted first");
-  return bits;
-}
-
 // Post-completion orientation: land the user in Curated Moods filtered
 // to their profile's blend category, tell them (in plain words) what
 // their answers actually changed, then leave a persistent invite to the
