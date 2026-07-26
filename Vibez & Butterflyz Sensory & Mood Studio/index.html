@@ -1218,7 +1218,14 @@ h3 { position: relative; }
   border: 1px solid var(--line-2); border-radius: 22px;
   padding: 40px 36px; text-align: center;
   box-shadow: 0 30px 80px rgba(0,0,0,0.55), 0 0 60px rgba(157,127,212,0.22);
-  animation: guideRise .4s cubic-bezier(0.22,1,0.36,1);
+  /* animation-fill-mode: forwards -- otherwise on mobile Chromium
+     (Samsung Internet + downloaded index viewed via content:// URL)
+     the guideRise animation ran while the parent #ttl-onboarding was
+     still display:none from initial page load and its "from" opacity:0
+     keyframe got stuck as the resolved value once the panel finally
+     painted. Result was a fully dim/invisible panel launch. */
+  opacity: 1;
+  animation: guideRise .4s cubic-bezier(0.22,1,0.36,1) forwards;
   overflow: hidden;
 }
 .onboarding-panel::before {
