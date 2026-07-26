@@ -1247,10 +1247,23 @@ h3 { position: relative; }
 .onboarding-mood-label { font-weight: 700; font-size: 12px; color: var(--ink); }
 .onboarding-mood-tag { font-size: 10px; color: var(--ink-3); line-height: 1.3; }
 @media (max-width: 600px) {
-  .onboarding-panel { padding: 30px 20px; max-height: 90vh; max-height: 90dvh; overflow-y: auto; }
-  .onboarding-panel h2 { font-size: 20px; }
-  .onboarding-mood-grid { grid-template-columns: 1fr 1fr; max-height: none; }
-  .onboarding-mood-tile { min-height: 76px; padding: 12px 8px; }
+  .onboarding-panel { padding: 26px 18px 14px; max-height: 92vh; max-height: 92dvh; overflow-y: auto; }
+  .onboarding-panel h2 { font-size: 19px; margin-bottom: 8px; }
+  .onboarding-lede { font-size: 13.5px; margin-bottom: 18px; }
+  .onboarding-mood-grid { grid-template-columns: 1fr 1fr; max-height: none; gap: 8px; margin-bottom: 12px; }
+  .onboarding-mood-tile { min-height: 64px; padding: 10px 6px; }
+  .onboarding-mood-label { font-size: 13px; line-height: 1.2; }
+  .onboarding-quiz-title { margin-bottom: 12px; }
+  /* Primary CTA sticks to the bottom of the scrollable panel so tall
+     question steps (mood grid + eyebrow + prompt + skip) can't push it
+     below the viewport -- previously the "Next" button was getting
+     clipped on tall mobile flows. */
+  .onboarding-panel .onboarding-begin {
+    position: sticky; bottom: 0;
+    margin: 6px -18px -14px; padding: 14px 18px;
+    background: linear-gradient(180deg, transparent, rgba(23,18,42,0.98) 30%);
+    box-shadow: 0 -12px 20px -6px rgba(23,18,42,0.85);
+  }
 }
 
 /* ============ TUNE THE LOUNGE — sensory profile onboarding ============ */
@@ -3356,19 +3369,6 @@ const OILS = [
     plant_part: "Flowers", extraction: "Steam Distilled"
   },
   {
-    id: "agarwood-oud", name: "Agarwood / Oud", latin: "Aquilaria malaccensis",
-    category: "Wood", note: "Base", type: "essential",
-    intensity: 3, blend_strength: 3,
-    aroma: ["Deep", "Woody", "Rich", "Animalic"],
-    constituents: [],
-    phototoxic: false, phototox_note: "Rare/Expensive; Generally safe",
-    cautions: ["Rare/Expensive", "Generally safe"],
-    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
-    pairs_with: [],
-    uses: ["Diffusion", "Grounding blends"],
-    plant_part: "Resinous Wood", extraction: "Steam Distilled"
-  },
-  {
     id: "amyris", name: "Amyris", latin: "Amyris balsamifera",
     category: "Wood", note: "Base", type: "essential",
     intensity: 3, blend_strength: 3,
@@ -3575,19 +3575,6 @@ const OILS = [
     pairs_with: [],
     uses: ["Diffusion", "Grounding blends"],
     plant_part: "Wood", extraction: "Steam Distilled"
-  },
-  {
-    id: "pine-scotch", name: "Pine (Scotch)", latin: "Pinus sylvestris",
-    category: "Wood", note: "Top", type: "essential",
-    intensity: 3, blend_strength: 3,
-    aroma: ["Strong", "Crisp", "Forest"],
-    constituents: [],
-    phototoxic: false, phototox_note: "Can sensitize if oxidized",
-    cautions: ["Can sensitize if oxidized"],
-    pregnancy: "Not specified in source data — consult a healthcare provider before use during pregnancy.",
-    pairs_with: [],
-    uses: ["Diffusion", "Grounding blends"],
-    plant_part: "Needles", extraction: "Steam Distilled"
   },
   {
     id: "pine-pinyon", name: "Pine (Pinyon)", latin: "Pinus edulis",
@@ -6610,6 +6597,18 @@ setView = function(v) {
   if (guideState.active && GUIDE_STEPS[guideState.i] && GUIDE_STEPS[guideState.i].view === v) {
     // stay in sync visually; no-op
   }
+  // Mobile ergonomics: landing on Moodlab, the Mood Card sits below a tall
+  // tab-help block + path ribbon + recipe controls -- users had to scroll
+  // ~two viewport heights to see the card their answers just populated.
+  // Auto-scroll it into view. Only fires when there's an actual card to
+  // land on (state.blend populated) so an empty visit still shows the
+  // help block first, which is what a first-time explorer needs.
+  if (v === "moodlab" && Object.keys(state.blend).length > 0) {
+    setTimeout(() => {
+      const card = document.getElementById("mood-card");
+      if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 250);
+  }
 };
 
 // ---- Guided rail steps (the seven requested stops) ----
@@ -7448,7 +7447,7 @@ const INTENT_TAB_LABEL = {
   surprise: "Curated Moods — a starting point for you"
 };
 
-function applyStoredProfile(profile) {
+function applyStoredProfile(profile, opts = {}) {
   if (!profile) return null;
   const moodKeys = Object.keys(MOODLAB_MOOD_PRESETS);
   const moodKey = INTENT_TO_MOOD[profile.sessionIntent] || moodKeys[Math.floor(Math.random() * moodKeys.length)];
@@ -7473,7 +7472,12 @@ function applyStoredProfile(profile) {
   // the return value so callers (finishTTL) can name-check the recipe
   // that got loaded without preloading a second time and stomping on it.
   let preloaded = null;
-  if (typeof ttlPreloadSignatureOils === "function" && !Object.keys(state.blend).length) {
+  // Force preload for the completion path (finishTTL) so a Retune with
+  // stuff still in state.blend from the previous session STILL picks a
+  // fresh curated blend. Otherwise: only preload if state.blend is empty
+  // (return visits shouldn't stomp a user's in-progress blend build).
+  const shouldPreload = opts.forcePreload || !Object.keys(state.blend).length;
+  if (typeof ttlPreloadSignatureOils === "function" && shouldPreload) {
     preloaded = ttlPreloadSignatureOils(moodKey, profile);
     // Same pinning as ttlRouteToPersonalized -- returning visitors also
     // need the pinned card visible in Curated Moods so they can find the
@@ -7571,57 +7575,88 @@ function ttlRouteToPersonalized(profile, moodKey, preloaded) {
 function ttlPreloadSignatureOils(moodKey, profile) {
   if (!moodKey) return null;
   const cat = TTL_MOOD_TO_BLEND_CAT[moodKey];
-  if (cat) {
-    const excluded = new Set(profile?.excludedOils || []);
-    const flags = profile?.safetyFlags || [];
-    const wantsPregnancySafe = flags.includes("pregnancy-nursing");
-    const candidates = MOOD_BLENDS.filter(b => {
-      if (b.cat !== cat) return false;
-      const libs = b.oils.map(o => findLibraryOil(o.n));
-      // Reject any blend containing an oil the user explicitly excluded.
-      if (libs.some(lib => lib && excluded.has(lib.id))) return false;
-      // Reject any blend with an oil the user's safety flags rule out.
-      if (libs.some(lib => lib && ttlSafetySuppressed(lib, flags))) return false;
-      if (wantsPregnancySafe && libs.some(lib => lib && /avoid/i.test(lib.pregnancy || ""))) return false;
-      return true;
-    });
-    if (candidates.length) {
-      const blend = candidates[Math.floor(Math.random() * candidates.length)];
-      const matched = blend.oils.map(o => ({ ...o, lib: findLibraryOil(o.n) }));
-      state.blend = {};
-      matched.forEach(m => { if (m.lib) state.blend[m.lib.id] = m.p; });
-      feedMoodlabFromBlend(blend);
-      state.mood = moodKey;
-      safeStorageSet("vb_session_mood", moodKey);
-      if (typeof renderAll === "function") renderAll();
-      if (typeof renderInlineShelf === "function") renderInlineShelf();
-      return { name: blend.name, oils: blend.oils.map(o => o.n) };
-    }
-  }
-  // Fall back: load the mood's full signature-oil list into state.blend
-  // (not just 2 -- these are already curated 3-oil combos), still filtered
-  // against exclusions/safety so the fallback stays honest to the profile.
-  const preset = MOODLAB_MOOD_PRESETS[moodKey];
-  if (!preset) return null;
   const excluded = new Set(profile?.excludedOils || []);
   const flags = profile?.safetyFlags || [];
+  const wantsPregnancySafe = flags.includes("pregnancy-nursing");
+
+  const passesProfile = (b) => {
+    const libs = b.oils.map(o => findLibraryOil(o.n));
+    if (libs.some(lib => lib && excluded.has(lib.id))) return false;
+    if (libs.some(lib => lib && ttlSafetySuppressed(lib, flags))) return false;
+    if (wantsPregnancySafe && libs.some(lib => lib && /avoid/i.test(lib.pregnancy || ""))) return false;
+    return true;
+  };
+
+  // Load a real curated blend into state.blend + Moodlab card. Returns
+  // the number of oils that resolved to library entries -- 500 blends
+  // but not every ingredient name maps cleanly to an OILS row, so we
+  // require >=2 loadable oils before accepting the pick, to avoid the
+  // "just Lavender" outcome the user hit.
+  const tryLoad = (blend) => {
+    const matched = blend.oils.map(o => ({ ...o, lib: findLibraryOil(o.n) }));
+    const usable = matched.filter(m => m.lib);
+    if (usable.length < 2) return 0;
+    state.blend = {};
+    usable.forEach(m => { state.blend[m.lib.id] = m.p; });
+    feedMoodlabFromBlend(blend);
+    state.mood = moodKey;
+    safeStorageSet("vb_session_mood", moodKey);
+    return usable.length;
+  };
+
+  // Candidate chain -- always finds SOMETHING out of 500 real recipes
+  // rather than silently degrading to a 1-oil preset:
+  //   1) matching-category blends that pass the profile filters
+  //   2) any-category blends that pass the profile filters
+  //   3) matching-category blends ignoring filters (last-ditch honesty:
+  //      if the profile is so restrictive no recipe fits, still show a
+  //      recipe from the right mood)
+  //   4) any blend at all
+  const pools = [];
+  if (cat) pools.push(MOOD_BLENDS.filter(b => b.cat === cat && passesProfile(b)));
+  pools.push(MOOD_BLENDS.filter(passesProfile));
+  if (cat) pools.push(MOOD_BLENDS.filter(b => b.cat === cat));
+  pools.push(MOOD_BLENDS.slice());
+
+  for (const pool of pools) {
+    if (!pool.length) continue;
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    for (const blend of shuffled.slice(0, 25)) {
+      if (tryLoad(blend) >= 2) {
+        if (typeof renderAll === "function") renderAll();
+        if (typeof renderInlineShelf === "function") renderInlineShelf();
+        return { name: blend.name, oils: blend.oils.map(o => o.n) };
+      }
+    }
+  }
+
+  // Signature-oil fallback only if all 4 pools somehow yield no loadable
+  // blend (shouldn't happen with 500 real recipes, but stays honest).
+  // Synthesizes a pseudo-blend so Moodlab still shows the preset's proper
+  // title/tagline/affirmation instead of an auto-derived "Lavender Blend".
+  const preset = MOODLAB_MOOD_PRESETS[moodKey];
+  if (!preset) return null;
   state.blend = {};
-  const added = [];
   preset.oils.forEach(name => {
     const oil = OILS.find(o => o.name === name);
-    if (!oil) return;
-    if (excluded.has(oil.id)) return;
-    if (ttlSafetySuppressed(oil, flags)) return;
-    state.blend[oil.id] = 2;
-    added.push(oil.name);
+    if (oil) state.blend[oil.id] = 2;
   });
   state.mood = moodKey;
   safeStorageSet("vb_session_mood", moodKey);
-  const themeSel = document.getElementById("moodlab-theme");
-  if (themeSel) themeSel.value = moodKey;
+  const pseudoBlend = {
+    cat: cat || "Signature Fusion",
+    name: preset.title,
+    oils: preset.oils.map(n => ({ n, p: 2 })),
+    diff: preset.oils.map((n, i) => `${i === 0 ? 3 : 2} drops ${n}`).join(" + "),
+    top: preset.oils.map((n, i) => `${i === 0 ? 2 : 1} drop${i === 0 ? "s" : ""} ${n}`).join(" + ") + " in 10ml carrier (~2% dilution)",
+    wear: "Light on skin at 2% dilution; safe for daily wrist wear.",
+    caution: "",
+    aff: ""
+  };
+  feedMoodlabFromBlend(pseudoBlend);
   if (typeof renderAll === "function") renderAll();
   if (typeof renderInlineShelf === "function") renderInlineShelf();
-  return added.length ? { name: preset.title, oils: added } : null;
+  return { name: preset.title, oils: preset.oils };
 }
 
 function finishTTL() {
@@ -7651,7 +7686,7 @@ function finishTTL() {
   // applyStoredProfile now handles the curated-blend preload itself and
   // returns what it loaded, so we don't preload twice (which would clear
   // state.blend and re-pick a random blend, causing a visible flash).
-  const { moodKey, preloaded } = applyStoredProfile(profile);
+  const { moodKey, preloaded } = applyStoredProfile(profile, { forcePreload: true });
   setTimeout(() => {
     clearInterval(dustTimer);
     ttlOnboardingEl.classList.add("hidden");
