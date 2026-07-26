@@ -1255,14 +1255,14 @@ h3 { position: relative; }
   .onboarding-mood-label { font-size: 13px; line-height: 1.2; }
   .onboarding-quiz-title { margin-bottom: 12px; }
   /* Primary CTA sticks to the bottom of the scrollable panel so tall
-     question steps (mood grid + eyebrow + prompt + skip) can't push it
-     below the viewport -- previously the "Next" button was getting
-     clipped on tall mobile flows. */
+     question steps can't push it below the viewport. Keeps its own
+     rose->violet gradient background intact (an earlier attempt
+     overwrote it with a dark fade and made the text nearly invisible
+     -- the button now paints on top of any content scrolling past). */
   .onboarding-panel .onboarding-begin {
-    position: sticky; bottom: 0;
-    margin: 6px -18px -14px; padding: 14px 18px;
-    background: linear-gradient(180deg, transparent, rgba(23,18,42,0.98) 30%);
-    box-shadow: 0 -12px 20px -6px rgba(23,18,42,0.85);
+    position: sticky; bottom: 8px; z-index: 3;
+    margin: 12px 0 4px;
+    box-shadow: 0 -20px 24px -8px rgba(23,18,42,0.9), 0 6px 18px rgba(157,127,212,0.35);
   }
 }
 
