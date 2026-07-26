@@ -4502,6 +4502,12 @@ const LOUNGE_MAP = {
     cocktail: { name: "The Hearthstone", desc: "Añejo tequila, mezcal float, vetiver tincture, orange bitters." },
     mocktail: { name: "Sacred Earth", desc: "Beetroot, ginger, activated charcoal, coconut water, lime." },
     food: { name: "Mushroom & Truffle Bruschetta", desc: "Wild mushroom ragù, truffle oil, toasted sourdough, shaved pecorino." }
+  },
+  "Power": {
+    wine: { name: "Napa Cabernet Sauvignon (Reserve)", desc: "Bold, structured, unapologetic — cassis, graphite, dark cocoa. Wine for taking up space." },
+    cocktail: { name: "The Statement Manhattan", desc: "Rye, sweet vermouth, aromatic bitters, brandied cherry. Classic, spirit-forward, no hiding behind mixers." },
+    mocktail: { name: "Smoked Cherry Bravado", desc: "Smoked cherry cordial, pomegranate juice, aged balsamic drop, black pepper rim." },
+    food: { name: "Dry-Aged Ribeye Bites", desc: "Seared ribeye tips, flaked Maldon salt, roasted marrow butter, charred rosemary." }
   }
 };
 
@@ -4517,7 +4523,12 @@ const PROFILE_MOOD_TO_LOUNGE = {
   "relaxation-rest": "Sleep",
   "self-love-being-loved": "Sensual",
   "joy-uplift": "Uplift",
-  "confidence-power": "Grounding",
+  // Confidence-power (outward, assertive, chest-open) and protection-
+  // strength (defensive, boundaried, inward) are meaningfully different
+  // moods -- the earthy Grounding pairing fits the protective one but
+  // reads too introverted for confidence. Power is a new bold entry
+  // added to LOUNGE_MAP for the outward-facing energy.
+  "confidence-power": "Power",
   "renewal-rejuvenation": "Breathe",
   "protection-strength": "Grounding"
 };
