@@ -4803,7 +4803,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("moodlab-curated").addEventListener("change", e => {
     e.target.dataset.touched = "true";
-    moodlabAffirmationOverride = null;
+    // NOTE: do NOT null the affirmation override here. applyMoodlabSource
+    // resets it from the picked blend's own `aff` field via getCurated-
+    // BlendData -- clearing it here would strand syncMoodCard on a random
+    // theme-pool pick, which was the whole reason curated blends were
+    // losing their bespoke affirmations after being picked from the dropdown.
     applyMoodlabSource(true);
   });
 
@@ -6253,6 +6257,10 @@ function getCuratedBlendData() {
     // as a real recipe even when the user hasn't loaded it into their
     // active blend.
     oilDrops: Object.fromEntries(blend.oils.map(o => [o.n, o.p])),
+    // Each of the 500 blends ships with a bespoke affirmation
+    // (blend.aff) -- carry it through so the Mood Card shows THIS
+    // recipe's line instead of a random theme-pool pick.
+    aff: blend.aff || "",
     placeholderChip: ""
   };
 }
@@ -6305,6 +6313,11 @@ function applyMoodlabSource(force = false) {
   // choose whether to add a handle; if the field is empty the card
   // simply omits the attribution line (see syncMoodCard/downloadMoodCard).
 
+  // Curated blends carry their own bespoke affirmation. Wire it in
+  // before assignMoodlabAffirmation runs so the theme-pool random pick
+  // doesn't overwrite it. My-blend source has no bespoke aff -- fall
+  // back to the theme pool there.
+  if (data.aff) moodlabAffirmationOverride = data.aff;
   assignMoodlabAffirmation(themeSelect.value, true);
   syncMoodCard();
 }
