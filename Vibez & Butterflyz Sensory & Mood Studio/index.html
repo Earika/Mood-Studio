@@ -6540,10 +6540,38 @@ function downloadMoodCard() {
   ctx.font = '500 22px Satoshi, Arial, sans-serif';
   ctx.fillText('MADE IN VIBEZ & BUTTERFLYZ SENSORY & MOOD STUDIO', size / 2, 1210);
   ctx.globalAlpha = 1;
-  const link = document.createElement('a');
-  link.download = `${fileName}.png`;
-  link.href = canvas.toDataURL('image/png');
-  link.click();
+  // Prefer the native mobile Share sheet when available (Android/iOS
+  // Web Share Level 2). Lets the user actually SEND the Mood Card via
+  // Messages / Gmail / WhatsApp / Instagram / etc -- which is what the
+  // button label ("Download or send") has been promising and, until
+  // now, only half-delivering. Falls back to a plain download when the
+  // browser has no Share API (most desktop) or refuses to share files.
+  canvas.toBlob(async blob => {
+    if (!blob) return;
+    const file = new File([blob], `${fileName}.png`, { type: 'image/png' });
+    const shareData = {
+      files: [file],
+      title: `${title} — Vibez & Butterflyz Mood Card`,
+      text: `${title}\n${tagline}\n\n"${affirmation}"`
+    };
+    if (navigator.canShare && navigator.canShare(shareData)) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (e) {
+        // AbortError -- user cancelled the share sheet. Don't force a
+        // download; they consciously backed out. Any other error falls
+        // through to the download path so the value isn't lost.
+        if (e && e.name === 'AbortError') return;
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = `${fileName}.png`;
+    link.href = url;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, 'image/png');
 }
 
 function renderAll() {
