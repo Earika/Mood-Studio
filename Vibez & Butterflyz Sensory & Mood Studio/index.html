@@ -722,7 +722,11 @@ a { color: var(--violet); }
 }
 
 /* ============ MODAL ============ */
-.modal { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 24px; }
+/* z-index above the toast (210) so any lingering toast that was still
+   visible when the user tapped a card tucks behind the modal instead
+   of covering its title -- reported on mobile with the welcome-back
+   toast still up when opening a Curated Moods recipe modal. */
+.modal { position: fixed; inset: 0; z-index: 240; display: flex; align-items: center; justify-content: center; padding: 24px; }
 .modal.hidden { display: none; }
 .modal-backdrop { position: absolute; inset: 0; background: rgba(8,6,16,0.75); backdrop-filter: blur(6px); }
 /* True fixed-header/scrolling-middle/fixed-footer layout -- not a sticky-
@@ -811,11 +815,32 @@ a { color: var(--violet); }
   .stats { grid-template-columns: repeat(2,1fr); }
   .blend-summary { grid-template-columns: 1fr; }
   .shelf-grid { grid-template-columns: 1fr 1fr; }
-  .main { padding: 16px 16px 90px; }
+  /* 130px bottom -- Tour button at bottom:14px (~40px tall) + Retune
+     button stacked at bottom:64px (~40px tall) + margin. Prior 90px
+     was fine when only Tour was in the corner; adding Retune made the
+     stack ~110px tall and content was scrolling under it. */
+  .main { padding: 16px 16px 130px; }
   .lounge-grid { grid-template-columns: 1fr; }
   .moodlab-layout { grid-template-columns: 1fr; }
   .moodlab-preview-wrap { padding: 6px; }
-  .mood-card { width: 100%; }
+  /* Mobile: drop the desktop square aspect-ratio (an aspect-ratio:1/1
+     on a 380px viewport gives you a 380x380 canvas, but the card's
+     content -- brand + title + tagline + multi-line affirmation +
+     "N drops X" oil chips + attribution + footer -- overflows that
+     easily and clips or breaks the layout). Let the card grow to fit,
+     tighten the interior padding and font sizes, and don't center-
+     justify the content anymore (it stacks naturally from the top). */
+  .mood-card { width: 100%; aspect-ratio: auto; min-height: 380px; }
+  .mood-card-inner { padding: 24px 20px; justify-content: flex-start; }
+  .mood-card-brand { font-size: 9px; margin-bottom: 12px; }
+  .mood-card h2 { font-size: 22px; margin-bottom: 6px; }
+  .mood-card-tagline { font-size: 13px; margin-bottom: 10px; }
+  .mood-card-affirmation { font-size: 14px; line-height: 1.5; margin-bottom: 16px; }
+  .mood-card-divider { margin-bottom: 14px; }
+  .mood-card-oils { margin-bottom: 14px; }
+  .mood-card-chip { font-size: 10.5px; padding: 3px 8px; }
+  .mood-card-attribution { font-size: 11px; }
+  .mood-card-footer { font-size: 9px; }
   .card { padding: 16px; }
 }
 @media (max-width: 600px) {
@@ -5088,6 +5113,12 @@ function clearFilters() {
 // ============ TOAST + "NEXT STEP" TAB NUDGES ============
 let toastHideTimer = null;
 function showToast(message, ms = 3200) {
+  // Don't fire a toast while a detail modal is open -- the toast's
+  // z-index sits above the modal and covers its title (mobile: quiz-
+  // completion toasts were landing on top of a Curated Moods recipe
+  // modal opened right after).
+  const modal = document.getElementById("modal");
+  if (modal && !modal.classList.contains("hidden")) return;
   const el = document.getElementById("toast");
   document.getElementById("toast-text").textContent = message;
   el.classList.add("visible");
@@ -6606,7 +6637,14 @@ setView = function(v) {
   if (v === "moodlab" && Object.keys(state.blend).length > 0) {
     setTimeout(() => {
       const card = document.getElementById("mood-card");
-      if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
+      const scroller = document.getElementById("main-content");
+      if (!card || !scroller) return;
+      // scrollIntoView(block:start) was overshooting because .main has
+      // top padding scrollIntoView doesn't account for -- title landed
+      // 28px ABOVE the viewport. Compute the offset manually with a
+      // small headroom pad so the card's top clears the tab-help block.
+      const cardTop = card.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
+      scroller.scrollTo({ top: Math.max(0, cardTop - 12), behavior: "smooth" });
     }, 250);
   }
 };
@@ -7557,10 +7595,12 @@ function ttlRouteToPersonalized(profile, moodKey, preloaded) {
     : (landedOnRecipes
         ? (INTENT_TAB_LABEL[profile.sessionIntent] || "Recipes tuned to your answers")
         : "Your Moodlab is tuned to your answers");
+  // Just the initial "Loaded X" confirmation -- the earlier follow-ups
+  // (a profile-change summary at 4.6s, a "Tap Tour in the corner"
+  // nudge at 11.4s) piled up on top of modals the user opened while
+  // reading, and generally read as spam. If the user wants a walkthrough
+  // they can tap the corner Tour button any time.
   showToast(intro, 4200);
-  const bits = ttlProfileChangeSummary(profile);
-  if (bits.length) setTimeout(() => showToast(bits.join(" · "), 6000), 4600);
-  setTimeout(() => showToast("Want a full walkthrough? Tap Tour in the corner.", 5000), 11400);
 }
 
 // Pick a real curated recipe from the 250-blend library whose category
