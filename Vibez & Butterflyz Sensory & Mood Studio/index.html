@@ -817,6 +817,17 @@ a { color: var(--violet); }
 .theme-joy-uplift           { background: linear-gradient(145deg, #D9942E 0%, #F2C64E 100%); }  /* warm sunlit gold */
 .theme-clarity-focus        { background: linear-gradient(145deg, #2A5488 0%, #5A93C4 100%); }  /* crisp clear sky blue */
 
+/* Joy-uplift override -- the gold/yellow gradient can't carry white text
+   at WCAG AA on light stops. Flip the whole card to deep royal purple:
+   text, chips, divider, emblem shadow, vignette all restated so nothing
+   defaults to the white treatment inherited from .mood-card-inner. */
+.mood-card.theme-joy-uplift .mood-card-inner { color: #3A1C6E; text-shadow: 0 1px 2px rgba(255,255,255,0.35); }
+.mood-card.theme-joy-uplift .mood-card-inner::before { background: radial-gradient(120% 90% at 50% 60%, transparent 40%, rgba(58,28,110,0.18) 100%); }
+.mood-card.theme-joy-uplift .mood-card h2 { color: #3A1C6E; }
+.mood-card.theme-joy-uplift .mood-card-divider { background: rgba(58,28,110,0.55); }
+.mood-card.theme-joy-uplift .mood-card-chip { background: rgba(58,28,110,0.10); border-color: rgba(58,28,110,0.28); color: #3A1C6E; }
+.mood-card.theme-joy-uplift .mood-card-emblem svg { filter: drop-shadow(0 2px 6px rgba(58,28,110,0.35)) drop-shadow(0 0 12px rgba(255,255,255,0.35)); }
+
 .muted { color: var(--ink-3); font-size: 12px; margin-bottom: 12px; line-height: 1.5; }
 .empty { text-align: center; padding: 32px 20px; color: var(--ink-3); font-style: italic; font-size: 13px; }
 
@@ -1436,9 +1447,9 @@ h3 { position: relative; }
 
 /* ============ MOBILE TAP TARGETS + SOCIAL-EMBED TIGHTENING ============ */
 @media (max-width: 600px) {
-  .chip { padding: 9px 13px; font-size: 12px; min-height: 40px; }
+  .chip { padding: 9px 13px; font-size: 13px; min-height: 40px; }
   .tab { padding: 10px 14px; min-height: 40px; }
-  .layout-btn { padding: 9px 12px; min-height: 40px; font-size: 12px; }
+  .layout-btn { padding: 9px 12px; min-height: 40px; font-size: 13px; }
   #category-filter, #search { min-height: 44px; }
   .blend-drops button { width: 28px; height: 28px; font-size: 16px; }
   .blend-remove { font-size: 20px; padding: 4px 8px; }
@@ -1447,8 +1458,50 @@ h3 { position: relative; }
   .modal-scroll { padding: 22px 18px; }
   .modal-actions { padding: 12px 18px 18px; }
   .btn-primary, .btn-secondary { padding: 11px 16px; min-height: 40px; }
-  .bfly-pill { min-height: 44px; font-size: 11px; }
+  .bfly-pill { min-height: 44px; font-size: 12px; }
   .butterfly-card, .butterfly-card-inner { min-height: 210px; }
+}
+
+/* ============ MOBILE TYPOGRAPHY -- ACCESSIBILITY PASS ============
+   Coordinated size floors aligned to public standards so the app is
+   readable on a phone without glasses:
+     * WCAG 1.4.4 (resizable text), Apple HIG (17pt body, 11pt floor),
+       Material Design (16sp body), NN/g (16px mobile body minimum).
+   The rule that matters most for iOS: EVERY form input must be >= 16px
+   or Safari auto-zooms the viewport on focus. That's why every input,
+   select, and textarea below is pinned to 16px, not just <input>. */
+@media (max-width: 600px) {
+  body { font-size: 16px; }
+  /* Nav + primary CTAs -- tab bar is the app's spine */
+  .tab { font-size: 15px; }
+  .btn-primary, .btn-secondary { font-size: 15px; }
+  /* Buttons/labels that were 10-12px go up to a legible floor */
+  .lede, .lede-text, .muted, .empty { font-size: 14px; }
+  .tab-help-title { font-size: 15px; }
+  .tab-help-desc { font-size: 14px; }
+  .tab-help-next { font-size: 13px; }
+  /* Form controls -- 16px prevents iOS focus zoom */
+  input, select, textarea { font-size: 16px !important; }
+  .moodlab-controls input, .moodlab-controls select { font-size: 16px; }
+  /* Chips + oil cards -- readable without crossing a size that
+     breaks the tight visual grid on 360px screens */
+  .oil-name, .bfly-name { font-size: 14px; }
+  .oil-latin, .bfly-latin { font-size: 12px; }
+  .oil-aroma, .bfly-desc { font-size: 12px; }
+  /* Lounge + pairing */
+  .lounge-card-name { font-size: 17px; }
+  .lounge-card-desc { font-size: 13px; }
+  /* Recipe + safety */
+  .safety-report, .recipe-line, .chem-oil-name, .action-name, .terpene-action-name { font-size: 14px; }
+  .safety-detail, .chem-bar, .action-score, .terpene-action-detail, .terpene-found { font-size: 12px; }
+  /* Mood Card mobile sizes -- own scale; matches the preview aesthetic
+     the user signed off on, tuned to accessibility floor */
+  .mood-card h2 { font-size: 26px; }
+  .mood-card-tagline { font-size: 15px; }
+  .mood-card-affirmation { font-size: 17px; line-height: 1.55; }
+  .mood-card-chip { font-size: 13px; padding: 4px 10px; }
+  .mood-card-attribution { font-size: 12px; }
+  .mood-card-footer { font-size: 11px; }
 }
 </style>
 </head>
@@ -6450,14 +6503,15 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
   return lines.length;
 }
 
-function drawChip(ctx, text, x, y) {
-  ctx.font = '500 22px Satoshi, Arial, sans-serif';
-  const padX = 18;
+function drawChip(ctx, text, x, y, opts) {
+  const o = opts || {};
+  ctx.font = '500 33px Satoshi, Arial, sans-serif';
+  const padX = 24;
   const w = ctx.measureText(text).width + padX * 2;
-  const h = 42;
-  const r = 21;
-  ctx.fillStyle = 'rgba(255,255,255,0.14)';
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  const h = 54;
+  const r = 27;
+  ctx.fillStyle = o.chipBg || 'rgba(255,255,255,0.12)';
+  ctx.strokeStyle = o.chipBorder || 'rgba(255,255,255,0.16)';
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -6468,7 +6522,7 @@ function drawChip(ctx, text, x, y) {
   ctx.closePath();
   ctx.fill();
   ctx.stroke();
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = o.textColor || '#fff';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
   ctx.fillText(text, x + padX, y + h / 2 + 1);
@@ -6513,69 +6567,126 @@ async function downloadMoodCard() {
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d');
-  const gradients = {
-    "calm-peace": ['#4C6B4A', '#7A6EA8'],
-    "motivation-drive": ['#2F4A32', '#B8873E'],
-    "renewal-rejuvenation": ['#4C6B4A', '#C9A62A'],
-    "reenergize-reignite": ['#B8873E', '#A64B2A'],
-    "relaxation-rest": ['#6B4A2F', '#7A6EA8'],
-    "self-love-being-loved": ['#A64B2A', '#7A6EA8'],
-    "confidence-power": ['#6B4A2F', '#2F4A32'],
-    "protection-strength": ['#2F4A32', '#6B4A2F'],
-    "joy-uplift": ['#C9A62A', '#B8873E'],
-    "clarity-focus": ['#2F4A32', '#7A6EA8']
+  // Theme colors mirror the CSS .theme-* gradients so the downloaded
+  // PNG matches what the user previews on screen. Each entry also
+  // declares whether the card uses white or dark text (joy-uplift is
+  // gold and needs deep purple for WCAG contrast). Chips + divider
+  // borrow the same ink so the shareable image reads as one design.
+  const themes = {
+    "calm-peace":            { c1: '#35507F', c2: '#6E63A8', ink: 'white' },
+    "motivation-drive":      { c1: '#B8432B', c2: '#E0913A', ink: 'white' },
+    "renewal-rejuvenation":  { c1: '#1F7A57', c2: '#6FB07A', ink: 'white' },
+    "reenergize-reignite":   { c1: '#C0362B', c2: '#E8843A', ink: 'white' },
+    "relaxation-rest":       { c1: '#263A6E', c2: '#55488C', ink: 'white' },
+    "self-love-being-loved": { c1: '#A83E6B', c2: '#D98BA8', ink: 'white' },
+    "confidence-power":      { c1: '#4A2C82', c2: '#8B57AE', ink: 'white' },
+    "protection-strength":   { c1: '#185C3E', c2: '#3F7357', ink: 'white' },
+    "joy-uplift":            { c1: '#D9942E', c2: '#F2C64E', ink: 'purple' },
+    "clarity-focus":         { c1: '#2A5488', c2: '#5A93C4', ink: 'white' }
   };
-  const [c1, c2] = gradients[theme] || gradients["clarity-focus"];
+  const t = themes[theme] || themes["clarity-focus"];
+  const isPurple = t.ink === 'purple';
+  const inkColor = isPurple ? '#3A1C6E' : '#ffffff';
+  const chipBg = isPurple ? 'rgba(58,28,110,0.10)' : 'rgba(255,255,255,0.12)';
+  const chipBorder = isPurple ? 'rgba(58,28,110,0.28)' : 'rgba(255,255,255,0.16)';
+  const dividerColor = isPurple ? 'rgba(58,28,110,0.55)' : 'rgba(255,255,255,0.75)';
+  const vignetteColor = isPurple ? 'rgba(58,28,110,0.18)' : 'rgba(0,0,0,0.22)';
+  const shadowColor = isPurple ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.4)';
+  const shadowBlur = isPurple ? 6 : 12;
+  const shadowOffsetY = isPurple ? 3 : 4;
+
+  // Rounded corner mask (14px * scale ≈ 42px). Match the CSS card exactly.
+  const cornerR = 42;
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(cornerR, 0);
+  ctx.arcTo(size, 0, size, size, cornerR);
+  ctx.arcTo(size, size, 0, size, cornerR);
+  ctx.arcTo(0, size, 0, 0, cornerR);
+  ctx.arcTo(0, 0, size, 0, cornerR);
+  ctx.closePath();
+  ctx.clip();
+
+  // Base gradient
   const g = ctx.createLinearGradient(0, 0, size, size);
-  g.addColorStop(0, c1);
-  g.addColorStop(1, c2);
+  g.addColorStop(0, t.c1);
+  g.addColorStop(1, t.c2);
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, size, size);
-  ctx.fillStyle = 'rgba(255,255,255,0.12)';
-  ctx.beginPath(); ctx.arc(1180, 220, 220, 0, Math.PI * 2); ctx.fill();
+
+  // Blob highlights -- position + scale mirror .mood-card::before/::after
+  // (site: 200/160 blob at 460 card; scaled 3.04x here).
+  ctx.filter = 'blur(60px)';
   ctx.fillStyle = 'rgba(255,255,255,0.08)';
-  ctx.beginPath(); ctx.arc(170, 1230, 180, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(1300, 180, 305, 0, Math.PI * 2); ctx.fill();
+  ctx.filter = 'none';
+  ctx.fillStyle = 'rgba(255,255,255,0.05)';
+  ctx.beginPath(); ctx.arc(100, 1310, 245, 0, Math.PI * 2); ctx.fill();
+
+  // Vignette -- soft radial darken so text stays legible on lighter
+  // gradient stops. Purple text on gold uses a purple wash instead.
+  const vg = ctx.createRadialGradient(size / 2, size * 0.6, size * 0.4, size / 2, size * 0.6, size * 0.9);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(1, vignetteColor);
+  ctx.fillStyle = vg;
+  ctx.fillRect(0, 0, size, size);
+
+  // Inner border (matches CSS `border: 1px solid rgba(255,255,255,0.1)`)
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  ctx.fillStyle = inkColor;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
+  ctx.shadowColor = shadowColor;
+  ctx.shadowBlur = shadowBlur;
+  ctx.shadowOffsetY = shadowOffsetY;
+
   // Butterfly emblem replaces the old "VIBEZ & BUTTERFLYZ BLENDZ" text
   // line -- matches the site-preview card design. Skip silently if the
   // image can't load; the card still ships without the mark rather than
   // crashing the download.
   const butterfly = await loadButterflyImage();
   if (butterfly) {
-    const bSize = 130;
+    const bSize = 140;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.35)';
+    ctx.shadowBlur = 18;
+    ctx.shadowOffsetY = 6;
     ctx.globalAlpha = 0.95;
-    ctx.drawImage(butterfly, (size - bSize) / 2, 90, bSize, bSize);
+    ctx.drawImage(butterfly, (size - bSize) / 2, 130, bSize, bSize);
+    ctx.restore();
   }
   ctx.globalAlpha = 1;
-  ctx.font = '600 88px Georgia, Times New Roman, serif';
-  const titleLines = wrapText(ctx, title, size / 2, 340, 980, 98);
-  ctx.font = '400 40px Satoshi, Arial, sans-serif';
-  ctx.globalAlpha = 0.94;
-  const taglineY = 340 + titleLines * 98 + 30;
-  const taglineLines = wrapText(ctx, tagline, size / 2, taglineY, 920, 52);
+  ctx.font = '600 85px Georgia, Times New Roman, serif';
+  const titleLines = wrapText(ctx, title, size / 2, 360, 1080, 96);
+  ctx.font = '400 43px Satoshi, Arial, sans-serif';
+  ctx.globalAlpha = 0.9;
+  const taglineY = 360 + titleLines * 96 + 34;
+  const taglineLines = wrapText(ctx, tagline, size / 2, taglineY, 1020, 54);
+  ctx.globalAlpha = 0.95;
+  ctx.font = '400 49px Georgia, Times New Roman, serif';
+  const affirmationY = taglineY + taglineLines * 54 + 48;
+  const affirmationLines = wrapText(ctx, affirmation, size / 2, affirmationY, 1020, 62);
+  const dividerY = affirmationY + affirmationLines * 62 + 44;
   ctx.globalAlpha = 1;
-  ctx.font = '400 42px Georgia, Times New Roman, serif';
-  const affirmationY = taglineY + taglineLines * 52 + 42;
-  const affirmationLines = wrapText(ctx, affirmation, size / 2, affirmationY, 960, 56);
-  const dividerY = affirmationY + affirmationLines * 56 + 42;
-  ctx.fillStyle = 'rgba(255,255,255,0.75)';
-  const dw = 120, dh = 8, dx = size / 2 - dw / 2;
+  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+  ctx.fillStyle = dividerColor;
+  const dw = 146, dh = 6, dx = size / 2 - dw / 2;
   ctx.beginPath();
-  ctx.moveTo(dx + 4, dividerY);
-  ctx.arcTo(dx + dw, dividerY, dx + dw, dividerY + dh, 4);
-  ctx.arcTo(dx + dw, dividerY + dh, dx, dividerY + dh, 4);
-  ctx.arcTo(dx, dividerY + dh, dx, dividerY, 4);
-  ctx.arcTo(dx, dividerY, dx + dw, dividerY, 4);
+  ctx.moveTo(dx + 3, dividerY);
+  ctx.arcTo(dx + dw, dividerY, dx + dw, dividerY + dh, 3);
+  ctx.arcTo(dx + dw, dividerY + dh, dx, dividerY + dh, 3);
+  ctx.arcTo(dx, dividerY + dh, dx, dividerY, 3);
+  ctx.arcTo(dx, dividerY, dx + dw, dividerY, 3);
   ctx.closePath();
   ctx.fill();
-  let chipX = 220, chipY = dividerY + 70;
-  const chipGap = 16;
-  // Same enrichment as the HTML preview -- the downloaded PNG is a Mood
-  // Card recipe now, not just an ingredient list. "3 drops Lavender".
-  // Drop counts source: for a curated card, use the recipe's own parts
-  // (data.oilDrops); for a My-blend card, use state.blend.
+
+  // Chips: measure the whole row width first, then draw centered.
+  // Otherwise a short chip row (2 oils) hugs the left margin instead
+  // of centering under the affirmation like the preview does.
+  const chipGap = 18;
   const chipLabel = name => {
     let drops = 0;
     if (data.oilDrops && data.oilDrops[name]) drops = data.oilDrops[name];
@@ -6585,30 +6696,59 @@ async function downloadMoodCard() {
     }
     return drops ? `${drops} drop${drops === 1 ? "" : "s"} ${name}` : name;
   };
-  oils.forEach(name => {
-    ctx.font = '500 22px Satoshi, Arial, sans-serif';
+  ctx.font = '500 33px Satoshi, Arial, sans-serif';
+  const chipMeta = oils.map(name => {
     const label = chipLabel(name);
-    const w = ctx.measureText(label).width + 36;
-    if (chipX + w > size - 220) {
-      chipX = 220;
-      chipY += 58;
-    }
-    chipX += drawChip(ctx, label, chipX, chipY) + chipGap;
+    return { label, w: ctx.measureText(label).width + 48 };
   });
-  // Skip the attribution line entirely when user didn't set one, so the
-  // downloaded card doesn't render a floating "Diffused by " with a
-  // trailing blank space.
+  const rows = [];
+  const maxRowW = size - 240;
+  let curRow = [], curW = 0;
+  chipMeta.forEach(c => {
+    const addW = curRow.length ? c.w + chipGap : c.w;
+    if (curW + addW > maxRowW && curRow.length) {
+      rows.push({ items: curRow, w: curW });
+      curRow = [c]; curW = c.w;
+    } else {
+      curRow.push(c); curW += addW;
+    }
+  });
+  if (curRow.length) rows.push({ items: curRow, w: curW });
+  let chipY = dividerY + 70;
+  rows.forEach(row => {
+    let x = (size - row.w) / 2;
+    row.items.forEach(c => {
+      drawChip(ctx, c.label, x, chipY, { chipBg, chipBorder, textColor: inkColor });
+      x += c.w + chipGap;
+    });
+    chipY += 68;
+  });
+
+  // Attribution + footer -- pinned to the bottom of the card so they
+  // read as a footer band, not floating chrome after the chips.
+  // Chips left the align in 'left' + baseline 'middle' -- restore both.
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = inkColor;
   if (attribution) {
-    ctx.fillStyle = '#fff';
-    ctx.globalAlpha = 0.88;
-    ctx.font = '400 28px Satoshi, Arial, sans-serif';
-    wrapText(ctx, attribution, size / 2, 1110, 960, 38);
+    ctx.globalAlpha = 0.85;
+    ctx.font = '400 37px Satoshi, Arial, sans-serif';
+    wrapText(ctx, attribution, size / 2, size - 110, 1020, 44);
   }
-  ctx.fillStyle = '#fff';
-  ctx.globalAlpha = 0.72;
-  ctx.font = '500 22px Satoshi, Arial, sans-serif';
-  ctx.fillText('MADE IN VIBEZ & BUTTERFLYZ SENSORY & MOOD STUDIO', size / 2, 1210);
+  ctx.globalAlpha = isPurple ? 0.75 : 0.65;
+  // Footer must fit inside the clip -- letter-spacing on canvas is a lie,
+  // so measure at a target width and scale the font down until it fits.
+  const footerText = 'MADE IN VIBEZ & BUTTERFLYZ SENSORY & MOOD STUDIO';
+  const footerMaxW = size - 200;
+  let footerSize = 26;
+  ctx.font = `500 ${footerSize}px Satoshi, Arial, sans-serif`;
+  while (ctx.measureText(footerText).width > footerMaxW && footerSize > 16) {
+    footerSize -= 1;
+    ctx.font = `500 ${footerSize}px Satoshi, Arial, sans-serif`;
+  }
+  ctx.fillText(footerText, size / 2, size - 60);
   ctx.globalAlpha = 1;
+  ctx.restore(); // release clip
   // Prefer the native mobile Share sheet when available (Android/iOS
   // Web Share Level 2). Lets the user actually SEND the Mood Card via
   // Messages / Gmail / WhatsApp / Instagram / etc -- which is what the
