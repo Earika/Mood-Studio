@@ -67,6 +67,13 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; background: var(--bg); color: var(--ink); }
+/* Chrome/Safari mobile auto-inflate text on pages they think aren't
+   mobile-optimized -- that was blowing the h1 up to ~45px on the phone
+   and clipping "Vibez & Butterflyz Sensory & Mood Studio" past the
+   viewport edge. This anchors the rendered font-size to the declared
+   value on every browser. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { overflow-x: hidden; } /* belt-and-suspenders against any wide-content overflow */
 body {
   font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   font-size: 14px;
@@ -826,13 +833,11 @@ a { color: var(--violet); }
   .lounge-grid { grid-template-columns: 1fr; }
   .moodlab-layout { grid-template-columns: 1fr; }
   .moodlab-preview-wrap { padding: 6px; }
-  /* Mobile: drop the desktop square aspect-ratio (an aspect-ratio:1/1
-     on a 380px viewport gives you a 380x380 canvas, but the card's
-     content -- brand + title + tagline + multi-line affirmation +
-     "N drops X" oil chips + attribution + footer -- overflows that
-     easily and clips or breaks the layout). Let the card grow to fit,
-     tighten the interior padding and font sizes, and don't center-
-     justify the content anymore (it stacks naturally from the top). */
+  /* Mobile Mood Card -- restore the approved SITE PREVIEW look. Drops
+     the desktop square aspect-ratio (a 380px viewport square couldn't
+     fit the card's content), keeps everything else close to the
+     preview aesthetic the user signed off on. The downloaded PNG is
+     a separate canvas render and needs its own fix to MATCH this. */
   .mood-card { width: 100%; aspect-ratio: auto; min-height: 380px; }
   .mood-card-inner { padding: 24px 20px; justify-content: flex-start; }
   .mood-card-brand { font-size: 9px; margin-bottom: 12px; }
@@ -849,6 +854,11 @@ a { color: var(--violet); }
 @media (max-width: 600px) {
   .topbar { flex-direction: column; align-items: flex-start; gap: 12px; }
   .shelf-grid { grid-template-columns: 1fr; }
+  /* Mobile-tight header: the full "Vibez & Butterflyz Sensory & Mood
+     Studio" title was overflowing to the right edge and clipping on
+     the phone. Shrink + allow soft-wrap so it fits within the panel. */
+  .topbar h1 { font-size: 20px; line-height: 1.15; word-wrap: break-word; overflow-wrap: anywhere; max-width: 100%; }
+  .topbar { padding: 16px 14px; margin: -6px -6px 16px; }
 }
 
 /* =================================================================== */
@@ -1664,6 +1674,20 @@ h3 { position: relative; }
         <p class="muted">Turn your current blend into a shareable mood card for Vibez & Butterflyz.</p>
         <div class="moodlab-layout">
           <div class="moodlab-controls">
+            <label>Vibez
+              <select id="moodlab-theme">
+                <option value="calm-peace">Calm &amp; Peace</option>
+                <option value="motivation-drive">Motivation &amp; Drive</option>
+                <option value="renewal-rejuvenation">Renewal &amp; Rejuvenation</option>
+                <option value="reenergize-reignite">Reenergize &amp; Reignite</option>
+                <option value="relaxation-rest">Relaxation &amp; Rest</option>
+                <option value="self-love-being-loved">Self-Love &amp; Being Loved</option>
+                <option value="confidence-power">Confidence &amp; Power</option>
+                <option value="protection-strength">Protection &amp; Strength</option>
+                <option value="joy-uplift">Joy &amp; Uplift</option>
+                <option value="clarity-focus">Clarity &amp; Focus</option>
+              </select>
+            </label>
             <label>Card source
               <select id="moodlab-source">
                 <option value="my-blend">My blend</option>
@@ -1679,20 +1703,6 @@ h3 { position: relative; }
             </label>
             <label>Subtitle
               <input id="moodlab-tagline" type="text" placeholder="Deep work. Quiet mind." />
-            </label>
-            <label>Vibez
-              <select id="moodlab-theme">
-                <option value="calm-peace">Calm &amp; Peace</option>
-                <option value="motivation-drive">Motivation &amp; Drive</option>
-                <option value="renewal-rejuvenation">Renewal &amp; Rejuvenation</option>
-                <option value="reenergize-reignite">Reenergize &amp; Reignite</option>
-                <option value="relaxation-rest">Relaxation &amp; Rest</option>
-                <option value="self-love-being-loved">Self-Love &amp; Being Loved</option>
-                <option value="confidence-power">Confidence &amp; Power</option>
-                <option value="protection-strength">Protection &amp; Strength</option>
-                <option value="joy-uplift">Joy &amp; Uplift</option>
-                <option value="clarity-focus">Clarity &amp; Focus</option>
-              </select>
             </label>
             <label>Diffused by (optional)
               <input id="moodlab-attribution" type="text" placeholder="@yourhandle" />
@@ -4817,6 +4827,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!document.getElementById("moodlab-tagline").dataset.touched) {
       document.getElementById("moodlab-tagline").value = getDefaultMoodline(e.target.value);
     }
+    // If the curated picker is active, re-filter it to the new Vibez so
+    // the user only sees blends that match. Reset picker selection to
+    // the first blend in the new pool so the card actually swaps to
+    // something matching (rather than silently keeping the old cross-
+    // vibe pick's data).
+    const sourceSel = document.getElementById("moodlab-source");
+    if (sourceSel && sourceSel.value === "curated") {
+      const cur = document.getElementById("moodlab-curated");
+      delete cur.dataset.vibe; // force re-populate for the new vibe
+      populateCuratedBlendOptions();
+      cur.selectedIndex = 0;
+      applyMoodlabSource(true);
+      return; // applyMoodlabSource re-derives affirmation + syncs the card
+    }
     assignMoodlabAffirmation(e.target.value, true);
     syncMoodCard();
   });
@@ -6265,20 +6289,32 @@ function getCuratedBlendData() {
   };
 }
 
+// Curated blends filtered by the currently-selected Vibez. If the Vibez
+// maps to a blend category (via TTL_MOOD_TO_BLEND_CAT / BLEND_CAT_MOOD),
+// only that category's ~50 blends show; otherwise all 500 do. Prevents
+// the picker from being a 500-item scroll and matches the "vibe first,
+// then pick a blend within it" mental model the user asked for.
 function populateCuratedBlendOptions() {
   const select = document.getElementById("moodlab-curated");
-  if (select.dataset.populated === "true") return;
-  // Group by category so 500 blends stay browsable via native optgroup.
+  const themeSel = document.getElementById("moodlab-theme");
+  const currentVibe = themeSel?.value || "clarity-focus";
+  // If we've already populated for THIS vibe, skip. Re-populate on vibe change.
+  if (select.dataset.vibe === currentVibe) return;
+  const cat = (typeof TTL_MOOD_TO_BLEND_CAT !== "undefined" && TTL_MOOD_TO_BLEND_CAT[currentVibe]) || null;
+  const pool = cat ? MOOD_BLENDS.filter(b => b.cat === cat) : MOOD_BLENDS;
+  // Group by category (redundant when a single cat is filtered, but keeps
+  // the same visual pattern; single-cat pool just renders one optgroup).
   const byCat = {};
-  MOOD_BLENDS.forEach((b, idx) => {
+  pool.forEach(b => {
+    const idx = MOOD_BLENDS.indexOf(b);
     if (!byCat[b.cat]) byCat[b.cat] = [];
     byCat[b.cat].push({ idx, name: b.name });
   });
-  const html = Object.entries(byCat).map(([cat, blends]) =>
-    `<optgroup label="${cat}">${blends.map(b => `<option value="${b.idx}">${b.name}</option>`).join("")}</optgroup>`
+  const html = Object.entries(byCat).map(([c, blends]) =>
+    `<optgroup label="${c}">${blends.map(b => `<option value="${b.idx}">${b.name}</option>`).join("")}</optgroup>`
   ).join("");
-  select.innerHTML = html;
-  select.dataset.populated = "true";
+  select.innerHTML = html || '<option value="">No curated blends for this vibe</option>';
+  select.dataset.vibe = currentVibe;
 }
 
 function resolveMoodlabBlendData() {
