@@ -7447,15 +7447,27 @@ document.getElementById("ttl-question-skip").addEventListener("click", finishTTL
 document.getElementById("ttl-skip").addEventListener("click", dismissTTL);
 document.getElementById("ttl-backdrop").addEventListener("click", dismissTTL);
 
+// Tracks when the overlay was last made visible. Used as a grace
+// period so phantom taps (the mobile tap-through effect: on some
+// browsers the tap that opened the page propagates as a synthetic
+// click to the newly-loaded page's elements) can't immediately
+// dismiss the panel the moment it appears. Reported as "the dialog
+// appears then disappears" on mobile, especially with a fresh browser.
+let ttlOverlayShownAt = 0;
+function ttlMarkShown() { ttlOverlayShownAt = Date.now(); }
+function ttlIsWithinGrace() { return Date.now() - ttlOverlayShownAt < 700; }
+
 // Hides the panel without marking onboarding "seen" -- an accidental
 // dismissal (stray backdrop tap, corner X) shouldn't permanently skip the
 // flow on future visits. Mirrors the legacy dismissOnboarding() behavior.
 function dismissTTL() {
+  if (ttlIsWithinGrace()) return; // phantom tap-through guard
   ttlOnboardingEl.classList.add("hidden");
 }
 // Deliberate opt-out ("I'll explore on my own"): hide + mark seen, but
 // write nothing to vb_sensory_profile -- current app behavior stays as-is.
 function finishTTLSkip() {
+  if (ttlIsWithinGrace()) return; // phantom tap-through guard
   ttlOnboardingEl.classList.add("hidden");
   safeStorageSet("vb_seen_onboarding", "true");
 }
@@ -7758,6 +7770,7 @@ retuneBtn.addEventListener("click", () => {
   ttlBackdropEl.classList.remove("intent-exhale", "intent-celebrate", "intent-romanticize");
   document.getElementById("ttl-step-welcome").classList.remove("hidden");
   ttlOnboardingEl.classList.remove("hidden");
+  ttlMarkShown();
 });
 
 // First-run only -- brand-new visitors see the flow; returning visitors
@@ -7771,6 +7784,7 @@ function runFirstRunFlow() {
   const profile = loadProfile();
   if (!safeStorageGet("vb_seen_onboarding") || !profile) {
     ttlOnboardingEl.classList.remove("hidden");
+    ttlMarkShown();
   } else {
     const { preloaded } = applyStoredProfile(profile);
     // Delay so the toast doesn't fight the initial page-render churn.
