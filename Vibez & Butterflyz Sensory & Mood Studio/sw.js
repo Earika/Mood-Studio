@@ -1,11 +1,19 @@
-// Minimal service worker: caches the app shell (this is a single-file app,
-// so "shell" and "content" are the same file) plus the manifest/icons, so
-// the blend tools and Mood Card work offline after a first visit. Does not
-// touch the Formspree email-gate request -- that's a cross-origin POST and
-// is never same-origin-GET, so it's simply never matched below and always
-// goes straight to the network.
+// Service worker: caches the app shell (single-file app) plus manifest/
+// icons for offline. Cross-origin POST (Formspree) is never same-origin
+// GET, so it never matches the fetch handler and always hits the network.
+//
+// Strategy per resource type:
+//   * HTML  -> NETWORK-FIRST. Always try fresh; fall back to cache only
+//              when offline. Fixes the classic PWA pain where users run
+//              one version behind after every deploy because cache-first
+//              serves stale index.html and only refreshes in background.
+//   * Everything else -> CACHE-FIRST with background refresh. Icons/
+//              manifest don't change often and rarely block a UI fix.
+//
+// Bump CACHE_VERSION whenever a shipped change needs to invalidate the
+// old shell forcefully -- the activate handler then deletes prior caches.
 
-const CACHE_VERSION = "vb-cache-v1";
+const CACHE_VERSION = "vb-cache-v2";
 const SHELL_ASSETS = [
   "./index.html",
   "./manifest.json",
@@ -31,12 +39,33 @@ self.addEventListener("activate", event => {
   self.clients.claim();
 });
 
+function isHtmlRequest(req) {
+  if (req.mode === "navigate") return true;
+  const accept = req.headers.get("accept") || "";
+  if (accept.includes("text/html")) return true;
+  const path = new URL(req.url).pathname;
+  return path.endsWith(".html") || path.endsWith("/");
+}
+
 self.addEventListener("fetch", event => {
   const req = event.request;
-  // Only ever handle same-origin GETs -- everything else (the Formspree
-  // POST, any future cross-origin call) passes straight through untouched.
   if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return;
 
+  if (isHtmlRequest(req)) {
+    // Network-first for HTML: always try the live version so shipped
+    // fixes land on the next load, not the load after that.
+    event.respondWith(
+      fetch(req)
+        .then(res => {
+          if (res.ok) caches.open(CACHE_VERSION).then(cache => cache.put(req, res.clone()));
+          return res;
+        })
+        .catch(() => caches.match(req).then(cached => cached || caches.match("./index.html")))
+    );
+    return;
+  }
+
+  // Cache-first for assets: fast offline load, refresh in background.
   event.respondWith(
     caches.match(req).then(cached => {
       const network = fetch(req)
@@ -44,9 +73,7 @@ self.addEventListener("fetch", event => {
           if (res.ok) caches.open(CACHE_VERSION).then(cache => cache.put(req, res.clone()));
           return res;
         })
-        .catch(() => cached); // offline: fall back to whatever's cached
-      // Cache-first for instant offline loads; refresh the cache in the
-      // background whenever the network is actually available.
+        .catch(() => cached);
       return cached || network;
     })
   );
