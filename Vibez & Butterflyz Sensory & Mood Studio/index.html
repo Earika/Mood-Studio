@@ -815,11 +815,14 @@ a { color: var(--violet); }
   .stats { grid-template-columns: repeat(2,1fr); }
   .blend-summary { grid-template-columns: 1fr; }
   .shelf-grid { grid-template-columns: 1fr 1fr; }
-  /* 130px bottom -- Tour button at bottom:14px (~40px tall) + Retune
-     button stacked at bottom:64px (~40px tall) + margin. Prior 90px
-     was fine when only Tour was in the corner; adding Retune made the
-     stack ~110px tall and content was scrolling under it. */
-  .main { padding: 16px 16px 130px; }
+  /* 130px bottom clearance for the Tour + Retune corner buttons.
+     Also drop the desktop overflow-y:auto + max-height:100dvh here:
+     on mobile that made .main its own scroll container inside the
+     already-scrolling body, so a finger drag inside .main scrolled
+     only its tiny overflow (a millimeter on a short view like an
+     empty Blend Analyzer) instead of the whole page. Letting the body
+     handle scroll gives natural momentum + full-page reach. */
+  .main { padding: 16px 16px 130px; overflow: visible; max-height: none; }
   .lounge-grid { grid-template-columns: 1fr; }
   .moodlab-layout { grid-template-columns: 1fr; }
   .moodlab-preview-wrap { padding: 6px; }
@@ -4750,6 +4753,12 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // tabs
+  // Tab click handlers preserve the user's scroll position across the
+  // tab switch. Both the browser's focus-scroll (bringing the newly-
+  // focused tab button into view) and the view swap (display:none on
+  // one .view + display:block on another can reset the scrollable
+  // container's scrollTop to 0) were reported as "Blend Analyzer was
+  // hard to scroll on the phone; it moved every time I tried."
   document.getElementById("tab-library").addEventListener("click", () => setView("library"));
   document.getElementById("tab-blend").addEventListener("click", () => setView("blend"));
   document.getElementById("tab-recipes").addEventListener("click", () => setView("recipes"));
@@ -6634,15 +6643,15 @@ function renderTabHelp(v, opts = {}) {
   document.getElementById("tab-help-title").textContent = h.title;
   document.getElementById("tab-help-desc").textContent = h.desc;
   document.getElementById("tab-help-next").innerHTML = (h.nextLabel || "Next:") + " " + h.next;
-  // A tab switch updates this card's text without ever hiding it, and can
-  // land it right behind the fixed Tour / Guide pills docked in the bottom
-  // corners -- nudge it fully into view when that happens. But this also
-  // runs once automatically on initial page load (see call at the bottom
-  // of this file), before the user has done anything -- scrolling then
-  // made the whole page open pre-scrolled away from the top, behind the
-  // email gate / onboarding overlay. So: only user-triggered calls (tab
-  // clicks) opt into the scroll; the initial-load call passes scroll:false.
-  if (opts.scroll !== false) helpEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  // Deliberately no auto-scroll here. Any scrollIntoView on tab click
+  // fought the user's own scroll on mobile ("page moves every time I
+  // try to scroll" -- reported on Blend Analyzer). The tab-help card
+  // sits directly below the tab bar in normal document flow, so a
+  // tab click that scrolls the user to the tab section is already
+  // enough to reveal it. If a user is deep-scrolled and taps a tab,
+  // they see the tab-help by scrolling up themselves. Never opts.scroll:
+  // false either, since the initial-load call had that same reason.
+  void opts;
 }
 document.getElementById("tab-help-dismiss").addEventListener("click", () => {
   tabHelpDismissed = true; helpEl.classList.add("hidden");
@@ -6665,14 +6674,21 @@ setView = function(v) {
   if (v === "moodlab" && Object.keys(state.blend).length > 0) {
     setTimeout(() => {
       const card = document.getElementById("mood-card");
+      if (!card) return;
+      // Auto-detect the scroll container: on desktop .main is the
+      // scroller (overflow-y:auto), on mobile that overflow is
+      // dropped so the body/window scrolls instead. Try main first,
+      // then window.
       const scroller = document.getElementById("main-content");
-      if (!card || !scroller) return;
-      // scrollIntoView(block:start) was overshooting because .main has
-      // top padding scrollIntoView doesn't account for -- title landed
-      // 28px ABOVE the viewport. Compute the offset manually with a
-      // small headroom pad so the card's top clears the tab-help block.
-      const cardTop = card.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop;
-      scroller.scrollTo({ top: Math.max(0, cardTop - 12), behavior: "smooth" });
+      const mainScrolls = scroller && scroller.scrollHeight > scroller.clientHeight;
+      const cardRect = card.getBoundingClientRect();
+      if (mainScrolls) {
+        const y = cardRect.top - scroller.getBoundingClientRect().top + scroller.scrollTop - 12;
+        scroller.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+      } else {
+        const y = cardRect.top + window.scrollY - 12;
+        window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+      }
     }, 250);
   }
 };
