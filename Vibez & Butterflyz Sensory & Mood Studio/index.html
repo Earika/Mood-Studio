@@ -818,15 +818,16 @@ a { color: var(--violet); }
 .theme-clarity-focus        { background: linear-gradient(145deg, #2A5488 0%, #5A93C4 100%); }  /* crisp clear sky blue */
 
 /* Joy-uplift override -- the gold/yellow gradient can't carry white text
-   at WCAG AA on light stops. Flip the whole card to deep royal purple:
-   text, chips, divider, emblem shadow, vignette all restated so nothing
-   defaults to the white treatment inherited from .mood-card-inner. */
-.mood-card.theme-joy-uplift .mood-card-inner { color: #3A1C6E; text-shadow: 0 1px 2px rgba(255,255,255,0.35); }
-.mood-card.theme-joy-uplift .mood-card-inner::before { background: radial-gradient(120% 90% at 50% 60%, transparent 40%, rgba(58,28,110,0.18) 100%); }
-.mood-card.theme-joy-uplift .mood-card h2 { color: #3A1C6E; }
-.mood-card.theme-joy-uplift .mood-card-divider { background: rgba(58,28,110,0.55); }
-.mood-card.theme-joy-uplift .mood-card-chip { background: rgba(58,28,110,0.10); border-color: rgba(58,28,110,0.28); color: #3A1C6E; }
-.mood-card.theme-joy-uplift .mood-card-emblem svg { filter: drop-shadow(0 2px 6px rgba(58,28,110,0.35)) drop-shadow(0 0 12px rgba(255,255,255,0.35)); }
+   at WCAG AA on light stops. Flip the whole card to a near-black
+   plum ink; no text-shadow (a light halo behind dark text muddies the
+   glyph edges), no vignette wash, no chip fill -- just clean high-
+   contrast letterforms on the gold. */
+.mood-card.theme-joy-uplift .mood-card-inner { color: #1F1233; text-shadow: none; }
+.mood-card.theme-joy-uplift .mood-card-inner::before { background: none; }
+.mood-card.theme-joy-uplift .mood-card h2 { color: #1F1233; }
+.mood-card.theme-joy-uplift .mood-card-divider { background: rgba(31,18,51,0.5); }
+.mood-card.theme-joy-uplift .mood-card-chip { background: transparent; border-color: rgba(31,18,51,0.4); color: #1F1233; backdrop-filter: none; }
+.mood-card.theme-joy-uplift .mood-card-emblem svg { filter: drop-shadow(0 2px 6px rgba(31,18,51,0.4)); }
 
 .muted { color: var(--ink-3); font-size: 12px; margin-bottom: 12px; line-height: 1.5; }
 .empty { text-align: center; padding: 32px 20px; color: var(--ink-3); font-style: italic; font-size: 13px; }
@@ -6634,15 +6635,20 @@ async function downloadMoodCard() {
     "clarity-focus":         { c1: '#2A5488', c2: '#5A93C4', ink: 'white' }
   };
   const t = themes[theme] || themes["clarity-focus"];
-  const isPurple = t.ink === 'purple';
-  const inkColor = isPurple ? '#3A1C6E' : '#ffffff';
-  const chipBg = isPurple ? 'rgba(58,28,110,0.10)' : 'rgba(255,255,255,0.12)';
-  const chipBorder = isPurple ? 'rgba(58,28,110,0.28)' : 'rgba(255,255,255,0.16)';
-  const dividerColor = isPurple ? 'rgba(58,28,110,0.55)' : 'rgba(255,255,255,0.75)';
-  const vignetteColor = isPurple ? 'rgba(58,28,110,0.18)' : 'rgba(0,0,0,0.22)';
-  const shadowColor = isPurple ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.4)';
-  const shadowBlur = isPurple ? 6 : 12;
-  const shadowOffsetY = isPurple ? 3 : 4;
+  const isDarkInk = t.ink === 'purple';
+  // Dark-ink cards (gold): near-black plum for max glyph contrast, no
+  // text-shadow (a white halo behind dark text muddies the letters),
+  // no vignette, transparent chips. White-ink cards keep the vignette
+  // + soft shadow because they need help staying legible on lighter
+  // gradient stops.
+  const inkColor = isDarkInk ? '#1F1233' : '#ffffff';
+  const chipBg = isDarkInk ? 'rgba(0,0,0,0)' : 'rgba(255,255,255,0.12)';
+  const chipBorder = isDarkInk ? 'rgba(31,18,51,0.4)' : 'rgba(255,255,255,0.16)';
+  const dividerColor = isDarkInk ? 'rgba(31,18,51,0.5)' : 'rgba(255,255,255,0.75)';
+  const vignetteColor = isDarkInk ? null : 'rgba(0,0,0,0.22)';
+  const shadowColor = isDarkInk ? null : 'rgba(0,0,0,0.4)';
+  const shadowBlur = isDarkInk ? 0 : 12;
+  const shadowOffsetY = isDarkInk ? 0 : 4;
 
   // Rounded corner mask (14px * scale ≈ 42px). Match the CSS card exactly.
   const cornerR = 42;
@@ -6672,13 +6678,16 @@ async function downloadMoodCard() {
   ctx.fillStyle = 'rgba(255,255,255,0.05)';
   ctx.beginPath(); ctx.arc(100, 1310, 245, 0, Math.PI * 2); ctx.fill();
 
-  // Vignette -- soft radial darken so text stays legible on lighter
-  // gradient stops. Purple text on gold uses a purple wash instead.
-  const vg = ctx.createRadialGradient(size / 2, size * 0.6, size * 0.4, size / 2, size * 0.6, size * 0.9);
-  vg.addColorStop(0, 'rgba(0,0,0,0)');
-  vg.addColorStop(1, vignetteColor);
-  ctx.fillStyle = vg;
-  ctx.fillRect(0, 0, size, size);
+  // Vignette -- soft radial darken so white text stays legible on
+  // lighter gradient stops. Dark-ink cards skip it (dark text + a dark
+  // wash reads as murky).
+  if (vignetteColor) {
+    const vg = ctx.createRadialGradient(size / 2, size * 0.6, size * 0.4, size / 2, size * 0.6, size * 0.9);
+    vg.addColorStop(0, 'rgba(0,0,0,0)');
+    vg.addColorStop(1, vignetteColor);
+    ctx.fillStyle = vg;
+    ctx.fillRect(0, 0, size, size);
+  }
 
   // Inner border (matches CSS `border: 1px solid rgba(255,255,255,0.1)`)
   ctx.strokeStyle = 'rgba(255,255,255,0.1)';
@@ -6776,7 +6785,7 @@ async function downloadMoodCard() {
   }
   y += emblemH + emblemGap;
 
-  ctx.shadowColor = shadowColor;
+  ctx.shadowColor = shadowColor || 'transparent';
   ctx.shadowBlur = shadowBlur;
   ctx.shadowOffsetY = shadowOffsetY;
   ctx.globalAlpha = 1;
@@ -6834,7 +6843,7 @@ async function downloadMoodCard() {
     wrapText(ctx, attribution, size / 2, y + 34, 1020, attributionLH);
     y += attributionLines * attributionLH + attributionGap;
   }
-  ctx.globalAlpha = isPurple ? 0.75 : 0.65;
+  ctx.globalAlpha = isDarkInk ? 0.75 : 0.65;
   // Letter-spacing isn't a canvas thing, so scale the footer font down
   // until it fits inside the clip.
   const footerText = 'MADE IN VIBEZ & BUTTERFLYZ SENSORY & MOOD STUDIO';
