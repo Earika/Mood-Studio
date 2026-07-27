@@ -6819,32 +6819,33 @@ async function downloadMoodCard() {
     attributionLines = measureWrap(ctx, attribution, 1020);
   }
 
-  // Layout rule: emblem is pinned near the top, footer + attribution
-  // are pinned near the bottom. The middle band (title / tagline /
-  // affirmation / divider / chips) is vertically centered in the free
-  // space between them. When the content grows, the empty room shrinks
-  // equally from top and bottom -- never bottom-heavy, never cluttered
-  // toward the footer.
-  const topMargin = 140;      // emblem top edge
+  // Layout rule: footer is pinned near the bottom. Everything above --
+  // emblem, title, tagline, affirmation, divider, chips -- flows as a
+  // single content block and is vertically centered in the free space
+  // above the footer. As the affirmation or the blend grows, the empty
+  // room shrinks equally from top and bottom, and the emblem always
+  // stays visually attached to the title instead of floating alone at
+  // the top edge.
+  const topSafeMargin = 90;   // minimum room above the emblem
   const bottomMargin = 90;    // footer baseline offset from bottom
   const attributionBlockH = attribution
     ? attributionLines * attributionLH + attributionGap
     : 0;
 
-  const middleH =
+  const contentH =
+    emblemH + emblemGap +
     titleLines * titleLH + titleGap +
     taglineLines * taglineLH + taglineGap +
     affirmationLines * affirmationLH + affirmationGap +
     dividerH + dividerGap +
     chipRows.length * chipRowH;
 
-  const topBandEnd = topMargin + emblemH + emblemGap;
   const bottomBandStart = size - bottomMargin - footerH - attributionBlockH;
-  const freeSpace = bottomBandStart - topBandEnd;
-  let y = topBandEnd + Math.max(0, (freeSpace - middleH) / 2);
+  const availH = bottomBandStart - topSafeMargin;
+  let y = topSafeMargin + Math.max(0, (availH - contentH) / 2);
 
   // ------- DRAW PASS -------
-  // Butterfly emblem -- pinned to the top margin
+  // Butterfly emblem -- top of the flowing content block, moves with it
   const butterfly = await loadButterflyImage();
   if (butterfly) {
     ctx.save();
@@ -6852,9 +6853,10 @@ async function downloadMoodCard() {
     ctx.shadowBlur = 18;
     ctx.shadowOffsetY = 6;
     ctx.globalAlpha = 0.95;
-    ctx.drawImage(butterfly, (size - emblemH) / 2, topMargin, emblemH, emblemH);
+    ctx.drawImage(butterfly, (size - emblemH) / 2, y, emblemH, emblemH);
     ctx.restore();
   }
+  y += emblemH + emblemGap;
 
   ctx.shadowColor = shadowColor || 'transparent';
   ctx.shadowBlur = shadowBlur;
