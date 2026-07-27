@@ -817,17 +817,45 @@ a { color: var(--violet); }
 .theme-joy-uplift           { background: linear-gradient(145deg, #D9942E 0%, #F2C64E 100%); }  /* warm sunlit gold */
 .theme-clarity-focus        { background: linear-gradient(145deg, #2A5488 0%, #5A93C4 100%); }  /* crisp clear sky blue */
 
-/* Joy-uplift override -- the gold/yellow gradient can't carry white text
-   at WCAG AA on light stops. Flip the whole card to a near-black
-   plum ink; no text-shadow (a light halo behind dark text muddies the
-   glyph edges), no vignette wash, no chip fill -- just clean high-
-   contrast letterforms on the gold. */
-.mood-card.theme-joy-uplift .mood-card-inner { color: #1F1233; text-shadow: none; }
+/* Joy-uplift override -- classic letterpress typography on gilded
+   metal: dark bronze shadow BELOW each glyph, warm cream highlight
+   ABOVE. Text reads as engraved into a brass plaque, not floating
+   flat and not fuzzed by a halo. Card itself gets a deeper gradient
+   plus a warm sun-glint highlight so the surface has dimension. */
+.mood-card.theme-joy-uplift {
+  background: linear-gradient(145deg, #B87B18 0%, #E5B23A 45%, #F5D468 100%);
+}
+.mood-card.theme-joy-uplift::before {
+  background: radial-gradient(circle, rgba(255,240,190,0.5), transparent 65%);
+  filter: blur(30px);
+}
+.mood-card.theme-joy-uplift::after {
+  background: radial-gradient(circle, rgba(120,60,10,0.28), transparent 70%);
+}
+.mood-card.theme-joy-uplift .mood-card-inner {
+  color: #2A1338;
+  text-shadow:
+    0 1px 0 rgba(255,240,200,0.55),
+    0 -1px 0 rgba(80,35,5,0.35),
+    0 2px 3px rgba(80,35,5,0.18);
+}
 .mood-card.theme-joy-uplift .mood-card-inner::before { background: none; }
-.mood-card.theme-joy-uplift .mood-card h2 { color: #1F1233; }
-.mood-card.theme-joy-uplift .mood-card-divider { background: rgba(31,18,51,0.5); }
-.mood-card.theme-joy-uplift .mood-card-chip { background: transparent; border-color: rgba(31,18,51,0.4); color: #1F1233; backdrop-filter: none; }
-.mood-card.theme-joy-uplift .mood-card-emblem svg { filter: drop-shadow(0 2px 6px rgba(31,18,51,0.4)); }
+.mood-card.theme-joy-uplift .mood-card h2 { color: #2A1338; }
+.mood-card.theme-joy-uplift .mood-card-divider {
+  background: linear-gradient(90deg, transparent, rgba(80,35,5,0.55), transparent);
+  height: 2px;
+  box-shadow: 0 1px 0 rgba(255,240,200,0.4);
+}
+.mood-card.theme-joy-uplift .mood-card-chip {
+  background: linear-gradient(180deg, rgba(255,240,200,0.28), rgba(180,120,30,0.10));
+  border-color: rgba(80,35,5,0.35);
+  color: #2A1338;
+  box-shadow: inset 0 1px 0 rgba(255,240,200,0.5), 0 1px 2px rgba(80,35,5,0.2);
+  backdrop-filter: none;
+}
+.mood-card.theme-joy-uplift .mood-card-emblem svg {
+  filter: drop-shadow(0 2px 4px rgba(80,35,5,0.5)) drop-shadow(0 1px 0 rgba(255,240,200,0.4));
+}
 
 .muted { color: var(--ink-3); font-size: 12px; margin-bottom: 12px; line-height: 1.5; }
 .empty { text-align: center; padding: 32px 20px; color: var(--ink-3); font-style: italic; font-size: 13px; }
@@ -6486,7 +6514,24 @@ function syncMoodCard() {
   renderLoungeMatrix(oils.map(name => ({ name })));
 }
 
-function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+// Letterpress-emboss the current-font text at (x, y): draw a warm
+// cream highlight ONE PIXEL ABOVE, a dark bronze shadow ONE PIXEL
+// BELOW, then the ink glyph on top. Reads as text engraved into a
+// brass plaque -- gives real depth without haloing.
+function drawEngravedLine(ctx, text, x, y, inkColor) {
+  const prev = ctx.fillStyle;
+  ctx.fillStyle = 'rgba(255,240,200,0.55)';
+  ctx.fillText(text, x, y + 2);
+  ctx.fillStyle = 'rgba(80,35,5,0.38)';
+  ctx.fillText(text, x, y - 2);
+  ctx.fillStyle = inkColor;
+  ctx.fillText(text, x, y);
+  ctx.fillStyle = prev;
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight, opts) {
+  const engraved = opts && opts.engraved;
+  const inkColor = opts && opts.inkColor;
   const words = text.split(/\s+/).filter(Boolean);
   let line = "";
   const lines = [];
@@ -6500,7 +6545,10 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
     }
   });
   if (line) lines.push(line);
-  lines.forEach((ln, i) => ctx.fillText(ln, x, y + i * lineHeight));
+  lines.forEach((ln, i) => {
+    if (engraved) drawEngravedLine(ctx, ln, x, y + i * lineHeight, inkColor);
+    else ctx.fillText(ln, x, y + i * lineHeight);
+  });
   return lines.length;
 }
 
@@ -6531,7 +6579,16 @@ function drawChip(ctx, text, x, y, opts) {
   const w = ctx.measureText(text).width + padX * 2;
   const h = 54;
   const r = 27;
-  ctx.fillStyle = o.chipBg || 'rgba(255,255,255,0.12)';
+  // Fill: string colors go direct; 'gold-plate' builds a cream-to-
+  // bronze gradient so the chip looks like a small brass tag.
+  if (o.chipBg === 'gold-plate') {
+    const cg = ctx.createLinearGradient(x, y, x, y + h);
+    cg.addColorStop(0, 'rgba(255,240,200,0.32)');
+    cg.addColorStop(1, 'rgba(180,120,30,0.14)');
+    ctx.fillStyle = cg;
+  } else {
+    ctx.fillStyle = o.chipBg || 'rgba(255,255,255,0.12)';
+  }
   ctx.strokeStyle = o.chipBorder || 'rgba(255,255,255,0.16)';
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -6543,10 +6600,34 @@ function drawChip(ctx, text, x, y, opts) {
   ctx.closePath();
   ctx.fill();
   ctx.stroke();
-  ctx.fillStyle = o.textColor || '#fff';
+  // Highlight rim on gold-plate chips -- a thin cream line just inside
+  // the top edge sells the "raised metal" feel.
+  if (o.chipBg === 'gold-plate') {
+    ctx.strokeStyle = 'rgba(255,240,200,0.5)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y + 1.5);
+    ctx.lineTo(x + w - r, y + 1.5);
+    ctx.stroke();
+  }
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  ctx.fillText(text, x + padX, y + h / 2 + 1);
+  const textY = y + h / 2 + 1;
+  const textX = x + padX;
+  if (o.engraved) {
+    // Same letterpress emboss as the main text, scaled tighter.
+    const prev = ctx.fillStyle;
+    ctx.fillStyle = 'rgba(255,240,200,0.5)';
+    ctx.fillText(text, textX, textY + 1);
+    ctx.fillStyle = 'rgba(80,35,5,0.35)';
+    ctx.fillText(text, textX, textY - 1);
+    ctx.fillStyle = o.textColor || '#fff';
+    ctx.fillText(text, textX, textY);
+    ctx.fillStyle = prev;
+  } else {
+    ctx.fillStyle = o.textColor || '#fff';
+    ctx.fillText(text, textX, textY);
+  }
   return w;
 }
 
@@ -6631,24 +6712,28 @@ async function downloadMoodCard() {
     "self-love-being-loved": { c1: '#A83E6B', c2: '#D98BA8', ink: 'white' },
     "confidence-power":      { c1: '#4A2C82', c2: '#8B57AE', ink: 'white' },
     "protection-strength":   { c1: '#185C3E', c2: '#3F7357', ink: 'white' },
-    "joy-uplift":            { c1: '#D9942E', c2: '#F2C64E', ink: 'purple' },
+    "joy-uplift":            { c1: '#B87B18', c2: '#F5D468', ink: 'engraved', midStop: '#E5B23A' },
     "clarity-focus":         { c1: '#2A5488', c2: '#5A93C4', ink: 'white' }
   };
   const t = themes[theme] || themes["clarity-focus"];
-  const isDarkInk = t.ink === 'purple';
-  // Dark-ink cards (gold): near-black plum for max glyph contrast, no
-  // text-shadow (a white halo behind dark text muddies the letters),
-  // no vignette, transparent chips. White-ink cards keep the vignette
-  // + soft shadow because they need help staying legible on lighter
-  // gradient stops.
-  const inkColor = isDarkInk ? '#1F1233' : '#ffffff';
-  const chipBg = isDarkInk ? 'rgba(0,0,0,0)' : 'rgba(255,255,255,0.12)';
-  const chipBorder = isDarkInk ? 'rgba(31,18,51,0.4)' : 'rgba(255,255,255,0.16)';
-  const dividerColor = isDarkInk ? 'rgba(31,18,51,0.5)' : 'rgba(255,255,255,0.75)';
-  const vignetteColor = isDarkInk ? null : 'rgba(0,0,0,0.22)';
-  const shadowColor = isDarkInk ? null : 'rgba(0,0,0,0.4)';
-  const shadowBlur = isDarkInk ? 0 : 12;
-  const shadowOffsetY = isDarkInk ? 0 : 4;
+  const isEngraved = t.ink === 'engraved';
+  // Engraved cards (gold): text reads as engraved into a brass plaque
+  // via a two-layer letterpress technique (bronze shadow BELOW each
+  // glyph + cream highlight ABOVE). Card gets a warmer gradient plus
+  // a sunlight glint at the top and a bronze weight at the bottom so
+  // the surface itself has real dimension.
+  // White-ink cards keep the vignette + drop-shadow for legibility on
+  // lighter gradient stops.
+  const inkColor = isEngraved ? '#2A1338' : '#ffffff';
+  const chipBg = isEngraved ? 'gold-plate' : 'rgba(255,255,255,0.12)';
+  const chipBorder = isEngraved ? 'rgba(80,35,5,0.35)' : 'rgba(255,255,255,0.16)';
+  const dividerColor = isEngraved ? 'engraved' : 'rgba(255,255,255,0.75)';
+  const vignetteColor = isEngraved ? null : 'rgba(0,0,0,0.22)';
+  // For engraved: shadowColor drives the letterpress emboss (dark
+  // bronze pass). For white-ink: soft dark drop shadow.
+  const shadowColor = isEngraved ? null : 'rgba(0,0,0,0.4)';
+  const shadowBlur = isEngraved ? 0 : 12;
+  const shadowOffsetY = isEngraved ? 0 : 4;
 
   // Rounded corner mask (14px * scale ≈ 42px). Match the CSS card exactly.
   const cornerR = 42;
@@ -6662,21 +6747,35 @@ async function downloadMoodCard() {
   ctx.closePath();
   ctx.clip();
 
-  // Base gradient
+  // Base gradient -- engraved gets a 3-stop for a richer gold surface
+  // that reads as burnished metal (deep amber -> honey -> pale gold).
   const g = ctx.createLinearGradient(0, 0, size, size);
   g.addColorStop(0, t.c1);
+  if (t.midStop) g.addColorStop(0.45, t.midStop);
   g.addColorStop(1, t.c2);
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, size, size);
 
-  // Blob highlights -- position + scale mirror .mood-card::before/::after
-  // (site: 200/160 blob at 460 card; scaled 3.04x here).
-  ctx.filter = 'blur(60px)';
-  ctx.fillStyle = 'rgba(255,255,255,0.08)';
-  ctx.beginPath(); ctx.arc(1300, 180, 305, 0, Math.PI * 2); ctx.fill();
-  ctx.filter = 'none';
-  ctx.fillStyle = 'rgba(255,255,255,0.05)';
-  ctx.beginPath(); ctx.arc(100, 1310, 245, 0, Math.PI * 2); ctx.fill();
+  // Ambient light -- engraved cards get a warm cream sun-glint at the
+  // top-right + a deep bronze weight at the bottom-left, so the surface
+  // has real dimension instead of feeling flat. Other themes keep the
+  // soft white blobs that mirror the CSS .mood-card::before/::after.
+  if (isEngraved) {
+    ctx.filter = 'blur(80px)';
+    ctx.fillStyle = 'rgba(255,240,190,0.5)';
+    ctx.beginPath(); ctx.arc(1050, 260, 380, 0, Math.PI * 2); ctx.fill();
+    ctx.filter = 'blur(70px)';
+    ctx.fillStyle = 'rgba(120,60,10,0.28)';
+    ctx.beginPath(); ctx.arc(280, 1180, 340, 0, Math.PI * 2); ctx.fill();
+    ctx.filter = 'none';
+  } else {
+    ctx.filter = 'blur(60px)';
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.beginPath(); ctx.arc(1300, 180, 305, 0, Math.PI * 2); ctx.fill();
+    ctx.filter = 'none';
+    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    ctx.beginPath(); ctx.arc(100, 1310, 245, 0, Math.PI * 2); ctx.fill();
+  }
 
   // Vignette -- soft radial darken so white text stays legible on
   // lighter gradient stops. Dark-ink cards skip it (dark text + a dark
@@ -6790,43 +6889,58 @@ async function downloadMoodCard() {
   ctx.shadowOffsetY = shadowOffsetY;
   ctx.globalAlpha = 1;
 
+  const textOpts = { engraved: isEngraved, inkColor };
+
   // Title -- Zodiak matches the site h2
   ctx.font = '600 85px Zodiak, Georgia, serif';
-  wrapText(ctx, title, size / 2, y + 78, 1080, titleLH);
+  wrapText(ctx, title, size / 2, y + 78, 1080, titleLH, textOpts);
   y += titleLines * titleLH + titleGap;
 
   // Tagline -- Satoshi, matches site body inherit
   ctx.font = '400 43px Satoshi, -apple-system, sans-serif';
   ctx.globalAlpha = 0.9;
-  wrapText(ctx, tagline, size / 2, y + 40, 1020, taglineLH);
+  wrapText(ctx, tagline, size / 2, y + 40, 1020, taglineLH, textOpts);
   y += taglineLines * taglineLH + taglineGap;
 
   // Affirmation
   ctx.globalAlpha = 0.95;
   ctx.font = '400 49px Satoshi, -apple-system, sans-serif';
-  wrapText(ctx, affirmation, size / 2, y + 46, 1020, affirmationLH);
+  wrapText(ctx, affirmation, size / 2, y + 46, 1020, affirmationLH, textOpts);
   y += affirmationLines * affirmationLH + affirmationGap;
 
   // Divider
   ctx.globalAlpha = 1;
   ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-  ctx.fillStyle = dividerColor;
   const dw = 146, dh = dividerH, dx = size / 2 - dw / 2, dy = y;
-  ctx.beginPath();
-  ctx.moveTo(dx + 3, dy);
-  ctx.arcTo(dx + dw, dy, dx + dw, dy + dh, 3);
-  ctx.arcTo(dx + dw, dy + dh, dx, dy + dh, 3);
-  ctx.arcTo(dx, dy + dh, dx, dy, 3);
-  ctx.arcTo(dx, dy, dx + dw, dy, 3);
-  ctx.closePath();
-  ctx.fill();
+  if (dividerColor === 'engraved') {
+    // Two-tone rule: cream highlight above, bronze line below --
+    // matches the letterpress vibe of the text.
+    ctx.fillStyle = 'rgba(255,240,200,0.4)';
+    ctx.fillRect(dx, dy, dw, 2);
+    const dg = ctx.createLinearGradient(dx, dy, dx + dw, dy);
+    dg.addColorStop(0, 'rgba(80,35,5,0)');
+    dg.addColorStop(0.5, 'rgba(80,35,5,0.55)');
+    dg.addColorStop(1, 'rgba(80,35,5,0)');
+    ctx.fillStyle = dg;
+    ctx.fillRect(dx, dy + 2, dw, 2);
+  } else {
+    ctx.fillStyle = dividerColor;
+    ctx.beginPath();
+    ctx.moveTo(dx + 3, dy);
+    ctx.arcTo(dx + dw, dy, dx + dw, dy + dh, 3);
+    ctx.arcTo(dx + dw, dy + dh, dx, dy + dh, 3);
+    ctx.arcTo(dx, dy + dh, dx, dy, 3);
+    ctx.arcTo(dx, dy, dx + dw, dy, 3);
+    ctx.closePath();
+    ctx.fill();
+  }
   y += dividerH + dividerGap;
 
   // Chip rows -- loop leaves y just below the last row; add chipsGap.
   chipRows.forEach(row => {
     let x = (size - row.w) / 2;
     row.items.forEach(c => {
-      drawChip(ctx, c.label, x, y, { chipBg, chipBorder, textColor: inkColor });
+      drawChip(ctx, c.label, x, y, { chipBg, chipBorder, textColor: inkColor, engraved: isEngraved });
       x += c.w + chipGap;
     });
     y += chipRowH;
@@ -6840,10 +6954,10 @@ async function downloadMoodCard() {
   if (attribution) {
     ctx.globalAlpha = 0.85;
     ctx.font = '400 37px Satoshi, -apple-system, sans-serif';
-    wrapText(ctx, attribution, size / 2, y + 34, 1020, attributionLH);
+    wrapText(ctx, attribution, size / 2, y + 34, 1020, attributionLH, textOpts);
     y += attributionLines * attributionLH + attributionGap;
   }
-  ctx.globalAlpha = isDarkInk ? 0.75 : 0.65;
+  ctx.globalAlpha = isEngraved ? 0.85 : 0.65;
   // Letter-spacing isn't a canvas thing, so scale the footer font down
   // until it fits inside the clip.
   const footerText = 'MADE IN VIBEZ & BUTTERFLYZ SENSORY & MOOD STUDIO';
@@ -6854,7 +6968,8 @@ async function downloadMoodCard() {
     footerSize -= 1;
     ctx.font = `500 ${footerSize}px Satoshi, -apple-system, sans-serif`;
   }
-  ctx.fillText(footerText, size / 2, y + footerSize);
+  if (isEngraved) drawEngravedLine(ctx, footerText, size / 2, y + footerSize, inkColor);
+  else ctx.fillText(footerText, size / 2, y + footerSize);
   ctx.globalAlpha = 1;
   ctx.restore(); // release clip
   // Prefer the native mobile Share sheet when available (Android/iOS
