@@ -800,7 +800,7 @@ a { color: var(--violet); }
 .mood-card-affirmation { font-size: 16px; line-height: 1.6; max-width: 340px; margin: 0 auto 20px; opacity: 0.95; }
 .mood-card-divider { width: 48px; height: 2px; border-radius: 999px; background: rgba(255,255,255,0.6); margin: 0 auto 20px; }
 .mood-card-oils { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 20px; }
-.mood-card-chip { padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.16); font-size: 11px; backdrop-filter: blur(4px); }
+.mood-card-chip { padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.16); font-family: 'Zodiak', Georgia, serif; font-size: 12px; backdrop-filter: blur(4px); }
 .mood-card-attribution { font-size: 12px; opacity: 0.85; margin-bottom: 8px; }
 .mood-card-footer { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.65; }
 
@@ -6525,7 +6525,7 @@ function measureWrap(ctx, text, maxWidth) {
 
 function drawChip(ctx, text, x, y, opts) {
   const o = opts || {};
-  ctx.font = '500 33px Satoshi, Arial, sans-serif';
+  ctx.font = '500 33px Zodiak, Georgia, serif';
   const padX = 24;
   const w = ctx.measureText(text).width + padX * 2;
   const h = 54;
@@ -6584,8 +6584,8 @@ function ensureMoodCardFonts() {
   _moodCardFontsPromise = Promise.all([
     document.fonts.load('600 85px Zodiak'),
     document.fonts.load('500 85px Zodiak'),
+    document.fonts.load('500 33px Zodiak'),
     document.fonts.load('400 43px Satoshi'),
-    document.fonts.load('500 33px Satoshi'),
     document.fonts.load('400 49px Satoshi'),
     document.fonts.load('400 37px Satoshi'),
     document.fonts.load('500 26px Satoshi')
@@ -6722,7 +6722,7 @@ async function downloadMoodCard() {
     }
     return drops ? `${drops} drop${drops === 1 ? "" : "s"} ${name}` : name;
   };
-  ctx.font = '500 33px Satoshi, -apple-system, sans-serif';
+  ctx.font = '500 33px Zodiak, Georgia, serif';
   const chipMeta = oils.map(name => {
     const label = chipLabel(name);
     return { label, w: ctx.measureText(label).width + 48 };
