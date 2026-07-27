@@ -1611,7 +1611,7 @@ h3 { position: relative; }
               <input id="moodlab-tagline" type="text" placeholder="Deep work. Quiet mind." />
             </label>
             <label>Attribution
-              <input id="moodlab-attribution" type="text" value="Diffuser set by @vibezandbutterflyz" />
+              <input id="moodlab-attribution" type="text" value="Diffused by @vibezandbutterflyz" />
             </label>
             <label>Card source
               <select id="moodlab-source">
@@ -1653,7 +1653,7 @@ h3 { position: relative; }
                 <div id="mood-card-affirmation" class="mood-card-affirmation">I know what matters, and I let the rest fall away.</div>
                 <div class="mood-card-divider"></div>
                 <div id="mood-card-oils" class="mood-card-oils"></div>
-                <div id="mood-card-attribution" class="mood-card-attribution">Diffuser set by @vibezandbutterflyz</div>
+                <div id="mood-card-attribution" class="mood-card-attribution">Diffused by @vibezandbutterflyz</div>
                 <div class="mood-card-footer">Made in Vibez &amp; Butterflyz</div>
               </div>
             </div>
@@ -6260,7 +6260,7 @@ function applyMoodlabSource(force = false) {
   if (force || !titleInput.dataset.touched) titleInput.value = data.title || "Mood Blend";
   if (force || !themeSelect.dataset.touched) themeSelect.value = data.mood || themeSelect.value || "clarity-focus";
   if (force || !taglineInput.dataset.touched) taglineInput.value = data.tagline || getDefaultMoodline(themeSelect.value);
-  if (!attributionInput.value) attributionInput.value = "Diffuser set by @vibezandbutterflyz";
+  if (!attributionInput.value) attributionInput.value = "Diffused by @vibezandbutterflyz";
 
   assignMoodlabAffirmation(themeSelect.value, true);
   syncMoodCard();
@@ -6283,7 +6283,7 @@ function syncMoodCard() {
   const data = resolveMoodlabBlendData();
   const title = document.getElementById("moodlab-title").value.trim() || data.title || "Mood Blend";
   const tagline = document.getElementById("moodlab-tagline").value.trim() || data.tagline || "Set the mood.";
-  const attribution = document.getElementById("moodlab-attribution").value.trim() || "Diffuser set by @vibezandbutterflyz";
+  const attribution = document.getElementById("moodlab-attribution").value.trim() || "Diffused by @vibezandbutterflyz";
   const theme = document.getElementById("moodlab-theme").value || data.mood || "clarity-focus";
   const card = document.getElementById("mood-card");
   const affirmation = assignMoodlabAffirmation(theme);
@@ -6353,7 +6353,7 @@ function downloadMoodCard() {
   const title = (document.getElementById("moodlab-title").value || data.title || "Mood Blend").trim();
   const tagline = (document.getElementById("moodlab-tagline").value || data.tagline || "Set the mood.").trim();
   const affirmation = getAssignedMoodlabAffirmation();
-  const attribution = (document.getElementById("moodlab-attribution").value || "Diffuser set by @vibezandbutterflyz").trim();
+  const attribution = (document.getElementById("moodlab-attribution").value || "Diffused by @vibezandbutterflyz").trim();
   const theme = document.getElementById("moodlab-theme").value || data.mood || "clarity-focus";
   const oils = (data.oils && data.oils.length ? data.oils : [data.placeholderChip || "Build a blend in Aroma Lab"]);
   const fileName = (title || 'mood-card').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'mood-card';
@@ -6429,7 +6429,7 @@ function downloadMoodCard() {
   wrapText(ctx, attribution, size / 2, 1110, 960, 38);
   ctx.globalAlpha = 0.72;
   ctx.font = '500 22px Satoshi, Arial, sans-serif';
-  ctx.fillText('MADE IN AROMA LAB', size / 2, 1210);
+  ctx.fillText('Made in Vibez & Butterflyz', size / 2, 1210);
   ctx.globalAlpha = 1;
   const link = document.createElement('a');
   link.download = `${fileName}.png`;
