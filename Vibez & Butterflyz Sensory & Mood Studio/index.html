@@ -6503,6 +6503,26 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
   return lines.length;
 }
 
+// Measure how many wrapped lines `text` would take at the current font,
+// without drawing anything. Used to size the layout block up-front so
+// the whole content can be vertically centered like the site preview.
+function measureWrap(ctx, text, maxWidth) {
+  if (!text) return 0;
+  const words = String(text).split(/\s+/);
+  let lines = 0, line = "";
+  words.forEach(word => {
+    const test = line ? line + " " + word : word;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines += 1;
+      line = word;
+    } else {
+      line = test;
+    }
+  });
+  if (line) lines += 1;
+  return lines || 1;
+}
+
 function drawChip(ctx, text, x, y, opts) {
   const o = opts || {};
   ctx.font = '500 33px Satoshi, Arial, sans-serif';
@@ -6547,7 +6567,36 @@ function loadButterflyImage() {
   return _butterflyImagePromise;
 }
 
+// Canvas 2D can't wait for web fonts to arrive on its own -- if we draw
+// before Satoshi/Zodiak are decoded and registered, canvas silently
+// falls back to Arial/Times. That's what made the downloaded chips look
+// wrong even though the on-screen preview reads them from the same CSS.
+// document.fonts.load() forces the browser to fetch the font file at
+// the sizes/weights we'll actually use, then we await fonts.ready so
+// the font registry is populated before the first fillText().
+let _moodCardFontsPromise = null;
+function ensureMoodCardFonts() {
+  if (_moodCardFontsPromise) return _moodCardFontsPromise;
+  if (!document.fonts || !document.fonts.load) {
+    _moodCardFontsPromise = Promise.resolve();
+    return _moodCardFontsPromise;
+  }
+  _moodCardFontsPromise = Promise.all([
+    document.fonts.load('600 85px Zodiak'),
+    document.fonts.load('500 85px Zodiak'),
+    document.fonts.load('400 43px Satoshi'),
+    document.fonts.load('500 33px Satoshi'),
+    document.fonts.load('400 49px Satoshi'),
+    document.fonts.load('400 37px Satoshi'),
+    document.fonts.load('500 26px Satoshi')
+  ]).then(() => document.fonts.ready).catch(() => null);
+  return _moodCardFontsPromise;
+}
+
 async function downloadMoodCard() {
+  // Web fonts must be decoded BEFORE the canvas starts drawing --
+  // otherwise Satoshi silently falls back to Arial and Zodiak to Times.
+  await ensureMoodCardFonts();
   const data = resolveMoodlabBlendData();
   const title = (document.getElementById("moodlab-title").value || data.title || "Mood Blend").trim();
   const tagline = (document.getElementById("moodlab-tagline").value || data.tagline || "Set the mood.").trim();
@@ -6639,53 +6688,30 @@ async function downloadMoodCard() {
   ctx.fillStyle = inkColor;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  ctx.shadowColor = shadowColor;
-  ctx.shadowBlur = shadowBlur;
-  ctx.shadowOffsetY = shadowOffsetY;
 
-  // Butterfly emblem replaces the old "VIBEZ & BUTTERFLYZ BLENDZ" text
-  // line -- matches the site-preview card design. Skip silently if the
-  // image can't load; the card still ships without the mark rather than
-  // crashing the download.
-  const butterfly = await loadButterflyImage();
-  if (butterfly) {
-    const bSize = 140;
-    ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.35)';
-    ctx.shadowBlur = 18;
-    ctx.shadowOffsetY = 6;
-    ctx.globalAlpha = 0.95;
-    ctx.drawImage(butterfly, (size - bSize) / 2, 130, bSize, bSize);
-    ctx.restore();
-  }
-  ctx.globalAlpha = 1;
-  ctx.font = '600 85px Georgia, Times New Roman, serif';
-  const titleLines = wrapText(ctx, title, size / 2, 360, 1080, 96);
-  ctx.font = '400 43px Satoshi, Arial, sans-serif';
-  ctx.globalAlpha = 0.9;
-  const taglineY = 360 + titleLines * 96 + 34;
-  const taglineLines = wrapText(ctx, tagline, size / 2, taglineY, 1020, 54);
-  ctx.globalAlpha = 0.95;
-  ctx.font = '400 49px Georgia, Times New Roman, serif';
-  const affirmationY = taglineY + taglineLines * 54 + 48;
-  const affirmationLines = wrapText(ctx, affirmation, size / 2, affirmationY, 1020, 62);
-  const dividerY = affirmationY + affirmationLines * 62 + 44;
-  ctx.globalAlpha = 1;
-  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-  ctx.fillStyle = dividerColor;
-  const dw = 146, dh = 6, dx = size / 2 - dw / 2;
-  ctx.beginPath();
-  ctx.moveTo(dx + 3, dividerY);
-  ctx.arcTo(dx + dw, dividerY, dx + dw, dividerY + dh, 3);
-  ctx.arcTo(dx + dw, dividerY + dh, dx, dividerY + dh, 3);
-  ctx.arcTo(dx, dividerY + dh, dx, dividerY, 3);
-  ctx.arcTo(dx, dividerY, dx + dw, dividerY, 3);
-  ctx.closePath();
-  ctx.fill();
+  // ------- MEASURE PASS -------
+  // The site preview uses flex-column + justify-content:center, so the
+  // content sits mid-card and every element gets its natural height.
+  // Canvas has no flexbox, so we simulate it: measure every line first,
+  // sum with gaps, then position the whole block centered vertically.
+  // Short recipes stop feeling like dead space and long ones fill the
+  // frame cleanly instead of pushing chips off the bottom.
+  const emblemH = 140, emblemGap = 30;
+  const titleLH = 96, titleGap = 34;
+  const taglineLH = 54, taglineGap = 40;
+  const affirmationLH = 60, affirmationGap = 44;
+  const dividerH = 6, dividerGap = 50;
+  const chipRowH = 68, chipsGap = 40;
+  const attributionLH = 44, attributionGap = 24;
+  const footerH = 30;
 
-  // Chips: measure the whole row width first, then draw centered.
-  // Otherwise a short chip row (2 oils) hugs the left margin instead
-  // of centering under the affirmation like the preview does.
+  ctx.font = '600 85px Zodiak, Georgia, serif';
+  const titleLines = measureWrap(ctx, title, 1080);
+  ctx.font = '400 43px Satoshi, -apple-system, sans-serif';
+  const taglineLines = measureWrap(ctx, tagline, 1020);
+  ctx.font = '400 49px Satoshi, -apple-system, sans-serif';
+  const affirmationLines = measureWrap(ctx, affirmation, 1020);
+
   const chipGap = 18;
   const chipLabel = name => {
     let drops = 0;
@@ -6696,57 +6722,130 @@ async function downloadMoodCard() {
     }
     return drops ? `${drops} drop${drops === 1 ? "" : "s"} ${name}` : name;
   };
-  ctx.font = '500 33px Satoshi, Arial, sans-serif';
+  ctx.font = '500 33px Satoshi, -apple-system, sans-serif';
   const chipMeta = oils.map(name => {
     const label = chipLabel(name);
     return { label, w: ctx.measureText(label).width + 48 };
   });
-  const rows = [];
+  const chipRows = [];
   const maxRowW = size - 240;
   let curRow = [], curW = 0;
   chipMeta.forEach(c => {
     const addW = curRow.length ? c.w + chipGap : c.w;
     if (curW + addW > maxRowW && curRow.length) {
-      rows.push({ items: curRow, w: curW });
+      chipRows.push({ items: curRow, w: curW });
       curRow = [c]; curW = c.w;
     } else {
       curRow.push(c); curW += addW;
     }
   });
-  if (curRow.length) rows.push({ items: curRow, w: curW });
-  let chipY = dividerY + 70;
-  rows.forEach(row => {
+  if (curRow.length) chipRows.push({ items: curRow, w: curW });
+
+  // Attribution may wrap on long handles; measure first
+  let attributionLines = 0;
+  if (attribution) {
+    ctx.font = '400 37px Satoshi, -apple-system, sans-serif';
+    attributionLines = measureWrap(ctx, attribution, 1020);
+  }
+
+  const blockH =
+    emblemH + emblemGap +
+    titleLines * titleLH + titleGap +
+    taglineLines * taglineLH + taglineGap +
+    affirmationLines * affirmationLH + affirmationGap +
+    dividerH + dividerGap +
+    chipRows.length * chipRowH + chipsGap +
+    (attribution ? attributionLines * attributionLH + attributionGap : 0) +
+    footerH;
+
+  // Anchor near vertical center; clamp so the emblem never crowds the
+  // top edge on a very tall recipe (rare, but keep 90px minimum).
+  let y = Math.max(90, (size - blockH) / 2);
+
+  // ------- DRAW PASS -------
+  // Butterfly emblem
+  const butterfly = await loadButterflyImage();
+  if (butterfly) {
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.35)';
+    ctx.shadowBlur = 18;
+    ctx.shadowOffsetY = 6;
+    ctx.globalAlpha = 0.95;
+    ctx.drawImage(butterfly, (size - emblemH) / 2, y, emblemH, emblemH);
+    ctx.restore();
+  }
+  y += emblemH + emblemGap;
+
+  ctx.shadowColor = shadowColor;
+  ctx.shadowBlur = shadowBlur;
+  ctx.shadowOffsetY = shadowOffsetY;
+  ctx.globalAlpha = 1;
+
+  // Title -- Zodiak matches the site h2
+  ctx.font = '600 85px Zodiak, Georgia, serif';
+  wrapText(ctx, title, size / 2, y + 78, 1080, titleLH);
+  y += titleLines * titleLH + titleGap;
+
+  // Tagline -- Satoshi, matches site body inherit
+  ctx.font = '400 43px Satoshi, -apple-system, sans-serif';
+  ctx.globalAlpha = 0.9;
+  wrapText(ctx, tagline, size / 2, y + 40, 1020, taglineLH);
+  y += taglineLines * taglineLH + taglineGap;
+
+  // Affirmation
+  ctx.globalAlpha = 0.95;
+  ctx.font = '400 49px Satoshi, -apple-system, sans-serif';
+  wrapText(ctx, affirmation, size / 2, y + 46, 1020, affirmationLH);
+  y += affirmationLines * affirmationLH + affirmationGap;
+
+  // Divider
+  ctx.globalAlpha = 1;
+  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+  ctx.fillStyle = dividerColor;
+  const dw = 146, dh = dividerH, dx = size / 2 - dw / 2, dy = y;
+  ctx.beginPath();
+  ctx.moveTo(dx + 3, dy);
+  ctx.arcTo(dx + dw, dy, dx + dw, dy + dh, 3);
+  ctx.arcTo(dx + dw, dy + dh, dx, dy + dh, 3);
+  ctx.arcTo(dx, dy + dh, dx, dy, 3);
+  ctx.arcTo(dx, dy, dx + dw, dy, 3);
+  ctx.closePath();
+  ctx.fill();
+  y += dividerH + dividerGap;
+
+  // Chip rows -- loop leaves y just below the last row; add chipsGap.
+  chipRows.forEach(row => {
     let x = (size - row.w) / 2;
     row.items.forEach(c => {
-      drawChip(ctx, c.label, x, chipY, { chipBg, chipBorder, textColor: inkColor });
+      drawChip(ctx, c.label, x, y, { chipBg, chipBorder, textColor: inkColor });
       x += c.w + chipGap;
     });
-    chipY += 68;
+    y += chipRowH;
   });
+  y += chipsGap;
 
-  // Attribution + footer -- pinned to the bottom of the card so they
-  // read as a footer band, not floating chrome after the chips.
-  // Chips left the align in 'left' + baseline 'middle' -- restore both.
+  // Attribution + footer -- restore center align (drawChip leaves left)
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = inkColor;
   if (attribution) {
     ctx.globalAlpha = 0.85;
-    ctx.font = '400 37px Satoshi, Arial, sans-serif';
-    wrapText(ctx, attribution, size / 2, size - 110, 1020, 44);
+    ctx.font = '400 37px Satoshi, -apple-system, sans-serif';
+    wrapText(ctx, attribution, size / 2, y + 34, 1020, attributionLH);
+    y += attributionLines * attributionLH + attributionGap;
   }
   ctx.globalAlpha = isPurple ? 0.75 : 0.65;
-  // Footer must fit inside the clip -- letter-spacing on canvas is a lie,
-  // so measure at a target width and scale the font down until it fits.
+  // Letter-spacing isn't a canvas thing, so scale the footer font down
+  // until it fits inside the clip.
   const footerText = 'MADE IN VIBEZ & BUTTERFLYZ SENSORY & MOOD STUDIO';
   const footerMaxW = size - 200;
   let footerSize = 26;
-  ctx.font = `500 ${footerSize}px Satoshi, Arial, sans-serif`;
+  ctx.font = `500 ${footerSize}px Satoshi, -apple-system, sans-serif`;
   while (ctx.measureText(footerText).width > footerMaxW && footerSize > 16) {
     footerSize -= 1;
-    ctx.font = `500 ${footerSize}px Satoshi, Arial, sans-serif`;
+    ctx.font = `500 ${footerSize}px Satoshi, -apple-system, sans-serif`;
   }
-  ctx.fillText(footerText, size / 2, size - 60);
+  ctx.fillText(footerText, size / 2, y + footerSize);
   ctx.globalAlpha = 1;
   ctx.restore(); // release clip
   // Prefer the native mobile Share sheet when available (Android/iOS
