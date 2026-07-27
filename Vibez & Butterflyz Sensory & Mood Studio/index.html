@@ -834,10 +834,7 @@ a { color: var(--violet); }
 }
 .mood-card.theme-joy-uplift .mood-card-inner {
   color: #2A1338;
-  text-shadow:
-    0 1px 0 rgba(255,240,200,0.55),
-    0 -1px 0 rgba(80,35,5,0.35),
-    0 2px 3px rgba(80,35,5,0.18);
+  text-shadow: none;
 }
 .mood-card.theme-joy-uplift .mood-card-inner::before { background: none; }
 .mood-card.theme-joy-uplift .mood-card h2 { color: #2A1338; }
@@ -6514,24 +6511,7 @@ function syncMoodCard() {
   renderLoungeMatrix(oils.map(name => ({ name })));
 }
 
-// Letterpress-emboss the current-font text at (x, y): draw a warm
-// cream highlight ONE PIXEL ABOVE, a dark bronze shadow ONE PIXEL
-// BELOW, then the ink glyph on top. Reads as text engraved into a
-// brass plaque -- gives real depth without haloing.
-function drawEngravedLine(ctx, text, x, y, inkColor) {
-  const prev = ctx.fillStyle;
-  ctx.fillStyle = 'rgba(255,240,200,0.55)';
-  ctx.fillText(text, x, y + 2);
-  ctx.fillStyle = 'rgba(80,35,5,0.38)';
-  ctx.fillText(text, x, y - 2);
-  ctx.fillStyle = inkColor;
-  ctx.fillText(text, x, y);
-  ctx.fillStyle = prev;
-}
-
-function wrapText(ctx, text, x, y, maxWidth, lineHeight, opts) {
-  const engraved = opts && opts.engraved;
-  const inkColor = opts && opts.inkColor;
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
   const words = text.split(/\s+/).filter(Boolean);
   let line = "";
   const lines = [];
@@ -6545,10 +6525,7 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight, opts) {
     }
   });
   if (line) lines.push(line);
-  lines.forEach((ln, i) => {
-    if (engraved) drawEngravedLine(ctx, ln, x, y + i * lineHeight, inkColor);
-    else ctx.fillText(ln, x, y + i * lineHeight);
-  });
+  lines.forEach((ln, i) => ctx.fillText(ln, x, y + i * lineHeight));
   return lines.length;
 }
 
@@ -6610,24 +6587,10 @@ function drawChip(ctx, text, x, y, opts) {
     ctx.lineTo(x + w - r, y + 1.5);
     ctx.stroke();
   }
+  ctx.fillStyle = o.textColor || '#fff';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  const textY = y + h / 2 + 1;
-  const textX = x + padX;
-  if (o.engraved) {
-    // Same letterpress emboss as the main text, scaled tighter.
-    const prev = ctx.fillStyle;
-    ctx.fillStyle = 'rgba(255,240,200,0.5)';
-    ctx.fillText(text, textX, textY + 1);
-    ctx.fillStyle = 'rgba(80,35,5,0.35)';
-    ctx.fillText(text, textX, textY - 1);
-    ctx.fillStyle = o.textColor || '#fff';
-    ctx.fillText(text, textX, textY);
-    ctx.fillStyle = prev;
-  } else {
-    ctx.fillStyle = o.textColor || '#fff';
-    ctx.fillText(text, textX, textY);
-  }
+  ctx.fillText(text, x + padX, y + h / 2 + 1);
   return w;
 }
 
@@ -6856,22 +6819,32 @@ async function downloadMoodCard() {
     attributionLines = measureWrap(ctx, attribution, 1020);
   }
 
-  const blockH =
-    emblemH + emblemGap +
+  // Layout rule: emblem is pinned near the top, footer + attribution
+  // are pinned near the bottom. The middle band (title / tagline /
+  // affirmation / divider / chips) is vertically centered in the free
+  // space between them. When the content grows, the empty room shrinks
+  // equally from top and bottom -- never bottom-heavy, never cluttered
+  // toward the footer.
+  const topMargin = 140;      // emblem top edge
+  const bottomMargin = 90;    // footer baseline offset from bottom
+  const attributionBlockH = attribution
+    ? attributionLines * attributionLH + attributionGap
+    : 0;
+
+  const middleH =
     titleLines * titleLH + titleGap +
     taglineLines * taglineLH + taglineGap +
     affirmationLines * affirmationLH + affirmationGap +
     dividerH + dividerGap +
-    chipRows.length * chipRowH + chipsGap +
-    (attribution ? attributionLines * attributionLH + attributionGap : 0) +
-    footerH;
+    chipRows.length * chipRowH;
 
-  // Anchor near vertical center; clamp so the emblem never crowds the
-  // top edge on a very tall recipe (rare, but keep 90px minimum).
-  let y = Math.max(90, (size - blockH) / 2);
+  const topBandEnd = topMargin + emblemH + emblemGap;
+  const bottomBandStart = size - bottomMargin - footerH - attributionBlockH;
+  const freeSpace = bottomBandStart - topBandEnd;
+  let y = topBandEnd + Math.max(0, (freeSpace - middleH) / 2);
 
   // ------- DRAW PASS -------
-  // Butterfly emblem
+  // Butterfly emblem -- pinned to the top margin
   const butterfly = await loadButterflyImage();
   if (butterfly) {
     ctx.save();
@@ -6879,33 +6852,30 @@ async function downloadMoodCard() {
     ctx.shadowBlur = 18;
     ctx.shadowOffsetY = 6;
     ctx.globalAlpha = 0.95;
-    ctx.drawImage(butterfly, (size - emblemH) / 2, y, emblemH, emblemH);
+    ctx.drawImage(butterfly, (size - emblemH) / 2, topMargin, emblemH, emblemH);
     ctx.restore();
   }
-  y += emblemH + emblemGap;
 
   ctx.shadowColor = shadowColor || 'transparent';
   ctx.shadowBlur = shadowBlur;
   ctx.shadowOffsetY = shadowOffsetY;
   ctx.globalAlpha = 1;
 
-  const textOpts = { engraved: isEngraved, inkColor };
-
   // Title -- Zodiak matches the site h2
   ctx.font = '600 85px Zodiak, Georgia, serif';
-  wrapText(ctx, title, size / 2, y + 78, 1080, titleLH, textOpts);
+  wrapText(ctx, title, size / 2, y + 78, 1080, titleLH);
   y += titleLines * titleLH + titleGap;
 
   // Tagline -- Satoshi, matches site body inherit
   ctx.font = '400 43px Satoshi, -apple-system, sans-serif';
   ctx.globalAlpha = 0.9;
-  wrapText(ctx, tagline, size / 2, y + 40, 1020, taglineLH, textOpts);
+  wrapText(ctx, tagline, size / 2, y + 40, 1020, taglineLH);
   y += taglineLines * taglineLH + taglineGap;
 
   // Affirmation
   ctx.globalAlpha = 0.95;
   ctx.font = '400 49px Satoshi, -apple-system, sans-serif';
-  wrapText(ctx, affirmation, size / 2, y + 46, 1020, affirmationLH, textOpts);
+  wrapText(ctx, affirmation, size / 2, y + 46, 1020, affirmationLH);
   y += affirmationLines * affirmationLH + affirmationGap;
 
   // Divider
@@ -6936,26 +6906,28 @@ async function downloadMoodCard() {
   }
   y += dividerH + dividerGap;
 
-  // Chip rows -- loop leaves y just below the last row; add chipsGap.
+  // Chip rows -- loop leaves y just below the last row.
   chipRows.forEach(row => {
     let x = (size - row.w) / 2;
     row.items.forEach(c => {
-      drawChip(ctx, c.label, x, y, { chipBg, chipBorder, textColor: inkColor, engraved: isEngraved });
+      drawChip(ctx, c.label, x, y, { chipBg, chipBorder, textColor: inkColor });
       x += c.w + chipGap;
     });
     y += chipRowH;
   });
-  y += chipsGap;
 
-  // Attribution + footer -- restore center align (drawChip leaves left)
+  // Bottom band -- pinned. Footer baseline at (size - bottomMargin),
+  // attribution stacks directly above it. This is what keeps the
+  // "MADE IN..." line near the bottom edge regardless of how tall the
+  // middle content ended up.
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = inkColor;
+  const footerBaselineY = size - bottomMargin;
   if (attribution) {
     ctx.globalAlpha = 0.85;
     ctx.font = '400 37px Satoshi, -apple-system, sans-serif';
-    wrapText(ctx, attribution, size / 2, y + 34, 1020, attributionLH, textOpts);
-    y += attributionLines * attributionLH + attributionGap;
+    wrapText(ctx, attribution, size / 2, footerBaselineY - footerH - attributionGap - (attributionLines - 1) * attributionLH, 1020, attributionLH);
   }
   ctx.globalAlpha = isEngraved ? 0.85 : 0.65;
   // Letter-spacing isn't a canvas thing, so scale the footer font down
@@ -6968,8 +6940,7 @@ async function downloadMoodCard() {
     footerSize -= 1;
     ctx.font = `500 ${footerSize}px Satoshi, -apple-system, sans-serif`;
   }
-  if (isEngraved) drawEngravedLine(ctx, footerText, size / 2, y + footerSize, inkColor);
-  else ctx.fillText(footerText, size / 2, y + footerSize);
+  ctx.fillText(footerText, size / 2, footerBaselineY);
   ctx.globalAlpha = 1;
   ctx.restore(); // release clip
   // Prefer the native mobile Share sheet when available (Android/iOS
