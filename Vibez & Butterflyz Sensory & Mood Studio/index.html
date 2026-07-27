@@ -4784,7 +4784,7 @@ function setView(v) {
   clearTabNudge(v); // visiting a tab is the whole point of its nudge -- clear it
   updatePathRibbon();
   if (v === "blend") renderBlendView();
-  if (v === "recipes") renderPairingSuggestions();
+  if (v === "recipes") { renderMoodBlendCats(); renderMoodBlends(); renderPairingSuggestions(); }
   if (v === "terpenes") renderTerpenes();
   if (v === "moodlab") renderMoodlab();
   // Once the user has actually looked at their blend's analysis, nudge
@@ -6790,22 +6790,6 @@ function renderOnboardingMoodGrid() {
   });
 }
 
-function applySessionMoodEffects(moodKey) {
-  state.mood = moodKey;
-  safeStorageSet("vb_session_mood", moodKey);
-  const preset = MOODLAB_MOOD_PRESETS[moodKey];
-  const added = [];
-  if (preset) {
-    preset.oils.slice(0, 2).forEach(name => {
-      const oil = OILS.find(o => o.name === name);
-      if (oil) { addToBlend(oil.id, 2); added.push(oil.name); }
-    });
-  }
-  const themeSel = document.getElementById("moodlab-theme");
-  if (themeSel) themeSel.value = moodKey;
-  if (added.length) showToast(`Added ${added.join(" + ")} to your blend`);
-}
-
 function startOnboarding() {
   onboardingEl.classList.remove("hidden");
   showOnboardingStep("welcome");
@@ -6990,6 +6974,18 @@ const INTENT_LEDE = {
   celebrate: "We're celebrating. Let's build something worthy of the occasion.",
   surprise: "Let's see where your senses take you."
 };
+
+const MOOD_TO_BLEND_CAT = Object.fromEntries(
+  Object.entries(BLEND_CAT_MOOD).map(([cat, mood]) => [mood, cat])
+);
+
+function suggestedBlendFor(moodKey) {
+  const cat = MOOD_TO_BLEND_CAT[moodKey];
+  if (!cat) return null;
+  const options = MOOD_BLENDS.filter(b => b.cat === cat);
+  if (!options.length) return null;
+  return options[Math.floor(Math.random() * options.length)];
+}
 
 // The 10 common, easy-to-find oils used by Q8's adventure sort. Matched
 // against the base name (parenthetical chemotype/origin qualifiers
@@ -7340,14 +7336,45 @@ function applyStoredProfile(profile) {
   renderInlineShelf();
   const blendOils = Object.keys(state.blend).map(id => OILS.find(o => o.id === id)).filter(Boolean);
   renderLoungeMatrix(blendOils);
+  applyLoungeVisibility(profile);
   const retuneBtn = document.getElementById("retune-btn");
   if (retuneBtn) retuneBtn.classList.remove("hidden");
   return moodKey;
 }
 
-function ttlPreloadSignatureOils(moodKey) {
-  if (!moodKey) return;
-  applySessionMoodEffects(moodKey);
+const INTENT_TO_BLEND_CAT = {
+  exhale: "Anxiety Ease",
+  spark: "Calm Energy",
+  romanticize: "Mood Support",
+  "slow-down": "Anxiety Ease",
+  celebrate: "Joy & Uplift",
+  surprise: null
+};
+
+function ttlPreloadCuratedBlend(intent, moodKey, profile) {
+  const cat = INTENT_TO_BLEND_CAT[intent] || MOOD_TO_BLEND_CAT[moodKey];
+  let options = cat ? MOOD_BLENDS.filter(b => b.cat === cat) : [...MOOD_BLENDS];
+  if (profile?.excludedOils?.length) {
+    options = options.filter(b => {
+      const matchedIds = b.oils.map(o => findLibraryOil(o.n)?.id).filter(Boolean);
+      const excludedCount = matchedIds.filter(id => profile.excludedOils.includes(id)).length;
+      return !matchedIds.length || excludedCount / matchedIds.length <= 0.5;
+    });
+  }
+  if (profile?.safetyFlags?.includes("pregnancy-nursing")) {
+    options = options.filter(b => !b.oils.some(o => {
+      const lib = findLibraryOil(o.n);
+      return lib && /avoid/i.test(lib.pregnancy || "");
+    }));
+  }
+  if (!options.length) options = MOOD_BLENDS;
+  const blend = options[Math.floor(Math.random() * options.length)];
+  blend.oils.forEach(o => {
+    const lib = findLibraryOil(o.n);
+    if (lib) addToBlend(lib.id, o.p || 2);
+  });
+  feedMoodlabFromBlend(blend);
+  return blend;
 }
 
 function finishTTL() {
@@ -7363,22 +7390,30 @@ function finishTTL() {
   };
   safeStorageSet("vb_sensory_profile", JSON.stringify(profile));
   safeStorageSet("vb_seen_onboarding", "true");
-  // Directly reveal the complete step (skipping the shared question
-  // fade-transition to avoid the ritual flashing before content mounts).
   document.querySelectorAll(".ttl-step").forEach(el => el.classList.add("hidden"));
   ttlIndex = TTL_FLOW.length - 1;
   document.getElementById("ttl-step-complete").classList.remove("hidden");
   if (profile.adventureLevel === "trust") ttlTriggerButterflyScatter();
-  // Ambient dust drift while the ritual text is up, reusing the existing
-  // particle system (already a no-op under prefers-reduced-motion).
   const dustTimer = setInterval(() => {
     goldDustBurst(window.innerWidth / 2 + (Math.random() - 0.5) * 120, window.innerHeight * 0.6);
   }, 700);
   const moodKey = applyStoredProfile(profile);
-  ttlPreloadSignatureOils(moodKey);
+  const loadedBlend = ttlPreloadCuratedBlend(profile.sessionIntent, moodKey, profile);
+  applyLoungeVisibility(profile);
   setTimeout(() => {
     clearInterval(dustTimer);
     ttlOnboardingEl.classList.add("hidden");
+    const blendCat = INTENT_TO_BLEND_CAT[profile.sessionIntent] || MOOD_TO_BLEND_CAT[moodKey];
+    if (blendCat) {
+      moodBlendState.cat = blendCat;
+      moodBlendState.shown = 24;
+    }
+    setView("recipes");
+    if (loadedBlend) {
+      showToast(`Your lounge is set — we loaded "${loadedBlend.name}" into your blend.`, 5000);
+    } else {
+      showToast("Your lounge is ready. Explore curated blends picked for your mood.", 4500);
+    }
   }, 3600);
 }
 
