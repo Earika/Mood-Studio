@@ -1611,7 +1611,7 @@ h3 { position: relative; }
               <input id="moodlab-tagline" type="text" placeholder="Deep work. Quiet mind." />
             </label>
             <label>Attribution
-              <input id="moodlab-attribution" type="text" value="Diffused by @vibezandbutterflyz" />
+              <input id="moodlab-attribution" type="text" placeholder="Diffused by @yourname" />
             </label>
             <label>Card source
               <select id="moodlab-source">
@@ -6142,19 +6142,25 @@ function getMoodPresetData(theme) {
   return {
     title: preset.title,
     tagline: preset.tagline,
-    oils: [...preset.oils],
+    oils: preset.oils.map(name => ({ name, drops: 0 })),
     mood: theme,
     placeholderChip: ""
   };
 }
 
 function getMyBlendData() {
-  const names = getCurrentBlendNames();
+  const blendOils = Object.entries(state.blend)
+    .map(([id, drops]) => {
+      const oil = OILS.find(o => o.id === id);
+      return oil ? { name: oil.name, drops } : null;
+    })
+    .filter(Boolean);
+  const names = blendOils.map(o => o.name);
   const mood = names.length ? getMoodlabThemeFromBlend(names) : document.getElementById("moodlab-theme").value || "clarity-focus";
   return {
     title: names.length ? titleFromOilNames(names) : "My Blend",
     tagline: getDefaultMoodline(mood),
-    oils: names,
+    oils: blendOils,
     mood,
     placeholderChip: names.length ? "" : "Build a blend or load a Curated Mood"
   };
@@ -6184,37 +6190,37 @@ function computeSuggestedBlendOptions() {
   const options = [];
 
   if (ranked[0]) {
-    const oils = [...baseNames, ranked[0].name];
-    const mood = getMoodlabThemeFromBlend(oils);
+    const oilNames = [...baseNames, ranked[0].name];
+    const mood = getMoodlabThemeFromBlend(oilNames);
     options.push({
       label: `${baseNames[0] || "Blend"} + ${ranked[0].name}`,
       title: `${ranked[0].name} Lift`,
       tagline: getDefaultMoodline(mood),
-      oils,
+      oils: oilNames.map(name => ({ name, drops: 0 })),
       mood
     });
   }
 
   if (ranked[0] && ranked[1]) {
-    const oils = [...baseNames.slice(0, 2), ranked[0].name, ranked[1].name];
-    const mood = getMoodlabThemeFromBlend(oils);
+    const oilNames = [...baseNames.slice(0, 2), ranked[0].name, ranked[1].name];
+    const mood = getMoodlabThemeFromBlend(oilNames);
     options.push({
       label: `${ranked[0].name} + ${ranked[1].name} support`,
       title: `${ranked[0].name} Harmony`,
       tagline: getDefaultMoodline(mood),
-      oils,
+      oils: oilNames.map(name => ({ name, drops: 0 })),
       mood
     });
   }
 
   if (ranked[0] && ranked[1] && ranked[2]) {
-    const oils = [ranked[0].name, ranked[1].name, ranked[2].name];
-    const mood = getMoodlabThemeFromBlend(oils);
+    const oilNames = [ranked[0].name, ranked[1].name, ranked[2].name];
+    const mood = getMoodlabThemeFromBlend(oilNames);
     options.push({
       label: `${ranked[0].name}, ${ranked[1].name} & ${ranked[2].name}`,
       title: "Harmonizing Trio",
       tagline: getDefaultMoodline(mood),
-      oils,
+      oils: oilNames.map(name => ({ name, drops: 0 })),
       mood
     });
   }
@@ -6287,7 +6293,7 @@ function applyMoodlabSource(force = false) {
   if (force || !titleInput.dataset.touched) titleInput.value = data.title || "Mood Blend";
   if (force || !themeSelect.dataset.touched) themeSelect.value = data.mood || themeSelect.value || "clarity-focus";
   if (force || !taglineInput.dataset.touched) taglineInput.value = data.tagline || getDefaultMoodline(themeSelect.value);
-  if (!attributionInput.value) attributionInput.value = "Diffused by @vibezandbutterflyz";
+  if (!attributionInput.value && !attributionInput.placeholder) attributionInput.placeholder = "Diffused by @yourname";
 
   assignMoodlabAffirmation(themeSelect.value, true);
   syncMoodCard();
@@ -6306,11 +6312,17 @@ function renderMoodlab() {
   applyMoodlabSource(false);
 }
 
+function formatOilChip(o) {
+  if (typeof o === "string") return o;
+  return o.drops ? `${o.name} · ${o.drops} drop${o.drops === 1 ? "" : "s"}` : o.name;
+}
+
 function syncMoodCard() {
   const data = resolveMoodlabBlendData();
   const title = document.getElementById("moodlab-title").value.trim() || data.title || "Mood Blend";
   const tagline = document.getElementById("moodlab-tagline").value.trim() || data.tagline || "Set the mood.";
-  const attribution = document.getElementById("moodlab-attribution").value.trim() || "Diffused by @vibezandbutterflyz";
+  const attrInput = document.getElementById("moodlab-attribution");
+  const attribution = attrInput.value.trim() || attrInput.placeholder;
   const theme = document.getElementById("moodlab-theme").value || data.mood || "clarity-focus";
   const card = document.getElementById("mood-card");
   const affirmation = assignMoodlabAffirmation(theme);
@@ -6323,13 +6335,10 @@ function syncMoodCard() {
   document.getElementById("mood-card-affirmation").textContent = affirmation;
   document.getElementById("mood-card-attribution").textContent = attribution;
   document.getElementById("mood-card-oils").innerHTML = oils.length
-    ? oils.map(o => `<span class="mood-card-chip">${o}</span>`).join("")
+    ? oils.map(o => `<span class="mood-card-chip">${formatOilChip(o)}</span>`).join("")
     : `<span class="mood-card-chip">${placeholder}</span>`;
 
-  // The Lounge Experience cards live alongside the mood card now — keep
-  // them in sync with whatever oils are driving it (live blend if any,
-  // else the resolved preset/suggested blend's oils).
-  renderLoungeMatrix(oils.map(name => ({ name })));
+  renderLoungeMatrix(oils.map(o => typeof o === "string" ? { name: o } : { name: o.name }));
 }
 
 function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
@@ -6380,9 +6389,11 @@ function downloadMoodCard() {
   const title = (document.getElementById("moodlab-title").value || data.title || "Mood Blend").trim();
   const tagline = (document.getElementById("moodlab-tagline").value || data.tagline || "Set the mood.").trim();
   const affirmation = getAssignedMoodlabAffirmation();
-  const attribution = (document.getElementById("moodlab-attribution").value || "Diffused by @vibezandbutterflyz").trim();
+  const attrInput = document.getElementById("moodlab-attribution");
+  const attribution = (attrInput.value.trim() || attrInput.placeholder).trim();
   const theme = document.getElementById("moodlab-theme").value || data.mood || "clarity-focus";
-  const oils = (data.oils && data.oils.length ? data.oils : [data.placeholderChip || "Build a blend in Aroma Lab"]);
+  const rawOils = data.oils && data.oils.length ? data.oils : [];
+  const oils = rawOils.length ? rawOils.map(formatOilChip) : [data.placeholderChip || "Build a blend in Aroma Lab"];
   const fileName = (title || 'mood-card').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'mood-card';
   const canvas = document.createElement('canvas');
   const size = 1400;
