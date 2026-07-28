@@ -837,6 +837,8 @@ a { color: var(--violet); }
   .lounge-card-desc { font-size: 13px; }
   .safety-report, .recipe-line, .chem-oil-name, .action-name, .terpene-action-name { font-size: 14px; }
   .safety-detail, .chem-bar, .action-score, .terpene-action-detail, .terpene-found { font-size: 12px; }
+  .mood-card { aspect-ratio: auto; min-height: 380px; width: 100%; max-width: 460px; }
+  .mood-card-inner { justify-content: flex-start; }
   .mood-card h2 { font-size: 26px; }
   .mood-card-tagline { font-size: 15px; }
   .mood-card-affirmation { font-size: 17px; line-height: 1.55; }
@@ -1848,7 +1850,7 @@ h3 { position: relative; }
     <div class="ttl-step" id="ttl-step-welcome">
       <div class="onboarding-icon" aria-hidden="true"><svg class="onboarding-emblem" viewBox="0 0 100 100"><use href="#vb-butterfly"/></svg></div>
       <h2>Welcome to Vibez &amp; Butterflyz.</h2>
-      <p class="onboarding-lede">Before we build your experience, let's get to know your senses.<br>No right answers. Just follow your instincts.</p>
+      <p class="onboarding-lede">Before we build your experience, let's get to know your senses.<br>Follow your instincts &mdash; every answer shapes what we pour for you.</p>
       <button class="btn-primary onboarding-begin" id="ttl-begin" type="button">Enter the Lounge</button>
       <button class="btn-secondary" id="ttl-skip-all" type="button">I'll explore on my own</button>
     </div>
@@ -1983,7 +1985,7 @@ const OILS = [
     intensity: 3, blend_strength: 3,
     aroma: ["Creamy","Sweet","Tropical","Nutty"],
     constituents: [], phototoxic: false, phototox_note: "N/A — synthetic accord.",
-    cautions: ["Fragrance oil, not a true essential oil — no therapeutic effect."],
+    cautions: ["Fragrance oil — synthetic accord, no therapeutic properties."],
     pregnancy: "Topical use only",
     pairs_with: ["Vanilla","Sweet Orange","Lime","Ylang Ylang","Sandalwood"],
     uses: ["Perfumery","Candle-making"]
@@ -1994,7 +1996,7 @@ const OILS = [
     intensity: 3, blend_strength: 3,
     aroma: ["Tropical","Tangy","Sweet","Exotic"],
     constituents: [], phototoxic: false, phototox_note: "N/A — synthetic accord.",
-    cautions: ["Fragrance oil, not a true essential oil."],
+    cautions: ["Fragrance oil — synthetic accord."],
     pregnancy: "Topical use only",
     pairs_with: ["Coconut","Vanilla","Ylang Ylang","Grapefruit","Mango"],
     uses: ["Summer diffusion","Perfumery"]
@@ -5540,7 +5542,7 @@ function openModal(oilId) {
           <div class="chem-bar-pct">${c.pct}%</div>
         </div>`).join("")}</div>`
     : oil.type === "fragrance"
-      ? `<div class="warn-banner">No chemical profile — this is a synthetic fragrance accord, not a true essential oil.</div>`
+      ? `<div class="warn-banner">No chemical profile available — synthetic fragrance accord.</div>`
       : `<div class="warn-banner">Chemical constituent data not yet available for this oil.</div>`;
 
   const phototoxBanner = oil.phototoxic
@@ -6374,6 +6376,17 @@ function syncMoodCard() {
     : `<span class="mood-card-chip">${placeholder}</span>`;
 
   renderLoungeMatrix(oils.map(o => typeof o === "string" ? { name: o } : { name: o.name }));
+
+  if (oils.length && state.view === "moodlab") {
+    const wrap = document.querySelector(".moodlab-preview-wrap");
+    if (wrap) {
+      const main = document.querySelector(".main");
+      if (main) {
+        const top = wrap.offsetTop - main.offsetTop - 20;
+        main.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+      }
+    }
+  }
 }
 
 function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
