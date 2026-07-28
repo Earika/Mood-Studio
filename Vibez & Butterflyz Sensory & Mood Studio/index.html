@@ -6669,6 +6669,22 @@ async function downloadMoodCard() {
   ctx.fillText('MADE IN VIBEZ & BUTTERFLYZ SENSORY & MOOD STUDIO', size / 2, footerBaselineY);
   ctx.globalAlpha = 1;
 
+  if (navigator.share && navigator.canShare) {
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    const file = new File([blob], `${fileName}.png`, { type: 'image/png' });
+    if (navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          title: title,
+          text: `${tagline}\n${affirmation}`,
+          files: [file]
+        });
+        return;
+      } catch (e) {
+        if (e.name === 'AbortError') return;
+      }
+    }
+  }
   const link = document.createElement('a');
   link.download = `${fileName}.png`;
   link.href = canvas.toDataURL('image/png');
