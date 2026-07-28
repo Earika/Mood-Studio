@@ -1213,7 +1213,8 @@ h3 { position: relative; }
   padding: 40px 36px; text-align: center;
   box-shadow: 0 30px 80px rgba(0,0,0,0.55), 0 0 60px rgba(157,127,212,0.22);
   animation: guideRise .4s cubic-bezier(0.22,1,0.36,1);
-  overflow: hidden;
+  overflow-y: auto; overflow-x: hidden;
+  max-height: 85vh; max-height: 85dvh;
 }
 .onboarding-panel::before {
   content: ""; position: absolute; inset: 0; pointer-events: none;
@@ -1229,7 +1230,7 @@ h3 { position: relative; }
 .onboarding-icon { font-size: 34px; margin-bottom: 14px; }
 .onboarding-panel h2 { font-family: 'Zodiak', serif; font-size: 24px; color: var(--ink); margin-bottom: 10px; line-height: 1.35; }
 .onboarding-lede { font-size: 14.5px; color: var(--ink-2); margin-bottom: 26px; line-height: 1.5; }
-.onboarding-begin { display: block; width: 100%; margin-bottom: 10px; padding: 13px; font-size: 14px; }
+.onboarding-begin { display: block; width: 100%; margin-bottom: 10px; padding: 13px; font-size: 14px; position: sticky; bottom: 0; z-index: 3; box-shadow: 0 -12px 20px rgba(23,18,42,0.95); }
 #onboarding-skip-all { display: block; width: 100%; }
 
 /* Email gate sits above onboarding — first thing any visitor sees */
