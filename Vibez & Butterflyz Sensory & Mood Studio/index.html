@@ -1688,7 +1688,7 @@ h3 { position: relative; }
                 <div class="mood-card-divider"></div>
                 <div id="mood-card-oils" class="mood-card-oils"></div>
                 <div id="mood-card-attribution" class="mood-card-attribution">Diffused by @vibezandbutterflyz</div>
-                <div class="mood-card-footer">Made in Vibez &amp; Butterflyz</div>
+                <div class="mood-card-footer">Made in Vibez &amp; Butterflyz Sensory &amp; Mood Studio</div>
               </div>
             </div>
           </div>
@@ -6348,7 +6348,7 @@ function renderMoodlab() {
 
 function formatOilChip(o) {
   if (typeof o === "string") return o;
-  return o.drops ? `${o.name} · ${o.drops} drop${o.drops === 1 ? "" : "s"}` : o.name;
+  return o.drops ? `${o.drops} drop${o.drops === 1 ? "" : "s"} ${o.name}` : o.name;
 }
 
 function syncMoodCard() {
@@ -6666,7 +6666,7 @@ async function downloadMoodCard() {
   }
   ctx.globalAlpha = 0.65;
   ctx.font = footerFont;
-  ctx.fillText('MADE IN VIBEZ & BUTTERFLYZ', size / 2, footerBaselineY);
+  ctx.fillText('MADE IN VIBEZ & BUTTERFLYZ SENSORY & MOOD STUDIO', size / 2, footerBaselineY);
   ctx.globalAlpha = 1;
 
   const link = document.createElement('a');
