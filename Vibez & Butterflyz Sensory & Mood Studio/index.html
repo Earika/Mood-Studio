@@ -4797,6 +4797,33 @@ function alphabetizeOils(oils) {
   return [...oils].sort((a, b) => a.name.localeCompare(b.name));
 }
 
+const COMMON_OIL_NAMES = ["lavender","sweet orange","peppermint","cedarwood","rosemary","frankincense","eucalyptus","lemon","geranium","ylang ylang"];
+function isCommonOil(oil) {
+  const base = oil.name.replace(/\s*\([^)]*\)/g, "").trim().toLowerCase();
+  return COMMON_OIL_NAMES.includes(base);
+}
+const RARE_OIL_NAMES = ["blue tansy","galbanum","neroli","rose otto","vetiver","helichrysum"];
+
+function ttlSafetySuppressed(oil, flags) {
+  if (!flags || !flags.length) return false;
+  const cautionText = (oil.cautions || []).join(" ").toLowerCase();
+  if (flags.includes("pregnancy-nursing") && /avoid/i.test(oil.pregnancy || "")) return true;
+  if (flags.includes("citrus-sun") && oil.phototoxic) return true;
+  if (flags.includes("sensitive-skin") && /sensit|irritat/.test(cautionText)) return true;
+  if (flags.includes("respiratory") && /respirat|laryngospasm|asthma/.test(cautionText)) return true;
+  if (flags.includes("pets") && /\bpet[s]?\b|\bcat[s]?\b|\bdog[s]?\b/.test(cautionText)) return true;
+  return false;
+}
+
+function ttlApplyAdventureSort(sorted, profile) {
+  const level = profile?.adventureLevel;
+  if (!level || level === "some-surprise") return sorted;
+  const commons = sorted.filter(isCommonOil);
+  const others = sorted.filter(o => !isCommonOil(o));
+  if (level === "familiar") return [...commons, ...others];
+  return [...others, ...commons];
+}
+
 function filteredOils() {
   const f = state.filters;
   const profile = loadProfile();
@@ -6987,21 +7014,6 @@ function suggestedBlendFor(moodKey) {
   return options[Math.floor(Math.random() * options.length)];
 }
 
-// The 10 common, easy-to-find oils used by Q8's adventure sort. Matched
-// against the base name (parenthetical chemotype/origin qualifiers
-// stripped) so "Cedarwood (Atlas)" still counts as "Cedarwood" -- same
-// base-name approach as inferLoungeMood() above.
-const COMMON_OIL_NAMES = ["lavender","sweet orange","peppermint","cedarwood","rosemary","frankincense","eucalyptus","lemon","geranium","ylang ylang"];
-function isCommonOil(oil) {
-  const base = oil.name.replace(/\s*\([^)]*\)/g, "").trim().toLowerCase();
-  return COMMON_OIL_NAMES.includes(base);
-}
-// Rare/unusual oils that surface experimental Curated Moods blends first
-// when adventureLevel is "trust".
-const RARE_OIL_NAMES = ["blue tansy","galbanum","neroli","rose otto","vetiver","helichrysum"];
-
-// Reused by both the completion ritual (first-time signature-oil preload)
-// and, formerly, the legacy one-tap picker. Kept as live shared infra.
 function applySessionMoodEffects(moodKey) {
   state.mood = moodKey;
   safeStorageSet("vb_session_mood", moodKey);
@@ -7016,29 +7028,6 @@ function applySessionMoodEffects(moodKey) {
   const themeSel = document.getElementById("moodlab-theme");
   if (themeSel) themeSel.value = moodKey;
   if (added.length) showToast(`Added ${added.join(" + ")} to your blend`);
-}
-
-// Hard filters used by filteredOils()/renderInlineShelf()/filteredMoodBlends()
-// -- maps Q6 safety flags to the oil properties already tracked in the data
-// (phototoxic, pregnancy, cautions text), same fields renderSafetyReport reads.
-function ttlSafetySuppressed(oil, flags) {
-  if (!flags || !flags.length) return false;
-  const cautionText = (oil.cautions || []).join(" ").toLowerCase();
-  if (flags.includes("pregnancy-nursing") && /avoid/i.test(oil.pregnancy || "")) return true;
-  if (flags.includes("citrus-sun") && oil.phototoxic) return true;
-  if (flags.includes("sensitive-skin") && /sensit|irritat/.test(cautionText)) return true;
-  if (flags.includes("respiratory") && /respirat|laryngospasm|asthma/.test(cautionText)) return true;
-  if (flags.includes("pets") && /\bpet[s]?\b|\bcat[s]?\b|\bdog[s]?\b/.test(cautionText)) return true;
-  return false;
-}
-
-function ttlApplyAdventureSort(sorted, profile) {
-  const level = profile?.adventureLevel;
-  if (!level || level === "some-surprise") return sorted;
-  const commons = sorted.filter(isCommonOil);
-  const others = sorted.filter(o => !isCommonOil(o));
-  if (level === "familiar") return [...commons, ...others];
-  return [...others, ...commons]; // "unexpected" and "trust" both surface non-common oils first
 }
 
 const ttlBackdropEl = document.getElementById("ttl-backdrop");
