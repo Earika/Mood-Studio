@@ -7662,11 +7662,12 @@ retuneBtn.addEventListener("click", () => {
 // (loadProfile's try/catch) just falls back to showing the flow again.
 function runFirstRunFlow() {
   const profile = loadProfile();
-  if (!safeStorageGet("vb_seen_onboarding")) {
-    ttlOnboardingEl.classList.remove("hidden");
-  } else if (profile) {
-    applyStoredProfile(profile);
-  }
+  if (profile) applyStoredProfile(profile);
+  ttlAnswers = {};
+  ttlIndex = 0;
+  document.querySelectorAll(".ttl-step").forEach(el => el.classList.add("hidden"));
+  document.getElementById("ttl-step-welcome").classList.remove("hidden");
+  ttlOnboardingEl.classList.remove("hidden");
 }
 runFirstRunFlow();
 
